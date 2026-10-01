@@ -31,3 +31,4 @@ C:\Users\Dell\OneDrive\Desktop\MediCare\obj\Debug\net10.0\refint\MediCare.dll
 C:\Users\Dell\OneDrive\Desktop\MediCare\obj\Debug\net10.0\MediCare.pdb
 C:\Users\Dell\OneDrive\Desktop\MediCare\obj\Debug\net10.0\MediCare.genruntimeconfig.cache
 C:\Users\Dell\OneDrive\Desktop\MediCare\obj\Debug\net10.0\ref\MediCare.dll
+C:\Users\Dell\OneDrive\Desktop\MediCare\obj\Debug\net10.0\MediCare.sourcelink.json
