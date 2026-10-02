@@ -1,5 +1,4 @@
 using MediCare.Data;
-
 namespace MediCare.Models;
 
 public class Patient
@@ -12,8 +11,8 @@ public class Patient
 
     public string EmergencyContact { get; set; } = string.Empty;
 
-    public User User { get; set; } = null!;      
+    public User User { get; set; } = null!;
 
     public ICollection<CaregiverPatient> CaregiverPatients { get; set; }
-                = new List<CaregiverPatient>();
+        = new List<CaregiverPatient>();
 }
