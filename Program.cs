@@ -28,15 +28,8 @@ builder.Services.AddScoped<IMedicineLogRepository, MedicineLogRepository>();
 builder.Services.AddScoped<IMedicineService, MedicineService>();
 builder.Services.AddScoped<IMedicineScheduleService, MedicineScheduleService>();
 builder.Services.AddScoped<IMedicineLogService, MedicineLogService>();
-// Swagger
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
-
-// Swagger
-app.UseSwagger();
-app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
 
