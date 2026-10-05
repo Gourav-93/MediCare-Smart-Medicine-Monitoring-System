@@ -20,6 +20,8 @@ public class AppDbContext : DbContext
 
     public DbSet<Medicine> Medicines { get; set; }
 
+    public DbSet<MedicineSchedule> MedicineSchedules { get; set; }
+
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
