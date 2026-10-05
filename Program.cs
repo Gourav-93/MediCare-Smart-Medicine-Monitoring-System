@@ -22,9 +22,11 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 // Repository
 builder.Services.AddScoped<IMedicineRepository, MedicineRepository>();
+builder.Services.AddScoped<IMedicineScheduleRepository, MedicineScheduleRepository>();
 
 // Service
 builder.Services.AddScoped<IMedicineService, MedicineService>();
+builder.Services.AddScoped<IMedicineScheduleService, MedicineScheduleService>();
 
 // Swagger
 builder.Services.AddEndpointsApiExplorer();
