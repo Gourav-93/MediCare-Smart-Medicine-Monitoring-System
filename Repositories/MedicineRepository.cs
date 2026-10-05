@@ -16,8 +16,7 @@ public class MedicineRepository : IMedicineRepository
 
     public async Task<List<Medicine>> GetAllAsync()
     {
-        return await _context.Medicines
-            .ToListAsync();
+        return await _context.Medicines.ToListAsync();
     }
 
     public async Task<Medicine?> GetByIdAsync(int id)
