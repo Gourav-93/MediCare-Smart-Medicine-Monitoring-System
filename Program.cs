@@ -19,15 +19,15 @@ builder.Services.AddDbContext<AppDbContext>(options =>
         )
     )
 );
-
 // Repository
 builder.Services.AddScoped<IMedicineRepository, MedicineRepository>();
 builder.Services.AddScoped<IMedicineScheduleRepository, MedicineScheduleRepository>();
+builder.Services.AddScoped<IMedicineLogRepository, MedicineLogRepository>();
 
 // Service
 builder.Services.AddScoped<IMedicineService, MedicineService>();
 builder.Services.AddScoped<IMedicineScheduleService, MedicineScheduleService>();
-
+builder.Services.AddScoped<IMedicineLogService, MedicineLogService>();
 // Swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
