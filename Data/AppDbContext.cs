@@ -18,6 +18,8 @@ public class AppDbContext : DbContext
 
     public DbSet<CaregiverPatient> CaregiverPatients { get; set; }
 
+    public DbSet<Medicine> Medicines { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
