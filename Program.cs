@@ -25,12 +25,14 @@ builder.Services.AddScoped<IMedicineRepository, MedicineRepository>();
 builder.Services.AddScoped<IMedicineScheduleRepository, MedicineScheduleRepository>();
 builder.Services.AddScoped<IMedicineLogRepository, MedicineLogRepository>();
 builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
+builder.Services.AddScoped<ICaregiverPatientRepository,CaregiverPatientRepository>();
 
 // Service
 builder.Services.AddScoped<IMedicineService, MedicineService>();
 builder.Services.AddScoped<IMedicineScheduleService, MedicineScheduleService>();
 builder.Services.AddScoped<IMedicineLogService, MedicineLogService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<ICaregiverPatientService,CaregiverPatientService>();
 
 // Background Service
 builder.Services.AddHostedService<MedicineReminderBackgroundService>();
