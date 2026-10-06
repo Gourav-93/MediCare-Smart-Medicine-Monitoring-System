@@ -24,11 +24,13 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddScoped<IMedicineRepository, MedicineRepository>();
 builder.Services.AddScoped<IMedicineScheduleRepository, MedicineScheduleRepository>();
 builder.Services.AddScoped<IMedicineLogRepository, MedicineLogRepository>();
+builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
 
 // Service
 builder.Services.AddScoped<IMedicineService, MedicineService>();
 builder.Services.AddScoped<IMedicineScheduleService, MedicineScheduleService>();
 builder.Services.AddScoped<IMedicineLogService, MedicineLogService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
 
 // Background Service
 builder.Services.AddHostedService<MedicineReminderBackgroundService>();
