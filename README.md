@@ -337,7 +337,7 @@ Emergency alerts
 Medicine stock tracking
 Reports and analytics
 Frontend / mobile application
-Production deployment
+Production deployment       
 Overall Progress
 Backend Setup             ██████████  100%
 Database                  ██████████  100%
@@ -346,7 +346,42 @@ User Roles                █████████░   90%
 Patient Module            ████████░░   80%
 Caregiver Module          ██████░░░░   60%
 Medicine Module           ███████░░░   70%
-Reminder System            ████░░░░░░   40%
-Testing                    █████░░░░░   50%
-Frontend / Mobile          ░░░░░░░░░░    0%
-Deployment                 ░░░░░░░░░░    0%
+Reminder System           ████░░░░░░   40%
+Testing                   █████░░░░░   50%
+Frontend / Mobile         ░░░░░░░░░░    0%
+Deployment                ░░░░░░░░░░    0%
+
+
+## Recent Progress
+
+### October 6, 2026
+
+Today, the **Medicine Repository layer** was implemented and integrated into the project.
+
+- Created `IMedicineRepository` interface
+- Created `MedicineRepository` implementation
+- Added repository structure for Medicine-related database operations
+- Connected the repository layer with the existing project architecture
+- Tested the project build after implementing the repository
+- Updated the Git repository with the latest changes
+- Created a new Git commit for the repository implementation
+
+### Current Architecture
+
+```text
+Controller
+    ↓
+Service
+    ↓
+Repository Interface
+    ↓
+Repository Implementation
+    ↓
+Entity Framework Core
+    ↓
+MySQL Database
+```
+
+### Current Status
+
+The Medicine module is currently being developed step by step. The repository layer has now been added, and the next development work can continue with the **Medicine Service layer and its business logic**.
