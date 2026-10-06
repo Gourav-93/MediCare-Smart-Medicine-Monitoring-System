@@ -1,4 +1,5 @@
 using MediCare.Data;
+using MediCare.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace MediCare.BackgroundServices;
@@ -66,11 +67,12 @@ public class MedicineReminderBackgroundService : BackgroundService
 
         var medicines = await context.Medicines
             .Include(m => m.Schedules)
+            .Include(m => m.Patient)
+            .ThenInclude(p => p.User)
             .ToListAsync(stoppingToken);
 
         foreach (var medicine in medicines)
         {
-            // Check medicine's active date range.
             if (medicine.StartDate.Date > today ||
                 medicine.EndDate.Date < today)
             {
@@ -79,7 +81,6 @@ public class MedicineReminderBackgroundService : BackgroundService
 
             foreach (var schedule in medicine.Schedules)
             {
-                // Currently supporting Daily schedules.
                 if (!string.Equals(
                     schedule.Frequency,
                     "Daily",
@@ -90,7 +91,6 @@ public class MedicineReminderBackgroundService : BackgroundService
 
                 var scheduledTime = today.Add(schedule.Time);
 
-                // Do not process future doses.
                 if (scheduledTime > now)
                 {
                     continue;
@@ -102,10 +102,9 @@ public class MedicineReminderBackgroundService : BackgroundService
                              x.ScheduledTime == scheduledTime,
                         stoppingToken);
 
-                // Create a log only if one does not exist.
                 if (log == null)
                 {
-                    log = new MediCare.Models.MedicineLog
+                    log = new MedicineLog
                     {
                         MedicineId = medicine.Id,
                         PatientId = medicine.PatientId,
@@ -114,13 +113,46 @@ public class MedicineReminderBackgroundService : BackgroundService
                     };
 
                     context.MedicineLogs.Add(log);
+
+                    // Create medicine reminder notification
+                    var notification = new Notification
+                    {
+                        UserId = medicine.Patient.UserId,
+                        Title = "Medicine Reminder",
+                        Message = $"Time to take {medicine.Name}.",
+                        Type = "MedicineReminder",
+                        IsRead = false,
+                        CreatedAt = DateTime.Now
+                    };
+
+                    context.Notifications.Add(notification);
+
+                    _logger.LogInformation(
+                        "Medicine reminder created for {MedicineName}.",
+                        medicine.Name);
                 }
 
-                // Mark the dose missed after 30 minutes.
                 if (log.Status == "Pending" &&
                     now >= scheduledTime.AddMinutes(30))
                 {
                     log.Status = "Missed";
+
+                    // Create missed medicine notification
+                    var notification = new Notification
+                    {
+                        UserId = medicine.Patient.UserId,
+                        Title = "Medicine Missed",
+                        Message = $"You missed your {medicine.Name} dose.",
+                        Type = "MedicineMissed",
+                        IsRead = false,
+                        CreatedAt = DateTime.Now
+                    };
+
+                    context.Notifications.Add(notification);
+
+                    _logger.LogInformation(
+                        "Medicine marked as missed: {MedicineName}.",
+                        medicine.Name);
                 }
             }
         }
