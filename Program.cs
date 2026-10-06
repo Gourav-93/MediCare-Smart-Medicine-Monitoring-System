@@ -4,6 +4,7 @@ using MediCare.Repositories.Interfaces;
 using MediCare.Service;
 using MediCare.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using MediCare.BackgroundServices;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,6 +29,9 @@ builder.Services.AddScoped<IMedicineLogRepository, MedicineLogRepository>();
 builder.Services.AddScoped<IMedicineService, MedicineService>();
 builder.Services.AddScoped<IMedicineScheduleService, MedicineScheduleService>();
 builder.Services.AddScoped<IMedicineLogService, MedicineLogService>();
+
+// Background Service
+builder.Services.AddHostedService<MedicineReminderBackgroundService>();
 
 var app = builder.Build();
 
