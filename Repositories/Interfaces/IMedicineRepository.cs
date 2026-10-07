@@ -13,4 +13,6 @@ public interface IMedicineRepository
     Task<Medicine> UpdateAsync(Medicine medicine);
 
     Task DeleteAsync(Medicine medicine);
+
+    Task<bool> PatientExistsAsync(int patientId);
 }

@@ -54,4 +54,14 @@ public class MedicineLogRepository : IMedicineLogRepository
             await _context.SaveChangesAsync();
         }
     }
+
+    public async Task<bool> MedicineExistsAsync(int medicineId)
+    {
+        return await _context.Medicines.AnyAsync(m => m.Id == medicineId);
+    }
+
+    public async Task<bool> PatientExistsAsync(int patientId)
+    {
+        return await _context.Patients.AnyAsync(p => p.Id == patientId);
+    }
 }

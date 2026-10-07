@@ -15,9 +15,24 @@ public class CaregiverPatientService : ICaregiverPatientService
         _repository = repository;
     }
 
-    public async Task<CaregiverPatient> LinkPatientAsync(
-        CaregiverPatientDto dto)
+    public async Task<CaregiverPatient> LinkPatientAsync(CaregiverPatientDto dto)
     {
+        if (!await _repository.CaregiverExistsAsync(dto.CaregiverId))
+        {
+            throw new ArgumentException("Caregiver not found.");
+        }
+
+        if (!await _repository.PatientExistsAsync(dto.PatientId))
+        {
+            throw new ArgumentException("Patient not found.");
+        }
+
+        var existingRelationships = await _repository.GetByCaregiverIdAsync(dto.CaregiverId);
+        if (existingRelationships.Any(x => x.PatientId == dto.PatientId))
+        {
+            throw new ArgumentException("Relationship already exists.");
+        }
+
         var relationship = new CaregiverPatient
         {
             CaregiverId = dto.CaregiverId,

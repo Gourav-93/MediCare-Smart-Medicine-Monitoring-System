@@ -46,4 +46,9 @@ public class MedicineScheduleRepository : IMedicineScheduleRepository
         _context.MedicineSchedules.Remove(schedule);
         await _context.SaveChangesAsync();
     }
+
+    public async Task<bool> MedicineExistsAsync(int medicineId)
+    {
+        return await _context.Medicines.AnyAsync(m => m.Id == medicineId);
+    }
 }

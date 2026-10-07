@@ -38,19 +38,33 @@ public class MedicineController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Add(MedicineDto dto)
     {
-        var medicine = await _service.AddAsync(dto);
-        return Ok(medicine);
+        try
+        {
+            var medicine = await _service.AddAsync(dto);
+            return Ok(medicine);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(int id, MedicineDto dto)
     {
-        var medicine = await _service.UpdateAsync(id, dto);
-        if (medicine == null)
+        try
         {
-            return NotFound("Medicine Not Found");
+            var medicine = await _service.UpdateAsync(id, dto);
+            if (medicine == null)
+            {
+                return NotFound("Medicine Not Found");
+            }
+            return Ok(medicine);
         }
-        return Ok(medicine);
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 
 

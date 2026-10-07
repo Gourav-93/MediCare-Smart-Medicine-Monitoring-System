@@ -39,9 +39,15 @@ public class MedicineLogController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Add(MedicineLogDto dto)
     {
-        var log = await _service.AddAsync(dto);
-
-        return Ok(log);
+        try
+        {
+            var log = await _service.AddAsync(dto);
+            return Ok(log);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 
     [HttpPut("{id}/taken")]

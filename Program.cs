@@ -5,11 +5,15 @@ using MediCare.Service;
 using MediCare.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using MediCare.BackgroundServices;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Controllers
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+});
 
 // Database
 builder.Services.AddDbContext<AppDbContext>(options =>

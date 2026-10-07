@@ -20,9 +20,15 @@ public class CaregiverPatientController : ControllerBase
     public async Task<IActionResult> LinkPatient(
         CaregiverPatientDto dto)
     {
-        var result = await _service.LinkPatientAsync(dto);
-
-        return Ok(result);
+        try
+        {
+            var result = await _service.LinkPatientAsync(dto);
+            return Ok(result);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 
     [HttpGet("caregiver/{caregiverId}")]

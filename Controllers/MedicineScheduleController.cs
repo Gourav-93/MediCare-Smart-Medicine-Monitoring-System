@@ -39,9 +39,15 @@ public class MedicineScheduleController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Add(MedicineScheduleDto dto)
     {
-        var schedule = await _service.AddAsync(dto);
-
-        return Ok(schedule);
+        try
+        {
+            var schedule = await _service.AddAsync(dto);
+            return Ok(schedule);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 
     [HttpPut("{id}")]
@@ -49,14 +55,21 @@ public class MedicineScheduleController : ControllerBase
         int id,
         MedicineScheduleDto dto)
     {
-        var schedule = await _service.UpdateAsync(id, dto);
-
-        if (schedule == null)
+        try
         {
-            return NotFound("Schedule not found.");
-        }
+            var schedule = await _service.UpdateAsync(id, dto);
 
-        return Ok(schedule);
+            if (schedule == null)
+            {
+                return NotFound("Schedule not found.");
+            }
+
+            return Ok(schedule);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 
     [HttpDelete("{id}")]

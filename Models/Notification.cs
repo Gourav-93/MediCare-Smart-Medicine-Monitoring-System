@@ -11,5 +11,5 @@ public class Notification
     public string Type { get; set; } = string.Empty;
     public bool IsRead { get; set; }
     public DateTime CreatedAt { get; set; }
-    public User User { get; set; } = null!;
+    public User? User { get; set; }
 }

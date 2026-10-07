@@ -26,6 +26,11 @@ public class MedicineScheduleService : IMedicineScheduleService
 
     public async Task<MedicineSchedule> AddAsync(MedicineScheduleDto dto)
     {
+        if (!await _repository.MedicineExistsAsync(dto.MedicineId))
+        {
+            throw new ArgumentException("Medicine not found.");
+        }
+
         var schedule = new MedicineSchedule
         {
             MedicineId = dto.MedicineId,
@@ -40,6 +45,11 @@ public class MedicineScheduleService : IMedicineScheduleService
         int id,
         MedicineScheduleDto dto)
     {
+        if (!await _repository.MedicineExistsAsync(dto.MedicineId))
+        {
+            throw new ArgumentException("Medicine not found.");
+        }
+
         var schedule = await _repository.GetByIdAsync(id);
 
         if (schedule == null)

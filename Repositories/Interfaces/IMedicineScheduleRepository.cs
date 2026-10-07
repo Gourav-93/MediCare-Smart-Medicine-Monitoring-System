@@ -13,4 +13,6 @@ public interface IMedicineScheduleRepository
     Task<MedicineSchedule> UpdateAsync(MedicineSchedule schedule);
 
     Task DeleteAsync(MedicineSchedule schedule);
+
+    Task<bool> MedicineExistsAsync(int medicineId);
 }

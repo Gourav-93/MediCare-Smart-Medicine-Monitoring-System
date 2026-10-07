@@ -8,10 +8,14 @@ namespace MediCare.Service;
 public class MedicineLogService : IMedicineLogService
 {
     private readonly IMedicineLogRepository _repository;
+    private readonly INotificationRepository _notificationRepository;
 
-    public MedicineLogService(IMedicineLogRepository repository)
+    public MedicineLogService(
+        IMedicineLogRepository repository,
+        INotificationRepository notificationRepository)
     {
         _repository = repository;
+        _notificationRepository = notificationRepository;
     }
 
     public async Task<List<MedicineLog>> GetAllAsync()
@@ -26,6 +30,16 @@ public class MedicineLogService : IMedicineLogService
 
     public async Task<MedicineLog> AddAsync(MedicineLogDto dto)
     {
+        if (!await _repository.MedicineExistsAsync(dto.MedicineId))
+        {
+            throw new ArgumentException("Medicine not found.");
+        }
+
+        if (!await _repository.PatientExistsAsync(dto.PatientId))
+        {
+            throw new ArgumentException("Patient not found.");
+        }
+
         var log = new MedicineLog
         {
             MedicineId = dto.MedicineId,
@@ -38,29 +52,27 @@ public class MedicineLogService : IMedicineLogService
     }
 
     public async Task<MedicineLog?> MarkAsTakenAsync(int id)
-{
-    var log = await _repository.GetByIdAsync(id);
-
-    if (log == null)
-        return null;
-
-    // Prevent taking the same dose twice
-    if (log.Status == "Taken")
-        return log;
-
-    log.Status = "Taken";
-    log.TakenTime = DateTime.Now;
-
-    // Decrease medicine stock
-    if (log.Medicine.Stock >= log.Medicine.Dose)
     {
-        log.Medicine.Stock -= log.Medicine.Dose;
-    }
-    else
-    {
-        log.Medicine.Stock = 0;
-    }
+        var log = await _repository.GetByIdAsync(id);
 
-    return await _repository.UpdateAsync(log);
-}
+        if (log == null)
+            return null;
+
+        if (log.Status == "Taken")
+            return log;
+
+        log.Status = "Taken";
+        log.TakenTime = DateTime.Now;
+
+        if (log.Medicine.Stock >= log.Medicine.Dose)
+        {
+            log.Medicine.Stock -= log.Medicine.Dose;
+        }
+        else
+        {
+            log.Medicine.Stock = 0;
+        }
+
+        return await _repository.UpdateAsync(log);
+    }
 }

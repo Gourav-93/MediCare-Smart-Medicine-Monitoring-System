@@ -62,4 +62,14 @@ public class CaregiverPatientRepository : ICaregiverPatientRepository
 
         return true;
     }
+
+    public async Task<bool> CaregiverExistsAsync(int caregiverId)
+    {
+        return await _context.Caregivers.AnyAsync(c => c.Id == caregiverId);
+    }
+
+    public async Task<bool> PatientExistsAsync(int patientId)
+    {
+        return await _context.Patients.AnyAsync(p => p.Id == patientId);
+    }
 }
