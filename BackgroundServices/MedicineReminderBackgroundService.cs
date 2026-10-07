@@ -20,7 +20,8 @@ public class MedicineReminderBackgroundService : BackgroundService
     protected override async Task ExecuteAsync(
         CancellationToken stoppingToken)
     {
-        _logger.LogInformation("Medicine Reminder Service started.");
+        _logger.LogInformation(
+            "Medicine Reminder Service started.");
 
         while (!stoppingToken.IsCancellationRequested)
         {
@@ -102,6 +103,7 @@ public class MedicineReminderBackgroundService : BackgroundService
                              x.ScheduledTime == scheduledTime,
                         stoppingToken);
 
+                // Create pending log and patient notification.
                 if (log == null)
                 {
                     log = new MedicineLog
@@ -114,8 +116,7 @@ public class MedicineReminderBackgroundService : BackgroundService
 
                     context.MedicineLogs.Add(log);
 
-                    // Create medicine reminder notification
-                    var notification = new Notification
+                    var patientNotification = new Notification
                     {
                         UserId = medicine.Patient.UserId,
                         Title = "Medicine Reminder",
@@ -125,33 +126,59 @@ public class MedicineReminderBackgroundService : BackgroundService
                         CreatedAt = DateTime.Now
                     };
 
-                    context.Notifications.Add(notification);
+                    context.Notifications.Add(patientNotification);
 
                     _logger.LogInformation(
-                        "Medicine reminder created for {MedicineName}.",
+                        "Reminder created for {MedicineName}.",
                         medicine.Name);
                 }
 
+                // Mark medicine as missed after 30 minutes.
                 if (log.Status == "Pending" &&
                     now >= scheduledTime.AddMinutes(30))
                 {
                     log.Status = "Missed";
 
-                    // Create missed medicine notification
-                    var notification = new Notification
+                    // Notify patient.
+                    var patientNotification = new Notification
                     {
                         UserId = medicine.Patient.UserId,
                         Title = "Medicine Missed",
-                        Message = $"You missed your {medicine.Name} dose.",
+                        Message =
+                            $"You missed your {medicine.Name} dose.",
                         Type = "MedicineMissed",
                         IsRead = false,
                         CreatedAt = DateTime.Now
                     };
 
-                    context.Notifications.Add(notification);
+                    context.Notifications.Add(patientNotification);
+
+                    // Find linked caregivers.
+                    var caregivers = await context.CaregiverPatients
+                        .Include(cp => cp.Caregiver)
+                        .Where(cp => cp.PatientId == medicine.PatientId)
+                        .ToListAsync(stoppingToken);
+
+                    foreach (var caregiverPatient in caregivers)
+                    {
+                        var caregiverNotification = new Notification
+                        {
+                            UserId = caregiverPatient.Caregiver.UserId,
+                            Title = "Patient Missed Medicine",
+                            Message =
+                                $"The patient missed {medicine.Name}.",
+                            Type = "CaregiverMedicineMissed",
+                            IsRead = false,
+                            CreatedAt = DateTime.Now
+                        };
+
+                        context.Notifications.Add(
+                            caregiverNotification);
+                    }
 
                     _logger.LogInformation(
-                        "Medicine marked as missed: {MedicineName}.",
+                        "Medicine {MedicineName} marked as missed. " +
+                        "Caregivers notified.",
                         medicine.Name);
                 }
             }
