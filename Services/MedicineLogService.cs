@@ -64,6 +64,9 @@ public class MedicineLogService : IMedicineLogService
         log.Status = "Taken";
         log.TakenTime = DateTime.Now;
 
+        var previousStock = log.Medicine.Stock;
+
+
         if (log.Medicine.Stock >= log.Medicine.Dose)
         {
             log.Medicine.Stock -= log.Medicine.Dose;
@@ -73,6 +76,19 @@ public class MedicineLogService : IMedicineLogService
             log.Medicine.Stock = 0;
         }
 
+        if (previousStock > 5 && log.Medicine.Stock <= 5)
+        {
+            var notification = new Notification
+            {
+                UserId = log.Medicine.Patient.UserId,
+                Title = "Low Medicine Stockkk",
+                Message = $"{log.Medicine.Name} stock is low. Please refill the medicine.",
+                Type = "Low Stock",
+                IsRead = false,
+                CreatedAt = DateTime.Now
+            };
+            await _notificationRepository.AddAsync(notification);
+        }
         return await _repository.UpdateAsync(log);
     }
 }

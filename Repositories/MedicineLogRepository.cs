@@ -24,6 +24,8 @@ public class MedicineLogRepository : IMedicineLogRepository
     {
         return await _context.MedicineLogs
             .Include(x => x.Medicine)
+            .ThenInclude(x => x.Patient)
+            .ThenInclude(x => x.User)
             .FirstOrDefaultAsync(x => x.Id == id);
     }
 
