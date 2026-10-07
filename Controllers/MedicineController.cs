@@ -26,10 +26,12 @@ public class MedicineController : ControllerBase
     public async Task<IActionResult> GetById(int id)
     {
         var medicine = await _service.GetByIdAsync(id);
-        if (id == null)
+
+        if (medicine == null)
         {
             return NotFound("Medicine Not Found.");
         }
+
         return Ok(medicine);
     }
 
