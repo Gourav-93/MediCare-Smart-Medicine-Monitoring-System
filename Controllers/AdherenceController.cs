@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace MediCare.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/adherence")]
 public class AdherenceController : ControllerBase
 {
     private readonly IAdherenceService _service;

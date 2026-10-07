@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace MediCare.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/medicinelog")]
 public class MedicineLogController : ControllerBase
 {
     private readonly IMedicineLogService _service;
