@@ -37,9 +37,11 @@ builder.Services.AddScoped<IMedicineScheduleService, MedicineScheduleService>();
 builder.Services.AddScoped<IMedicineLogService, MedicineLogService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<ICaregiverPatientService,CaregiverPatientService>();
+builder.Services.AddScoped<IAdherenceService, AdherenceService>();
 
 // Background Service
 builder.Services.AddHostedService<MedicineReminderBackgroundService>();
+
 
 var app = builder.Build();
 
