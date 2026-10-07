@@ -67,7 +67,7 @@ public class MedicineReminderBackgroundService : BackgroundService
         var today = now.Date;
 
         var medicines = await context.Medicines
-            .Include(m => m.Schedules)
+            .Include(m => m.MedicineSchedules)
             .Include(m => m.Patient)
             .ThenInclude(p => p.User)
             .ToListAsync(stoppingToken);
@@ -80,7 +80,7 @@ public class MedicineReminderBackgroundService : BackgroundService
                 continue;
             }
 
-            foreach (var schedule in medicine.Schedules)
+            foreach (var schedule in medicine.MedicineSchedules)
             {
                 if (!string.Equals(
                     schedule.Frequency,

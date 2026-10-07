@@ -20,8 +20,8 @@ public class Medicine
 
     public Patient Patient { get; set; } = null!;
 
-    public ICollection<MedicineSchedule> Schedules { get; set; }
-        = new List<MedicineSchedule>();
+    public ICollection<MedicineSchedule> MedicineSchedules { get; set; }
+    = new List<MedicineSchedule>();
 
     public ICollection<MedicineLog> MedicineLogs { get; set; }
         = new List<MedicineLog>();

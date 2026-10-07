@@ -38,17 +38,29 @@ public class MedicineLogService : IMedicineLogService
     }
 
     public async Task<MedicineLog?> MarkAsTakenAsync(int id)
+{
+    var log = await _repository.GetByIdAsync(id);
+
+    if (log == null)
+        return null;
+
+    // Prevent taking the same dose twice
+    if (log.Status == "Taken")
+        return log;
+
+    log.Status = "Taken";
+    log.TakenTime = DateTime.Now;
+
+    // Decrease medicine stock
+    if (log.Medicine.Stock >= log.Medicine.Dose)
     {
-        var log = await _repository.GetByIdAsync(id);
-
-        if (log == null)
-        {
-            return null;
-        }
-
-        log.Status = "Taken";
-        log.TakenTime = DateTime.Now;
-
-        return await _repository.UpdateAsync(log);
+        log.Medicine.Stock -= log.Medicine.Dose;
     }
+    else
+    {
+        log.Medicine.Stock = 0;
+    }
+
+    return await _repository.UpdateAsync(log);
+}
 }

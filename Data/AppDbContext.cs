@@ -71,5 +71,12 @@ public class AppDbContext : DbContext
             .WithMany()
             .HasForeignKey(n => n.UserId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        // Medicine -> MedicineSchedule (One-to-Many)
+        modelBuilder.Entity<MedicineSchedule>()
+            .HasOne(ms => ms.Medicine)
+            .WithMany(m => m.MedicineSchedules)
+            .HasForeignKey(ms => ms.MedicineId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

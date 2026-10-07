@@ -23,6 +23,7 @@ public class MedicineLogRepository : IMedicineLogRepository
     public async Task<MedicineLog?> GetByIdAsync(int id)
     {
         return await _context.MedicineLogs
+            .Include(x => x.Medicine)
             .FirstOrDefaultAsync(x => x.Id == id);
     }
 
