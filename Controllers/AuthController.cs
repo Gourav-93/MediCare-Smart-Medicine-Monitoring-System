@@ -1,6 +1,7 @@
 using MediCare.Data;
 using MediCare.DTOs;
 using MediCare.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -9,6 +10,7 @@ namespace MediCare.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[AllowAnonymous]
 public class AuthController : ControllerBase
 {
     private readonly AppDbContext _context;
@@ -24,40 +26,60 @@ public class AuthController : ControllerBase
         _passwordHasher = new PasswordHasher<User>();
     }
 
+    // POST: api/Auth/register
     [HttpPost("register")]
     public async Task<IActionResult> Register(RegisterDto dto)
     {
         if (string.IsNullOrWhiteSpace(dto.Name) ||
             string.IsNullOrWhiteSpace(dto.Email) ||
-            string.IsNullOrWhiteSpace(dto.Password))
+            string.IsNullOrWhiteSpace(dto.Password) ||
+            string.IsNullOrWhiteSpace(dto.Role))
         {
-            return BadRequest("Name, Email and Password are required.");
+            return BadRequest(
+                "Name, Email, Password and Role are required."
+            );
         }
 
+        if (dto.Password.Length < 6)
+        {
+            return BadRequest(
+                "Password must be at least 6 characters long."
+            );
+        }
+
+        var email = dto.Email.Trim().ToLower();
+
         var existingUser = await _context.Users
-            .FirstOrDefaultAsync(u => u.Email == dto.Email);
+            .FirstOrDefaultAsync(u =>
+                u.Email.ToLower() == email);
 
         if (existingUser != null)
         {
             return BadRequest("Email already exists.");
         }
 
-        var role = dto.Role.ToUpper();
+        var role = dto.Role.Trim().ToUpper();
 
+        // ADMIN cannot register publicly
         if (role != "PATIENT" && role != "CAREGIVER")
         {
-            return BadRequest("Only PATIENT or CAREGIVER registration is allowed.");
+            return BadRequest(
+                "Only PATIENT or CAREGIVER registration is allowed."
+            );
         }
 
         var user = new User
         {
-            Name = dto.Name,
-            Email = dto.Email,
+            Name = dto.Name.Trim(),
+            Email = email,
             Role = role
         };
 
         user.PasswordHash =
-            _passwordHasher.HashPassword(user, dto.Password);
+            _passwordHasher.HashPassword(
+                user,
+                dto.Password
+            );
 
         _context.Users.Add(user);
 
@@ -66,19 +88,34 @@ public class AuthController : ControllerBase
         return Ok(new
         {
             message = "User registered successfully.",
-            userId = user.Id
+            userId = user.Id,
+            role = user.Role
         });
     }
 
+    // POST: api/Auth/login
     [HttpPost("login")]
     public async Task<IActionResult> Login(LoginDto dto)
     {
+        if (string.IsNullOrWhiteSpace(dto.Email) ||
+            string.IsNullOrWhiteSpace(dto.Password))
+        {
+            return BadRequest(
+                "Email and Password are required."
+            );
+        }
+
+        var email = dto.Email.Trim().ToLower();
+
         var user = await _context.Users
-            .FirstOrDefaultAsync(u => u.Email == dto.Email);
+            .FirstOrDefaultAsync(u =>
+                u.Email.ToLower() == email);
 
         if (user == null)
         {
-            return Unauthorized("Invalid email or password.");
+            return Unauthorized(
+                "Invalid email or password."
+            );
         }
 
         var result = _passwordHasher.VerifyHashedPassword(
@@ -89,7 +126,9 @@ public class AuthController : ControllerBase
 
         if (result == PasswordVerificationResult.Failed)
         {
-            return Unauthorized("Invalid email or password.");
+            return Unauthorized(
+                "Invalid email or password."
+            );
         }
 
         var token = _jwtService.GenerateToken(
