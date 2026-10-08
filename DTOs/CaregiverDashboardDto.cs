@@ -6,7 +6,7 @@ public class CaregiverDashboardDto
 {
     public CaregiverInfoDto Caregiver { get; set; } = new();
 
-    public List<PatientDashboardDto> Patients { get; set; } = new();
+    public List<CaregiverDashboardPatientDto> Patients { get; set; } = new();
 
     public List<EmergencyAlert> ActiveEmergencies { get; set; } = new();
 
@@ -32,21 +32,6 @@ public class CaregiverInfoDto
     public string Email { get; set; } = string.Empty;
 
     public string Relationship { get; set; } = string.Empty;
-}
-
-public class PatientDashboardDto
-{
-    public int PatientId { get; set; }
-
-    public int UserId { get; set; }
-
-    public string Name { get; set; } = string.Empty;
-
-    public string Email { get; set; } = string.Empty;
-
-    public DateTime DateOfBirth { get; set; }
-
-    public string EmergencyContact { get; set; } = string.Empty;
 }
 
 public class PatientAdherenceDto

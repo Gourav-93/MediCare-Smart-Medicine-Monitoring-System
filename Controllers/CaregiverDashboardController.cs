@@ -63,7 +63,7 @@ public class CaregiverDashboardController : ControllerBase
 
         // Patient information
         var patients = linkedPatients
-            .Select(p => new PatientDashboardDto
+            .Select(p => new CaregiverDashboardPatientDto
             {
                 PatientId = p.Id,
                 UserId = p.UserId,
@@ -72,7 +72,7 @@ public class CaregiverDashboardController : ControllerBase
                 DateOfBirth = p.DateOfBirth,
                 EmergencyContact = p.EmergencyContact
             })
-            .ToList();
+                    .ToList();
 
         // Active emergency alerts
         var activeEmergencies = await _context.EmergencyAlerts
