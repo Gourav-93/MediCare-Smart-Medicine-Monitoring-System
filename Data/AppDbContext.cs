@@ -26,6 +26,8 @@ public class AppDbContext : DbContext
 
     public DbSet<Notification> Notifications { get; set; }
 
+    public DbSet<EmergencyAlert> EmergencyAlerts { get; set; }
+
 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -78,5 +80,12 @@ public class AppDbContext : DbContext
             .WithMany(m => m.MedicineSchedules)
             .HasForeignKey(ms => ms.MedicineId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<EmergencyAlert>()
+            .HasOne(e => e.Patient)
+            .WithMany()
+            .HasForeignKey(e => e.PatientId)
+            .OnDelete(DeleteBehavior.Cascade);
+
     }
 }
