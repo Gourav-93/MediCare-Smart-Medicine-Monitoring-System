@@ -1,387 +1,218 @@
-# MediCare – Smart Medicine Reminder & Family Monitoring System
+# MediCare — Smart Medicine Reminder & Family Monitoring System
 
-MediCare is a real-world healthcare management system designed to help patients manage their medicines and allow caregivers/family members to monitor their health-related activities.
+**MediCare** is a medicine management and reminder system designed to help patients take their medicines on time and allow linked caregivers to monitor medication activities. It aims to reduce missed doses through scheduled reminders and email notifications while supporting family-based care.
 
-The project is built using **ASP.NET Core Web API** with **MySQL** and follows a layered architecture.
+## 🚀 Features
 
-## Features
+- **User Authentication:** Secure login and role-based access.
+- **Patient Management:** Maintain patient profiles and personal information.
+- **Caregiver Management:** Link caregivers with patients for family monitoring.
+- **Medicine Management:** Add, update, and manage medicine details and schedules.
+- **Automated Medicine Reminders:** A background service checks medicine schedules and processes due reminders.
+- **Email Notifications:** Send medicine reminder emails to patients.
+- **Missed Dose Monitoring:** Track overdue medicine doses and notify linked caregivers according to the configured rules.
+- **Caregiver Support:** Allow linked caregivers to access relevant patient and medicine information and assist with medicine management.
+- **RESTful APIs:** Backend endpoints for application functionality and data management.
+- **MySQL Database:** Store application data using Entity Framework Core.
+- **Exception Handling:** Centralized error-handling middleware for improved API reliability.
 
-* User authentication with JWT
-* Role-based access for Admin, Patient and Caregiver
-* Patient profile management
-* Caregiver and patient relationship management
-* Medicine management
-* Medicine schedule and reminder system
-* Patient medicine tracking
-* Family/Caregiver monitoring
-* MySQL database integration
-* Entity Framework Core migrations
-* Background service for reminder processing
-* RESTful APIs
+## 🛠️ Technology Stack
 
-## User Roles
+| Component             | Technology                       |
+| --------------------- | -------------------------------- |
+| Backend               | ASP.NET Core Web API             |
+| Programming Language  | C#                               |
+| Framework             | .NET 10                          |
+| Database              | MySQL                            |
+| ORM                   | Entity Framework Core            |
+| MySQL Provider        | Pomelo.EntityFrameworkCore.MySql |
+| Authentication        | JWT Bearer Authentication        |
+| API Testing           | Postman                          |
+| API Documentation     | Swagger / OpenAPI                |
+| Background Processing | .NET BackgroundService           |
+| Version Control       | Git and GitHub                   |
 
-### Admin
+## 🏗️ System Architecture
 
-* Manage users
-* Manage patients and caregivers
-* Manage system data
-
-### Patient
-
-* Manage personal profile
-* Add and manage medicines
-* Set medicine schedules
-* Track medicine reminders
-
-### Caregiver
-
-* Monitor assigned patients
-* View patient medicine schedules
-* Monitor medicine-related activities
-
-## Technology Stack
-
-### Backend
-
-* C#
-* ASP.NET Core Web API
-* .NET 10
-* Entity Framework Core
-* REST API
-* JWT Authentication
-
-### Database
-
-* MySQL
-* Entity Framework Core Migrations
-* Pomelo.EntityFrameworkCore.MySql
-
-### Development Tools
-
-* Visual Studio Code
-* Postman
-* Git & GitHub
-
-## Project Architecture
+The application follows a layered architecture to separate API endpoints, business logic, data access, and background processing.
 
 ```text
-Client / Postman
-       |
-       v
-Controllers
-       |
-       v
-Services
-       |
-       v
-Repositories
-       |
-       v
-Entity Framework Core
-       |
-       v
-MySQL Database
+Patient / Caregiver / Admin
+            |
+            v
+      ASP.NET Core API
+            |
+            v
+        Controllers
+            |
+            v
+         Services
+            |
+            v
+       Repositories
+            |
+            v
+     Entity Framework Core
+            |
+            v
+        MySQL Database
+
+    Background Reminder Service
+            |
+            v
+   Scheduled Dose Monitoring
+            |
+            v
+    Email Notifications
 ```
 
-A background service is also used for processing medicine reminders.
+## 💊 How It Works
 
-```text
-Medicine Schedule
-       |
-       v
-Background Service
-       |
-       v
-Check Reminder Time
-       |
-       v
-Generate Reminder / Notification
-```
+1. Users log in to the system.
+2. Patients manage their profiles and medicine schedules.
+3. Caregivers are linked to patients through the caregiver-patient relationship.
+4. The background service checks medicine schedules at configured intervals.
+5. When a medicine reminder becomes due, the system processes the reminder and sends an email notification according to its configuration.
+6. If a dose remains overdue, the configured missed-dose monitoring logic can notify the linked caregiver.
+7. Caregivers can access relevant patient information and assist with medicine management, subject to authorization.
 
-## Main Modules
+## 🗄️ Database
 
-```text
-MediCare
-│
-├── Controllers
-│   ├── AuthController
-│   ├── PatientController
-│   ├── CaregiverController
-│   └── MedicineController
-│
-├── Models
-│   ├── User
-│   ├── Patient
-│   ├── Caregiver
-│   ├── CaregiverPatient
-│   └── Medicine
-│
-├── Data
-│   └── AppDbContext
-│
-├── Services
-│
-├── Repositories
-│
-├── DTOs
-│
-├── Migrations
-│
-└── Program.cs
-```
+MediCare uses MySQL to store application data. Entity Framework Core manages database access and migrations.
 
-## Authentication
+The main entities include:
 
-MediCare uses **JWT (JSON Web Token)** authentication.
+- **User:** Stores user account information and roles.
+- **Patient:** Stores patient-specific details.
+- **Caregiver:** Stores caregiver information.
+- **CaregiverPatient:** Maintains the relationship between caregivers and patients.
+- **Medicine:** Stores medicine information and scheduling details.
 
-After successful login, the API generates a JWT token containing information such as:
+Additional entities may be used for dose tracking, reminders, or notifications, depending on the implemented database schema.
 
-* User ID
-* User role
-* Token expiry time
+## 🔐 Security
 
-The token is then used to access protected APIs.
+- JWT-based authentication.
+- Role-based access control where configured.
+- Authorized access to protected API endpoints.
+- Separation of application logic into controllers, services, and repositories.
+- Centralized exception handling.
 
-Example:
+> Security depends on the actual endpoint authorization policies and configuration. Production deployment should also use HTTPS and securely stored secrets.
 
-```text
-Login
-  ↓
-Username / Email + Password
-  ↓
-Authentication
-  ↓
-JWT Token
-  ↓
-Authorization
-  ↓
-Protected API
-```
+## ⚙️ Getting Started
 
-## Database Design
+### Prerequisites
 
-The application uses MySQL as its database.
+Install the following before running the project:
 
-Main entities include:
-
-* User
-* Patient
-* Caregiver
-* CaregiverPatient
-* Medicine
-* Medicine Schedule
-* Reminder
-
-Relationships are managed using **Entity Framework Core**.
-
-Database changes are handled through migrations instead of manually creating database tables.
-
-## Entity Framework Core Migration
-
-Example commands:
-
-```powershell
-dotnet ef migrations add InitialCreate
-dotnet ef database update
-```
-
-Migrations allow the database structure to be updated whenever the application's models change.
-
-## Getting Started
+- [.NET SDK](https://dotnet.microsoft.com/download)
+- [MySQL Community Server](https://dev.mysql.com/downloads/mysql/)
+- [Git](https://git-scm.com/downloads)
+- [Postman](https://www.postman.com/downloads/)
 
 ### 1. Clone the Repository
 
-```powershell
-git clone https://github.com/Gourav-93/MediCare.git
+```bash
+git clone https://github.com/Gourav-93/MediCare-Smart-Medicine-Monitoring-System.git
 ```
 
 ### 2. Open the Project
 
-```powershell
-cd MediCare
+```bash
+cd MediCare-Smart-Medicine-Monitoring-System
 ```
 
-### 3. Restore Dependencies
+### 3. Configure the Database
 
-```powershell
-dotnet restore
-```
-
-### 4. Configure MySQL
-
-Update the connection string in:
-
-```text
-appsettings.json
-```
+Update the MySQL connection string in `appsettings.json` or your development configuration.
 
 Example:
 
 ```json
-"ConnectionStrings": {
-  "DefaultConnection": "server=localhost;database=MediCareDb;user=root;password=YOUR_PASSWORD;"
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "server=localhost;port=3306;database=MediCareDb;user=YOUR_USERNAME;password=YOUR_PASSWORD;"
+  }
 }
 ```
 
-### 5. Apply Database Migration
+Use the actual connection-string key and database name defined in your project. Do not commit real database passwords or secrets to GitHub.
 
-```powershell
+### 4. Restore Dependencies
+
+```bash
+dotnet restore
+```
+
+### 5. Apply Database Migrations
+
+If migrations are already included in the repository:
+
+```bash
 dotnet ef database update
 ```
 
-### 6. Run the Project
+If the Entity Framework CLI is not installed:
 
-```powershell
+```bash
+dotnet tool install --global dotnet-ef
+```
+
+Use a compatible EF Core tool version for the project. If necessary, install the project's matching version instead.
+
+### 6. Run the Application
+
+```bash
 dotnet run
 ```
 
-The API can then be tested using **Postman** or another API client.
+Check the terminal output for the actual API address and port.
 
-## API Testing
+### 7. Test the APIs
 
-The APIs can be tested using Postman.
+Open Postman and send requests to the configured API base URL. Test authentication first, then use the returned JWT token to access protected endpoints.
 
-Typical flow:
+Use the HTTP methods and routes defined by the project's controllers.
 
-```text
-Register
-   ↓
-Login
-   ↓
-Get JWT Token
-   ↓
-Add Token in Authorization Header
-   ↓
-Access Protected APIs
-```
+## 🧪 Testing Checklist
 
-Authorization header:
+- [ ] User registration or account setup, if implemented.
+- [ ] Login and JWT token generation.
+- [ ] Patient profile operations.
+- [ ] Caregiver profile operations.
+- [ ] Linking a caregiver to a patient.
+- [ ] Adding and updating medicines.
+- [ ] Validating medicine schedules.
+- [ ] Checking scheduled reminder execution.
+- [ ] Verifying patient reminder emails.
+- [ ] Verifying caregiver notifications for overdue doses.
+- [ ] Checking authorization and invalid request handling.
 
-```text
-Authorization: Bearer <JWT_TOKEN>
-```
+## 🎯 Project Objective
 
-## Security
+The main objective of MediCare is to make medicine management easier and support patients who may forget their scheduled doses. By combining automated reminders with caregiver monitoring, the system provides a foundation for more organized medication routines and family support.
 
-The project uses:
+## 🔮 Future Enhancements
 
-* JWT Authentication
-* Role-based Authorization
-* Password hashing
-* Protected API endpoints
-* User-specific data access
+- Mobile push notifications.
+- Medicine stock and refill alerts.
+- Downloadable medicine history reports.
+- Dashboard analytics for adherence trends.
+- Multiple notification channels.
+- Improved reminder preferences and timezone support.
 
-## Future Improvements
-
-Possible future enhancements:
-
-* Push notifications
-* SMS/Email medicine reminders
-* Mobile application
-* Doctor integration
-* Medicine history and reports
-* Emergency alerts
-* Advanced caregiver dashboard
-* Medicine stock tracking
-* Cloud deployment
-
-## Project Goal
-
-The main goal of MediCare is to solve the real-world problem of **missed medicines and lack of family monitoring**.
-
-The system connects patients with their caregivers and provides a centralized platform for managing medicine schedules and monitoring important medicine-related activities.
-
-## Developer
+## 👨‍💻 Developer
 
 **Gourav Khore**
 
-**Role:** Software / Backend Developer
+- GitHub: [Gourav-93](https://github.com/Gourav-93)
+- Project: MediCare — Smart Medicine Reminder & Family Monitoring System
 
-**Technologies:** C#, ASP.NET Core, .NET, Entity Framework Core, MySQL, REST API, JWT
+## 📄 License
+
+This project is intended for learning, development, and demonstration purposes. Add a specific open-source license if you decide to distribute it under one.
 
 ---
 
-### Status
-Current Implementation Status
-
-🚧 Project Status: In Development
-
-✅ Completed
-ASP.NET Core Web API project setup
-MySQL database configuration
-Entity Framework Core integration
-Database migrations setup
-User authentication
-JWT-based authentication
-Role-based authorization structure
-User/Patient/Caregiver entity structure
-Patient and caregiver relationship structure
-Medicine management structure
-Basic REST API architecture
-Layered project structure
-🔄 Currently In Progress
-Medicine scheduling and reminder logic
-Caregiver monitoring functionality
-Medicine intake/consumption tracking
-Background reminder service
-API validation and error handling
-Complete Postman API testing
-Improving authorization and user-specific data access
-⏳ Planned
-Push notifications
-Email/SMS reminders
-Patient medicine history
-Caregiver dashboard
-Emergency alerts
-Medicine stock tracking
-Reports and analytics
-Frontend / mobile application
-Production deployment       
-Overall Progress
-Backend Setup             ██████████  100%
-Database                  ██████████  100%
-Authentication            █████████░   90%
-User Roles                █████████░   90%
-Patient Module            ████████░░   80%
-Caregiver Module          ██████░░░░   60%
-Medicine Module           ███████░░░   70%
-Reminder System           ████░░░░░░   40%
-Testing                   █████░░░░░   50%
-Frontend / Mobile         ░░░░░░░░░░    0%
-Deployment                ░░░░░░░░░░    0%
-
-
-## Recent Progress
-
-### October 6, 2026
-
-Today, the **Medicine Repository layer** was implemented and integrated into the project.
-
-- Created `IMedicineRepository` interface
-- Created `MedicineRepository` implementation
-- Added repository structure for Medicine-related database operations
-- Connected the repository layer with the existing project architecture
-- Tested the project build after implementing the repository
-- Updated the Git repository with the latest changes
-- Created a new Git commit for the repository implementation
-
-### Current Architecture
-
-```text
-Controller
-    ↓
-Service
-    ↓
-Repository Interface
-    ↓
-Repository Implementation
-    ↓
-Entity Framework Core
-    ↓
-MySQL Database
-```
-
-### Current Status
-
-The Medicine module is currently being developed step by step. The repository layer has now been added, and the next development work can continue with the **Medicine Service layer and its business logic**.
+**MediCare — Helping patients stay on schedule, with support from the people who care.**
