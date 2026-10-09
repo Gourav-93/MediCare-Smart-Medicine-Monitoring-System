@@ -89,7 +89,13 @@ public class AppDbContext : DbContext
             .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<EmailDeliveryLog>()
-            .HasIndex(e => new { e.MedicineScheduleId, e.ScheduledOccurrence, e.NotificationType, e.RecipientEmail })
+            .HasIndex(e => new
+            {
+                e.MedicineScheduleId,
+                e.ScheduledOccurrence,
+                e.NotificationType,
+                e.RecipientEmail
+            })
             .IsUnique();
 
         modelBuilder.Entity<EmailDeliveryLog>()

@@ -41,13 +41,6 @@ public class CaregiverPatientController : ControllerBase
         return User.FindFirstValue(ClaimTypes.Role) ?? string.Empty;
     }
 
-    // =========================================================
-    // LINK PATIENT
-    // ADMIN -> can link any caregiver with any patient
-    // CAREGIVER -> can link only himself with a patient
-    // PATIENT -> not allowed
-    // =========================================================
-
     [HttpPost("link")]
     [Authorize(Roles = "ADMIN,CAREGIVER")]
     public async Task<IActionResult> LinkPatient(
@@ -115,13 +108,6 @@ public class CaregiverPatientController : ControllerBase
             return BadRequest(ex.Message);
         }
     }
-
-    // =========================================================
-    // GET PATIENTS OF CAREGIVER
-    // ADMIN -> any caregiver
-    // CAREGIVER -> only himself
-    // PATIENT -> not allowed
-    // =========================================================
 
     [HttpGet("caregiver/{caregiverId}")]
     [Authorize(Roles = "ADMIN,CAREGIVER")]
@@ -220,13 +206,6 @@ public class CaregiverPatientController : ControllerBase
 
         return Ok(caregivers);
     }
-
-    // =========================================================
-    // UNLINK PATIENT
-    // ADMIN -> any relationship
-    // CAREGIVER -> only his own relationship
-    // PATIENT -> not allowed
-    // =========================================================
 
     [HttpDelete("unlink")]
     [Authorize(Roles = "ADMIN,CAREGIVER")]

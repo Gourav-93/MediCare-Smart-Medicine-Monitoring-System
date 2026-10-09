@@ -8,7 +8,7 @@ namespace MediCare.BackgroundServices;
 public class MedicineReminderBackgroundService : BackgroundService
 {
     private readonly IServiceScopeFactory _scopeFactory;
-    private readonly ILogger<MedicineReminderBackgroundService> _logger;
+        private readonly ILogger<MedicineReminderBackgroundService> _logger;
 
     public MedicineReminderBackgroundService(
         IServiceScopeFactory scopeFactory,
