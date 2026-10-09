@@ -43,7 +43,7 @@ public class MedicineReminderBackgroundService : BackgroundService
             try
             {
                 await Task.Delay(
-                    TimeSpan.FromMinutes(1),
+                    TimeSpan.FromSeconds(15),
                     stoppingToken);
             }
             catch (OperationCanceledException)
@@ -95,177 +95,262 @@ public class MedicineReminderBackgroundService : BackgroundService
                 var scheduledTime =
                     today.Add(schedule.Time);
 
-                if (scheduledTime > now)
-                    continue;
-
                 var log = await context.MedicineLogs
                     .FirstOrDefaultAsync(
                         x => x.MedicineId == medicine.Id &&
                              x.ScheduledTime == scheduledTime,
                         stoppingToken);
 
-                if (log == null)
+                // Check Reminder (2 minutes before)
+                if (now >= scheduledTime.AddMinutes(-2))
                 {
-                    log = new MedicineLog
+                    if (log == null)
                     {
-                        MedicineId = medicine.Id,
-                        PatientId = medicine.PatientId,
-                        ScheduledTime = scheduledTime,
-                        Status = "Pending"
-                    };
-
-                    context.MedicineLogs.Add(log);
-
-                    // Database notification for patient
-                    var patientNotification = new Notification
-                    {
-                        UserId = medicine.Patient.UserId,
-                        Title = "Medicine Reminder",
-                        Message = $"Time to take {medicine.Name}.",
-                        Type = "MedicineReminder",
-                        IsRead = false,
-                        CreatedAt = DateTime.Now
-                    };
-
-                    context.Notifications.Add(patientNotification);
-
-                    // Email notification for patient
-                    if (!string.IsNullOrWhiteSpace(
-                            medicine.Patient.User.Email))
-                    {
-                        try
+                        log = new MedicineLog
                         {
-                            await emailService.SendEmailAsync(
-                                medicine.Patient.User.Email,
-                                "Medicine Reminder - MediCare",
-                                $"Hello {medicine.Patient.User.Name},\n\n" +
-                                $"It is time to take your medicine: {medicine.Name}.\n\n" +
-                                "Please take your medicine on time.\n\n" +
-                                "Regards,\n" +
-                                "MediCare");
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.LogError(
-                                ex,
-                                "Failed to send reminder email to patient {Email}.",
-                                medicine.Patient.User.Email);
-                        }
+                            MedicineId = medicine.Id,
+                            PatientId = medicine.PatientId,
+                            ScheduledTime = scheduledTime,
+                            Status = "Pending"
+                        };
+
+                        context.MedicineLogs.Add(log);
+                        await context.SaveChangesAsync(stoppingToken);
                     }
 
-                    _logger.LogInformation(
-                        "Reminder created for {MedicineName}.",
-                        medicine.Name);
+                    await TrySendReminderEmailAsync(context, emailService, schedule, medicine, scheduledTime, stoppingToken);
                 }
 
-                // Mark medicine as missed after 30 minutes
-                if (log.Status == "Pending" &&
-                    now >= scheduledTime.AddMinutes(30))
+                // Check Missed (5 minutes grace period)
+                if (log != null && log.Status == "Pending" && now >= scheduledTime.AddMinutes(5))
                 {
                     log.Status = "Missed";
+                    await context.SaveChangesAsync(stoppingToken);
 
-                    // Patient database notification
-                    var patientNotification = new Notification
-                    {
-                        UserId = medicine.Patient.UserId,
-                        Title = "Medicine Missed",
-                        Message =
-                            $"You missed your {medicine.Name} dose.",
-                        Type = "MedicineMissed",
-                        IsRead = false,
-                        CreatedAt = DateTime.Now
-                    };
+                    await TrySendMissedEmailAsync(context, emailService, schedule, medicine, scheduledTime, stoppingToken);
+                }
 
-                    context.Notifications.Add(patientNotification);
-
-                    // Patient email
-                    if (!string.IsNullOrWhiteSpace(
-                            medicine.Patient.User.Email))
-                    {
-                        try
-                        {
-                            await emailService.SendEmailAsync(
-                                medicine.Patient.User.Email,
-                                "Medicine Missed - MediCare",
-                                $"Hello {medicine.Patient.User.Name},\n\n" +
-                                $"You missed your {medicine.Name} dose.\n\n" +
-                                "Please make sure to follow your medicine schedule.\n\n" +
-                                "Regards,\n" +
-                                "MediCare");
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.LogError(
-                                ex,
-                                "Failed to send missed medicine email to patient {Email}.",
-                                medicine.Patient.User.Email);
-                        }
-                    }
-
-                    // Get linked caregivers
-                    var caregivers =
-                        await context.CaregiverPatients
-                            .Include(cp => cp.Caregiver)
-                                .ThenInclude(c => c.User)
-                            .Where(cp =>
-                                cp.PatientId == medicine.PatientId)
-                            .ToListAsync(stoppingToken);
-
-                    foreach (var caregiverPatient in caregivers)
-                    {
-                        var caregiver =
-                            caregiverPatient.Caregiver;
-
-                        // Caregiver database notification
-                        var caregiverNotification =
-                            new Notification
-                            {
-                                UserId = caregiver.UserId,
-                                Title = "Patient Missed Medicine",
-                                Message =
-                                    $"The patient missed {medicine.Name}.",
-                                Type = "CaregiverMedicineMissed",
-                                IsRead = false,
-                                CreatedAt = DateTime.Now
-                            };
-
-                        context.Notifications.Add(
-                            caregiverNotification);
-
-                        // Caregiver email
-                        if (!string.IsNullOrWhiteSpace(
-                                caregiver.User.Email))
-                        {
-                            try
-                            {
-                                await emailService.SendEmailAsync(
-                                    caregiver.User.Email,
-                                    "Patient Missed Medicine - MediCare",
-                                    $"Hello {caregiver.User.Name},\n\n" +
-                                    $"The patient has missed the scheduled " +
-                                    $"dose of {medicine.Name}.\n\n" +
-                                    "Please check on the patient.\n\n" +
-                                    "Regards,\n" +
-                                    "MediCare");
-                            }
-                            catch (Exception ex)
-                            {
-                                _logger.LogError(
-                                    ex,
-                                    "Failed to send missed medicine email to caregiver {Email}.",
-                                    caregiver.User.Email);
-                            }
-                        }
-                    }
-
-                    _logger.LogInformation(
-                        "Medicine {MedicineName} marked as missed. " +
-                        "Patient and caregivers notified.",
-                        medicine.Name);
+                // Check Caregiver Alert (30 minutes grace period)
+                if (log != null && log.Status == "Missed" && now >= scheduledTime.AddMinutes(30))
+                {
+                    await TrySendCaregiverAlertAsync(context, emailService, schedule, medicine, scheduledTime, stoppingToken);
                 }
             }
         }
+    }
 
-        await context.SaveChangesAsync(stoppingToken);
+    private async Task TrySendReminderEmailAsync(AppDbContext context, IEmailService emailService, MedicineSchedule schedule, Medicine medicine, DateTime scheduledTime, CancellationToken stoppingToken)
+    {
+        var recipientEmail = medicine.Patient.User.Email;
+        if (string.IsNullOrWhiteSpace(recipientEmail)) return;
+
+        var deliveryLog = await context.EmailDeliveryLogs.FirstOrDefaultAsync(
+            l => l.MedicineScheduleId == schedule.Id && l.ScheduledOccurrence == scheduledTime && l.NotificationType == "Reminder" && l.RecipientEmail == recipientEmail, stoppingToken);
+        
+        if (deliveryLog != null && (deliveryLog.Status == "Sent" || deliveryLog.RetryCount >= 3))
+            return;
+
+        if (deliveryLog == null)
+        {
+            deliveryLog = new EmailDeliveryLog
+            {
+                MedicineScheduleId = schedule.Id,
+                ScheduledOccurrence = scheduledTime,
+                NotificationType = "Reminder",
+                RecipientEmail = recipientEmail,
+                Status = "Pending"
+            };
+            context.EmailDeliveryLogs.Add(deliveryLog);
+            
+            var patientNotification = new Notification
+            {
+                UserId = medicine.Patient.UserId,
+                Title = "Medicine Reminder",
+                Message = $"Time to take {medicine.Name}.",
+                Type = "MedicineReminder",
+                IsRead = false,
+                CreatedAt = DateTime.Now
+            };
+            context.Notifications.Add(patientNotification);
+            
+            await context.SaveChangesAsync(stoppingToken);
+        }
+
+        try
+        {
+            await emailService.SendEmailAsync(
+                recipientEmail,
+                "MediCare - Upcoming Medicine Reminder",
+                $"Hello {medicine.Patient.User.Name},\n\n" +
+                $"This is a reminder from MediCare that it is almost time to take your medicine.\n" +
+                $"Medicine: {medicine.Name}\n" +
+                $"Scheduled Time: {scheduledTime:t}\n" +
+                $"Dosage: {(string.IsNullOrEmpty(medicine.Dosage) ? "N/A" : medicine.Dosage)}\n" +
+                "Please take your medicine at the scheduled time and record your medicine intake in MediCare.\n" +
+                "Stay healthy!\n\n" +
+                "Regards,\n" +
+                "MediCare Team");
+
+            deliveryLog.Status = "Sent";
+            deliveryLog.SentAt = DateTime.Now;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to send reminder email to patient {Email}.", recipientEmail);
+            deliveryLog.Status = "Failed";
+            deliveryLog.ErrorMessage = ex.Message;
+            deliveryLog.RetryCount++;
+        }
+        finally
+        {
+            await context.SaveChangesAsync(stoppingToken);
+        }
+    }
+
+    private async Task TrySendMissedEmailAsync(AppDbContext context, IEmailService emailService, MedicineSchedule schedule, Medicine medicine, DateTime scheduledTime, CancellationToken stoppingToken)
+    {
+        var recipientEmail = medicine.Patient.User.Email;
+        if (string.IsNullOrWhiteSpace(recipientEmail)) return;
+
+        var deliveryLog = await context.EmailDeliveryLogs.FirstOrDefaultAsync(
+            l => l.MedicineScheduleId == schedule.Id && l.ScheduledOccurrence == scheduledTime && l.NotificationType == "Missed" && l.RecipientEmail == recipientEmail, stoppingToken);
+        
+        if (deliveryLog != null && (deliveryLog.Status == "Sent" || deliveryLog.RetryCount >= 3))
+            return;
+
+        if (deliveryLog == null)
+        {
+            deliveryLog = new EmailDeliveryLog
+            {
+                MedicineScheduleId = schedule.Id,
+                ScheduledOccurrence = scheduledTime,
+                NotificationType = "Missed",
+                RecipientEmail = recipientEmail,
+                Status = "Pending"
+            };
+            context.EmailDeliveryLogs.Add(deliveryLog);
+            
+            var patientNotification = new Notification
+            {
+                UserId = medicine.Patient.UserId,
+                Title = "Medicine Missed",
+                Message = $"You missed your {medicine.Name} dose.",
+                Type = "MedicineMissed",
+                IsRead = false,
+                CreatedAt = DateTime.Now
+            };
+            context.Notifications.Add(patientNotification);
+
+            await context.SaveChangesAsync(stoppingToken);
+        }
+
+        try
+        {
+            await emailService.SendEmailAsync(
+                recipientEmail,
+                "MediCare - Missed Medicine Alert",
+                $"Hello {medicine.Patient.User.Name},\n\n" +
+                $"Our MediCare system noticed that you have not recorded taking the following scheduled medicine.\n" +
+                $"Medicine: {medicine.Name}\n" +
+                $"Scheduled Time: {scheduledTime:t}\n" +
+                $"Status: Missed\n" +
+                "If you have already taken this medicine, please update your medicine record in MediCare.\n" +
+                "Please follow your healthcare professional's instructions.\n\n" +
+                "Regards,\n" +
+                "MediCare Team");
+
+            deliveryLog.Status = "Sent";
+            deliveryLog.SentAt = DateTime.Now;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to send missed medicine email to patient {Email}.", recipientEmail);
+            deliveryLog.Status = "Failed";
+            deliveryLog.ErrorMessage = ex.Message;
+            deliveryLog.RetryCount++;
+        }
+        finally
+        {
+            await context.SaveChangesAsync(stoppingToken);
+        }
+    }
+
+    private async Task TrySendCaregiverAlertAsync(AppDbContext context, IEmailService emailService, MedicineSchedule schedule, Medicine medicine, DateTime scheduledTime, CancellationToken stoppingToken)
+    {
+        var caregivers = await context.CaregiverPatients
+            .Include(cp => cp.Caregiver)
+                .ThenInclude(c => c.User)
+            .Where(cp => cp.PatientId == medicine.PatientId)
+            .ToListAsync(stoppingToken);
+
+        foreach (var caregiverPatient in caregivers)
+        {
+            var caregiverEmail = caregiverPatient.Caregiver.User.Email;
+            if (string.IsNullOrWhiteSpace(caregiverEmail)) continue;
+
+            var cgDeliveryLog = await context.EmailDeliveryLogs.FirstOrDefaultAsync(
+                l => l.MedicineScheduleId == schedule.Id && l.ScheduledOccurrence == scheduledTime && l.NotificationType == "CaregiverAlert30Min" && l.RecipientEmail == caregiverEmail, stoppingToken);
+
+            if (cgDeliveryLog != null && (cgDeliveryLog.Status == "Sent" || cgDeliveryLog.RetryCount >= 3))
+                continue;
+
+            if (cgDeliveryLog == null)
+            {
+                cgDeliveryLog = new EmailDeliveryLog
+                {
+                    MedicineScheduleId = schedule.Id,
+                    ScheduledOccurrence = scheduledTime,
+                    NotificationType = "CaregiverAlert30Min",
+                    RecipientEmail = caregiverEmail,
+                    Status = "Pending"
+                };
+                context.EmailDeliveryLogs.Add(cgDeliveryLog);
+                
+                var caregiverNotification = new Notification
+                {
+                    UserId = caregiverPatient.Caregiver.UserId,
+                    Title = "Patient Medicine Alert",
+                    Message = $"The patient {medicine.Patient.User.Name} missed {medicine.Name} for 30 minutes.",
+                    Type = "CaregiverMedicineAlert30Min",
+                    IsRead = false,
+                    CreatedAt = DateTime.Now
+                };
+                context.Notifications.Add(caregiverNotification);
+
+                await context.SaveChangesAsync(stoppingToken);
+            }
+
+            try
+            {
+                await emailService.SendEmailAsync(
+                    caregiverEmail,
+                    "MediCare - Patient Medicine Alert",
+                    $"Hello {caregiverPatient.Caregiver.User.Name},\n\n" +
+                    $"This is an important medicine alert from MediCare.\n\n" +
+                    $"The following patient has not recorded taking their scheduled medicine within 30 minutes of the scheduled time.\n\n" +
+                    $"Patient: {medicine.Patient.User.Name}\n" +
+                    $"Medicine: {medicine.Name}\n" +
+                    $"Scheduled Time: {scheduledTime:g}\n" +
+                    $"Status: Missed\n\n" +
+                    "Please contact the patient to check whether they have taken the medicine.\n\n" +
+                    "If the patient has already taken it, please ensure their medicine intake record is updated in MediCare.\n\n" +
+                    "Regards,\n" +
+                    "MediCare Team");
+
+                cgDeliveryLog.Status = "Sent";
+                cgDeliveryLog.SentAt = DateTime.Now;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to send 30-min caregiver alert to {Email}.", caregiverEmail);
+                cgDeliveryLog.Status = "Failed";
+                cgDeliveryLog.ErrorMessage = ex.Message;
+                cgDeliveryLog.RetryCount++;
+            }
+            finally
+            {
+                await context.SaveChangesAsync(stoppingToken);
+            }
+        }
     }
 }

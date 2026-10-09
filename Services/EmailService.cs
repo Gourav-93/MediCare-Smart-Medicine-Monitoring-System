@@ -31,10 +31,12 @@ public class EmailService : IEmailService
 
         if (string.IsNullOrWhiteSpace(smtpHost) ||
             string.IsNullOrWhiteSpace(senderEmail) ||
-            string.IsNullOrWhiteSpace(password))
+            string.IsNullOrWhiteSpace(password) ||
+            password == "YourEmailPassword" ||
+            password == "your-gmail-app-password")
         {
-            throw new InvalidOperationException(
-                "Email configuration is missing.");
+            _logger.LogError("Email configuration is missing or invalid. Please check the 'Email' section in appsettings.json or provide environment variables (e.g., Email__Password).");
+            throw new InvalidOperationException("Email configuration is missing or invalid.");
         }
 
         var email = new MimeMessage();

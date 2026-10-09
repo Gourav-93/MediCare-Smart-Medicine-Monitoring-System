@@ -28,6 +28,7 @@ public class AppDbContext : DbContext
 
     public DbSet<EmergencyAlert> EmergencyAlerts { get; set; }
 
+    public DbSet<EmailDeliveryLog> EmailDeliveryLogs { get; set; }
 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -87,5 +88,14 @@ public class AppDbContext : DbContext
             .HasForeignKey(e => e.PatientId)
             .OnDelete(DeleteBehavior.Cascade);
 
+        modelBuilder.Entity<EmailDeliveryLog>()
+            .HasIndex(e => new { e.MedicineScheduleId, e.ScheduledOccurrence, e.NotificationType, e.RecipientEmail })
+            .IsUnique();
+
+        modelBuilder.Entity<EmailDeliveryLog>()
+            .HasOne(e => e.MedicineSchedule)
+            .WithMany()
+            .HasForeignKey(e => e.MedicineScheduleId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }
