@@ -53,9 +53,14 @@ public class CaregiverPatientController : ControllerBase
     public async Task<IActionResult> LinkPatient(
         CaregiverPatientDto dto)
     {
-        if (dto.CaregiverId <= 0 || dto.PatientId <= 0)
+        if (dto.CaregiverId <= 0)
         {
-            return BadRequest("Valid caregiverId and patientId are required.");
+            return BadRequest("Valid caregiverId is required.");
+        }
+
+        if (dto.PatientId <= 0 && string.IsNullOrWhiteSpace(dto.PatientEmail))
+        {
+            return BadRequest("Either PatientId or PatientEmail is required.");
         }
 
         var role = GetCurrentRole();
@@ -74,6 +79,21 @@ public class CaregiverPatientController : ControllerBase
             caregiver.UserId != currentUserId)
         {
             return Forbid();
+        }
+
+        if (dto.PatientId <= 0 && !string.IsNullOrWhiteSpace(dto.PatientEmail))
+        {
+            var pUser = await _context.Users.FirstOrDefaultAsync(u => u.Email.ToLower() == dto.PatientEmail.ToLower() && u.Role == "PATIENT");
+            if (pUser == null) 
+            {
+                return NotFound("Patient with that email not found.");
+            }
+            var pat = await _context.Patients.FirstOrDefaultAsync(p => p.UserId == pUser.Id);
+            if (pat == null)
+            {
+                return NotFound("Patient profile not found.");
+            }
+            dto.PatientId = pat.Id;
         }
 
         var patientExists = await _context.Patients

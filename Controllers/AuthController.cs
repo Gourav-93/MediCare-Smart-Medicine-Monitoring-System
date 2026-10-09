@@ -1,5 +1,6 @@
 using MediCare.Data;
 using MediCare.DTOs;
+using MediCare.Models;
 using MediCare.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -84,6 +85,28 @@ public class AuthController : ControllerBase
         _context.Users.Add(user);
 
         await _context.SaveChangesAsync();
+
+        if (role == "PATIENT")
+        {
+            var patient = new Patient
+            {
+                UserId = user.Id,
+                DateOfBirth = DateTime.Today,
+                EmergencyContact = ""
+            };
+            _context.Patients.Add(patient);
+            await _context.SaveChangesAsync();
+        }
+        else if (role == "CAREGIVER")
+        {
+            var caregiver = new Caregiver
+            {
+                UserId = user.Id,
+                Relationship = ""
+            };
+            _context.Caregivers.Add(caregiver);
+            await _context.SaveChangesAsync();
+        }
 
         return Ok(new
         {

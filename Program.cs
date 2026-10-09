@@ -19,6 +19,17 @@ builder.Services.AddControllers().AddJsonOptions(options =>
     options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
 });
 
+// CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", builder =>
+    {
+        builder.AllowAnyOrigin()
+               .AllowAnyMethod()
+               .AllowAnyHeader();
+    });
+});
+
 // Database
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseMySql(
@@ -77,6 +88,8 @@ builder.Services.AddHostedService<MedicineReminderBackgroundService>();
 var app = builder.Build();
 
 app.UseHttpsRedirection();
+
+app.UseCors("AllowAll");
 
 app.UseAuthentication();
 
