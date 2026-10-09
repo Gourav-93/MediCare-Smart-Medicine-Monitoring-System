@@ -1,3 +1,12 @@
+```gitignore
+# Frontend
 MediCare-Frontend/
+
+# Build files
 bin/
 obj/
+
+# Configuration files
+appsettings.json
+appsettings.*.json
+```

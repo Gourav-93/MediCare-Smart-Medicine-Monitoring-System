@@ -161,6 +161,17 @@ public class MedicineController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Add(MedicineDto dto)
     {
+        var role = GetCurrentRole();
+        if (role == "PATIENT")
+        {
+            var currentUserId = GetCurrentUserId();
+            var patient = await _context.Patients.FirstOrDefaultAsync(p => p.UserId == currentUserId);
+            if (patient != null)
+            {
+                dto.PatientId = patient.Id;
+            }
+        }
+
         if (dto.PatientId <= 0)
         {
             return BadRequest("Valid patientId is required.");
@@ -196,6 +207,17 @@ public class MedicineController : ControllerBase
         int id,
         MedicineDto dto)
     {
+        var role = GetCurrentRole();
+        if (role == "PATIENT")
+        {
+            var currentUserId = GetCurrentUserId();
+            var patient = await _context.Patients.FirstOrDefaultAsync(p => p.UserId == currentUserId);
+            if (patient != null)
+            {
+                dto.PatientId = patient.Id;
+            }
+        }
+
         if (dto.PatientId <= 0)
         {
             return BadRequest("Valid patientId is required.");

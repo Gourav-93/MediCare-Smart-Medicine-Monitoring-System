@@ -36,17 +36,14 @@ public class AuthController : ControllerBase
             string.IsNullOrWhiteSpace(dto.Password) ||
             string.IsNullOrWhiteSpace(dto.Role))
         {
-            return BadRequest(
-                "Name, Email, Password and Role are required."
-            );
+            return BadRequest(new { message = "Name, Email, Password and Role are required." });
         }
 
         if (dto.Password.Length < 6)
         {
-            return BadRequest(
-                "Password must be at least 6 characters long."
-            );
+            return BadRequest(new { message = "Password must be at least 6 characters long." });
         }
+
 
         var email = dto.Email.Trim().ToLower();
 
@@ -56,7 +53,7 @@ public class AuthController : ControllerBase
 
         if (existingUser != null)
         {
-            return BadRequest("Email already exists.");
+            return BadRequest(new { message = "Email already exists." });
         }
 
         var role = dto.Role.Trim().ToUpper();
@@ -64,9 +61,7 @@ public class AuthController : ControllerBase
         // ADMIN cannot register publicly
         if (role != "PATIENT" && role != "CAREGIVER")
         {
-            return BadRequest(
-                "Only PATIENT or CAREGIVER registration is allowed."
-            );
+            return BadRequest(new { message = "Only PATIENT or CAREGIVER registration is allowed." });
         }
 
         var user = new User
@@ -123,9 +118,7 @@ public class AuthController : ControllerBase
         if (string.IsNullOrWhiteSpace(dto.Email) ||
             string.IsNullOrWhiteSpace(dto.Password))
         {
-            return BadRequest(
-                "Email and Password are required."
-            );
+            return BadRequest(new { message = "Email and Password are required." });
         }
 
         var email = dto.Email.Trim().ToLower();
@@ -136,9 +129,7 @@ public class AuthController : ControllerBase
 
         if (user == null)
         {
-            return Unauthorized(
-                "Invalid email or password."
-            );
+            return Unauthorized(new { message = "Invalid email or password." });
         }
 
         var result = _passwordHasher.VerifyHashedPassword(
@@ -149,9 +140,7 @@ public class AuthController : ControllerBase
 
         if (result == PasswordVerificationResult.Failed)
         {
-            return Unauthorized(
-                "Invalid email or password."
-            );
+            return Unauthorized(new { message = "Invalid email or password." });
         }
 
         var token = _jwtService.GenerateToken(

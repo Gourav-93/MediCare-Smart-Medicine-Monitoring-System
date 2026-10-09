@@ -4,6 +4,7 @@ using MediCare.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using MediCare.Models;
 
 namespace MediCare.Controllers;
 
@@ -61,14 +62,41 @@ public class PatientDashboardController : ControllerBase
             .OrderBy(s => s.Time)
             .ToListAsync();
 
-        // Pending medicine logs
-        var pendingMedicines = await _context.MedicineLogs
+        // Today's medicine logs for pending calculation
+        var todaysLogs = await _context.MedicineLogs
             .Include(log => log.Medicine)
             .Where(log =>
                 log.PatientId == patient.Id &&
-                log.Status == "Pending")
-            .OrderBy(log => log.ScheduledTime)
+                log.ScheduledTime.Date == today)
             .ToListAsync();
+
+        var pendingMedicines = new List<MedicineLog>();
+
+        foreach (var schedule in todaySchedules)
+        {
+            var scheduledTime = today.Add(schedule.Time);
+            var log = todaysLogs.FirstOrDefault(l =>
+                l.MedicineId == schedule.MedicineId &&
+                l.ScheduledTime == scheduledTime);
+
+            if (log == null)
+            {
+                pendingMedicines.Add(new MedicineLog
+                {
+                    MedicineId = schedule.MedicineId,
+                    Medicine = schedule.Medicine,
+                    PatientId = patient.Id,
+                    ScheduledTime = scheduledTime,
+                    Status = "Pending"
+                });
+            }
+            else if (log.Status == "Pending")
+            {
+                pendingMedicines.Add(log);
+            }
+        }
+
+        pendingMedicines = pendingMedicines.OrderBy(log => log.ScheduledTime).ToList();
 
         // Missed medicine logs
         var missedMedicines = await _context.MedicineLogs

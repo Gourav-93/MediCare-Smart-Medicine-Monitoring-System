@@ -4,6 +4,7 @@ using MediCare.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using MediCare.Models;
 
 namespace MediCare.Controllers;
 
@@ -96,18 +97,6 @@ public class CaregiverDashboardController : ControllerBase
             .Take(20)
             .ToListAsync();
 
-        // Pending medicines
-        var pendingMedicines = await _context.MedicineLogs
-            .Include(log => log.Medicine)
-            .Include(log => log.Patient)
-                .ThenInclude(p => p.User)
-            .Where(log =>
-                patientIds.Contains(log.PatientId) &&
-                log.Status == "Pending")
-            .OrderBy(log => log.ScheduledTime)
-            .Take(20)
-            .ToListAsync();
-
         // Today's medicine schedules
         var today = DateTime.Today;
 
@@ -119,6 +108,44 @@ public class CaregiverDashboardController : ControllerBase
                 schedule.Medicine.EndDate.Date >= today)
             .OrderBy(schedule => schedule.Time)
             .ToListAsync();
+
+        // Today's medicine logs for pending calculation
+        var todaysLogs = await _context.MedicineLogs
+            .Include(log => log.Medicine)
+            .Include(log => log.Patient)
+                .ThenInclude(p => p.User)
+            .Where(log =>
+                patientIds.Contains(log.PatientId) &&
+                log.ScheduledTime.Date == today)
+            .ToListAsync();
+
+        var pendingMedicines = new List<MedicineLog>();
+
+        foreach (var schedule in todaySchedules)
+        {
+            var scheduledTime = today.Add(schedule.Time);
+            var log = todaysLogs.FirstOrDefault(l =>
+                l.MedicineId == schedule.MedicineId &&
+                l.ScheduledTime == scheduledTime);
+
+            if (log == null)
+            {
+                pendingMedicines.Add(new MedicineLog
+                {
+                    MedicineId = schedule.MedicineId,
+                    Medicine = schedule.Medicine,
+                    PatientId = schedule.Medicine.PatientId,
+                    ScheduledTime = scheduledTime,
+                    Status = "Pending"
+                });
+            }
+            else if (log.Status == "Pending")
+            {
+                pendingMedicines.Add(log);
+            }
+        }
+
+        pendingMedicines = pendingMedicines.OrderBy(log => log.ScheduledTime).Take(20).ToList();
 
         // Adherence calculation
         var logs = await _context.MedicineLogs
