@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medicine History - MediCare</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    <link rel="stylesheet" href="css/animations.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-brand">
+                    <i data-lucide="activity"></i>
+                    MediCare
+                </div>
+            </div>
+            <div class="sidebar-menu">
+                <a href="patient-dashboard.html" class="menu-item">
+                    <i data-lucide="layout-dashboard"></i> Dashboard
+                </a>
+                <a href="medicines.html" class="menu-item">
+                    <i data-lucide="pill"></i> My Medicines
+                </a>
+                <a href="schedule.html" class="menu-item">
+                    <i data-lucide="calendar"></i> Schedule
+                </a>
+                <a href="medicine-logs.html" class="menu-item active">
+                    <i data-lucide="clipboard-list"></i> History
+                </a>
+                <a href="notifications.html" class="menu-item">
+                    <i data-lucide="bell"></i> Notifications
+                </a>
+                <a href="emergency.html" class="menu-item text-danger" style="color: var(--danger);">
+                    <i data-lucide="alert-circle"></i> Emergency
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <nav class="navbar">
+                <div class="navbar-left">
+                    <i data-lucide="menu" class="nav-icon" id="sidebarToggle"></i>
+                    <h2 class="hide-mobile" style="font-size: 1.1rem;">Medicine History</h2>
+                </div>
+                <div class="navbar-right">
+                    <i data-lucide="moon" class="nav-icon" onclick="toggleTheme()"></i>
+                    <div class="user-profile" onclick="window.location.href='profile.html'">
+                        <div class="avatar">P</div>
+                    </div>
+                    <i data-lucide="log-out" class="nav-icon" onclick="logout()" title="Logout"></i>
+                </div>
+            </nav>
+
+            <div class="page-content">
+                <div class="page-header">
+                    <h1 class="page-title">Medicine Logs</h1>
+                    <select id="filterStatus" class="form-control" style="width: 200px;" onchange="filterLogs()">
+                        <option value="All">All Status</option>
+                        <option value="Taken">Taken</option>
+                        <option value="Missed">Missed</option>
+                        <option value="Pending">Pending</option>
+                    </select>
+                </div>
+
+                <div class="card animate-fade-in">
+                    <div class="table-container">
+                        <table id="logsTable">
+                            <thead>
+                                <tr>
+                                    <th>Medicine</th>
+                                    <th>Scheduled Time</th>
+                                    <th>Taken Time</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td colspan="5" style="text-align: center;">Loading...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="js/api.js"></script>
+    <script src="js/common.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/medicine-logs.js"></script>
+</body>
+</html>

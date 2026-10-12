@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - MediCare</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    <link rel="stylesheet" href="css/animations.css">
+</head>
+<body>
+    <div class="app-container">
+        
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-brand">
+                    <i data-lucide="activity"></i>
+                    MediCare
+                </div>
+            </div>
+            <div class="sidebar-menu" id="sidebarMenu">
+                <!-- Dynamically populated based on role -->
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <nav class="navbar">
+                <div class="navbar-left">
+                    <i data-lucide="menu" class="nav-icon" id="sidebarToggle"></i>
+                    <h2 class="hide-mobile" style="font-size: 1.1rem;">My Profile</h2>
+                </div>
+                <div class="navbar-right">
+                    <i data-lucide="moon" class="nav-icon" onclick="toggleTheme()"></i>
+                    <i data-lucide="log-out" class="nav-icon" onclick="logout()" title="Logout"></i>
+                </div>
+            </nav>
+
+            <div class="page-content">
+                <div class="page-header">
+                    <h1 class="page-title">Profile Settings</h1>
+                </div>
+
+                <div class="card animate-fade-in" style="max-width: 600px; margin: 0 auto;">
+                    <div style="text-align: center; margin-bottom: 2rem;">
+                        <div class="avatar" style="width: 80px; height: 80px; font-size: 2rem; margin: 0 auto 1rem auto;" id="profileAvatar">U</div>
+                        <h2 id="profileName">Loading...</h2>
+                        <div style="color: var(--text-muted);" id="profileEmail">...</div>
+                        <span class="badge badge-info" id="profileRole" style="margin-top: 0.5rem; display: inline-block;">...</span>
+                    </div>
+
+                    <div style="border-top: 1px solid var(--border-color); padding-top: 2rem;">
+                        <div class="form-group">
+                            <label class="form-label">Email Address</label>
+                            <input type="text" id="inputEmail" class="form-control" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Role</label>
+                            <input type="text" id="inputRole" class="form-control" readonly>
+                        </div>
+                        <!-- Note: Since there isn't a specific PUT /api/user/profile endpoint in this snippet, this is read-only for now -->
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="js/api.js"></script>
+    <script src="js/common.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/profile.js"></script>
+</body>
+</html>

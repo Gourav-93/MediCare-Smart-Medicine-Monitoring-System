@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medicine Schedule - MediCare</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    <link rel="stylesheet" href="css/animations.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-brand">
+                    <i data-lucide="activity"></i>
+                    MediCare
+                </div>
+            </div>
+            <div class="sidebar-menu">
+                <a href="patient-dashboard.html" class="menu-item">
+                    <i data-lucide="layout-dashboard"></i> Dashboard
+                </a>
+                <a href="medicines.html" class="menu-item">
+                    <i data-lucide="pill"></i> My Medicines
+                </a>
+                <a href="schedule.html" class="menu-item active">
+                    <i data-lucide="calendar"></i> Schedule
+                </a>
+                <a href="medicine-logs.html" class="menu-item">
+                    <i data-lucide="clipboard-list"></i> History
+                </a>
+                <a href="notifications.html" class="menu-item">
+                    <i data-lucide="bell"></i> Notifications
+                </a>
+                <a href="emergency.html" class="menu-item text-danger" style="color: var(--danger);">
+                    <i data-lucide="alert-circle"></i> Emergency
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <nav class="navbar">
+                <div class="navbar-left">
+                    <i data-lucide="menu" class="nav-icon" id="sidebarToggle"></i>
+                    <h2 class="hide-mobile" style="font-size: 1.1rem;">Medicine Schedule</h2>
+                </div>
+                <div class="navbar-right">
+                    <i data-lucide="moon" class="nav-icon" onclick="toggleTheme()"></i>
+                    <div class="user-profile" onclick="window.location.href='profile.html'">
+                        <div class="avatar">P</div>
+                    </div>
+                    <i data-lucide="log-out" class="nav-icon" onclick="logout()" title="Logout"></i>
+                </div>
+            </nav>
+
+            <div class="page-content">
+                <div class="page-header">
+                    <h1 class="page-title">Manage Schedule</h1>
+                    <button class="btn btn-primary" onclick="openAddModal()">
+                        <i data-lucide="plus"></i> Add Schedule
+                    </button>
+                </div>
+
+                <div class="card animate-fade-in">
+                    <div class="table-container">
+                        <table id="scheduleTable">
+                            <thead>
+                                <tr>
+                                    <th>Medicine</th>
+                                    <th>Time</th>
+                                    <th>Frequency</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td colspan="4" style="text-align: center;">Loading...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Add/Edit Modal -->
+    <div class="modal-overlay" id="scheduleModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="page-title" id="modalTitle" style="font-size: 1.25rem;">Add Schedule</h2>
+                <button class="modal-close" onclick="closeModal()"><i data-lucide="x"></i></button>
+            </div>
+            <form id="scheduleForm">
+                <input type="hidden" id="schId">
+                
+                <div class="form-group">
+                    <label class="form-label">Select Medicine</label>
+                    <select id="schMedicine" class="form-control" required></select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Time</label>
+                    <input type="time" id="schTime" class="form-control" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Frequency</label>
+                    <select id="schFrequency" class="form-control" required>
+                        <option value="Daily">Daily</option>
+                        <option value="Weekly">Weekly</option>
+                        <option value="Monthly">Monthly</option>
+                        <option value="As Needed">As Needed</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">Save Schedule</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="js/api.js"></script>
+    <script src="js/common.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/schedules.js"></script>
+</body>
+</html>

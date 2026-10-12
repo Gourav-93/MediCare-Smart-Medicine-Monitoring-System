@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - MediCare</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/animations.css">
+    <style>
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, rgba(37, 99, 235, 0.05) 0%, rgba(14, 165, 233, 0.05) 100%);
+            padding: 2rem 0;
+        }
+        .auth-container {
+            width: 100%;
+            max-width: 500px;
+            padding: 2rem;
+            background: var(--card-bg);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border-color);
+        }
+        .auth-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .auth-brand {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+        .auth-subtitle {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+        }
+        .password-container {
+            position: relative;
+        }
+        .password-toggle {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+        }
+        .auth-footer {
+            margin-top: 1.5rem;
+            text-align: center;
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+        .row {
+            display: flex;
+            gap: 1rem;
+        }
+        .col {
+            flex: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-container animate-fade-in">
+        <div class="auth-header">
+            <div class="auth-brand">
+                <i data-lucide="activity"></i>
+                MediCare
+            </div>
+            <p class="auth-subtitle">Create your account.</p>
+        </div>
+        
+        <form id="registerForm">
+            <div class="form-group">
+                <label class="form-label">Full Name</label>
+                <input type="text" id="name" class="form-control" required placeholder="John Doe">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Email</label>
+                <input type="email" id="email" class="form-control" required placeholder="john@example.com">
+            </div>
+            
+            <div class="row">
+                <div class="col form-group">
+                    <label class="form-label">Password</label>
+                    <div class="password-container">
+                        <input type="password" id="password" class="form-control" required placeholder="Password">
+                    </div>
+                </div>
+                <div class="col form-group">
+                    <label class="form-label">Confirm Password</label>
+                    <div class="password-container">
+                        <input type="password" id="confirmPassword" class="form-control" required placeholder="Confirm">
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">I am a...</label>
+                <select id="role" class="form-control" required>
+                    <option value="Patient">Patient</option>
+                    <option value="Caregiver">Caregiver</option>
+                </select>
+            </div>
+            
+            <button type="submit" class="btn btn-primary" style="width: 100%;">Register</button>
+        </form>
+        
+        <div class="auth-footer">
+            Already have an account? <a href="login.html">Login here</a>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="js/api.js"></script>
+    <script src="js/common.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+        lucide.createIcons();
+
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const role = document.getElementById('role').value;
+
+            if (password !== confirmPassword) {
+                showToast("Passwords do not match", "error");
+                return;
+            }
+
+            try {
+                await handleRegister({ name, email, password, role });
+                showToast('Registration successful! Please login.', 'success');
+                setTimeout(() => {
+                    window.location.href = 'login.html';
+                }, 1500);
+            } catch (error) {
+                // Handled in API
+            }
+        });
+    </script>
+</body>
+</html>

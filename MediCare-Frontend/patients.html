@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patients - MediCare</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    <link rel="stylesheet" href="css/animations.css">
+</head>
+<body>
+    <div class="app-container">
+        
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-brand">
+                    <i data-lucide="activity"></i>
+                    MediCare
+                </div>
+            </div>
+            <div class="sidebar-menu">
+                <a href="caregiver-dashboard.html" class="menu-item">
+                    <i data-lucide="layout-dashboard"></i> Dashboard
+                </a>
+                <a href="patients.html" class="menu-item active">
+                    <i data-lucide="users"></i> Patients
+                </a>
+                <a href="notifications.html" class="menu-item">
+                    <i data-lucide="bell"></i> Notifications
+                </a>
+                <a href="emergency.html" class="menu-item text-danger" style="color: var(--danger);">
+                    <i data-lucide="alert-circle"></i> Emergency Alerts
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <nav class="navbar">
+                <div class="navbar-left">
+                    <i data-lucide="menu" class="nav-icon" id="sidebarToggle"></i>
+                    <h2 class="hide-mobile" style="font-size: 1.1rem;">Patient Management</h2>
+                </div>
+                <div class="navbar-right">
+                    <i data-lucide="moon" class="nav-icon" onclick="toggleTheme()"></i>
+                    <div class="user-profile" onclick="window.location.href='profile.html'">
+                        <div class="avatar" id="nav-initial">C</div>
+                    </div>
+                    <i data-lucide="log-out" class="nav-icon" onclick="logout()" title="Logout"></i>
+                </div>
+            </nav>
+
+            <div class="page-content">
+                <div class="page-header">
+                    <h1 class="page-title">Linked Patients</h1>
+                    <button class="btn btn-primary" onclick="openLinkModal()">
+                        <i data-lucide="link"></i> Link Patient
+                    </button>
+                </div>
+
+                <div class="card animate-fade-in">
+                    <div class="table-container">
+                        <table id="patientsTable">
+                            <thead>
+                                <tr>
+                                    <th>Patient Name</th>
+                                    <th>Email</th>
+                                    <th>Date of Birth</th>
+                                    <th>Emergency Contact</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td colspan="5" style="text-align: center;">Loading...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- Link Patient Modal -->
+    <div class="modal-overlay" id="linkModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="page-title" style="font-size: 1.25rem;">Link Patient</h2>
+                <button class="modal-close" onclick="closeModal()"><i data-lucide="x"></i></button>
+            </div>
+            <form id="linkForm">
+                <div class="form-group">
+                    <label class="form-label">Patient Email</label>
+                    <input type="email" id="patientEmail" class="form-control" required placeholder="Enter patient's email">
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">Link Patient</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="js/api.js"></script>
+    <script src="js/common.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/patients.js"></script>
+</body>
+</html>

@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - MediCare</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    <link rel="stylesheet" href="css/animations.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-brand">
+                    <i data-lucide="activity"></i>
+                    MediCare Admin
+                </div>
+            </div>
+            <div class="sidebar-menu">
+                <a href="admin-dashboard.html" class="menu-item active">
+                    <i data-lucide="layout-dashboard"></i> Dashboard
+                </a>
+                <a href="emergency.html" class="menu-item text-danger" style="color: var(--danger);">
+                    <i data-lucide="alert-circle"></i> Emergency Alerts
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <nav class="navbar">
+                <div class="navbar-left">
+                    <i data-lucide="menu" class="nav-icon" id="sidebarToggle"></i>
+                    <h2 class="hide-mobile" style="font-size: 1.1rem;">Admin Portal</h2>
+                </div>
+                <div class="navbar-right">
+                    <i data-lucide="moon" class="nav-icon" onclick="toggleTheme()"></i>
+                    <div class="user-profile" onclick="window.location.href='profile.html'">
+                        <div class="avatar" id="nav-initial">A</div>
+                        <div class="hide-mobile">
+                            <div style="font-weight: 600; font-size: 0.875rem;" id="nav-username">Admin</div>
+                            <div style="font-size: 0.75rem; color: var(--text-muted);" id="nav-role">Admin</div>
+                        </div>
+                    </div>
+                    <i data-lucide="log-out" class="nav-icon" onclick="logout()" title="Logout"></i>
+                </div>
+            </nav>
+
+            <div class="page-content">
+                <div class="page-header">
+                    <h1 class="page-title">System Overview</h1>
+                </div>
+
+                <div class="kpi-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+                    <div class="card kpi-card">
+                        <div class="kpi-info">
+                            <h3>Total Users</h3>
+                            <div class="kpi-value" id="kpi-users">0</div>
+                        </div>
+                        <div class="kpi-icon"><i data-lucide="users"></i></div>
+                    </div>
+                    <div class="card kpi-card">
+                        <div class="kpi-info">
+                            <h3>Patients</h3>
+                            <div class="kpi-value" id="kpi-patients">0</div>
+                        </div>
+                        <div class="kpi-icon" style="color: var(--info); background: rgba(59,130,246,0.1);"><i data-lucide="user"></i></div>
+                    </div>
+                    <div class="card kpi-card">
+                        <div class="kpi-info">
+                            <h3>Caregivers</h3>
+                            <div class="kpi-value" id="kpi-caregivers">0</div>
+                        </div>
+                        <div class="kpi-icon" style="color: var(--success); background: rgba(16,185,129,0.1);"><i data-lucide="heart"></i></div>
+                    </div>
+                    <div class="card kpi-card">
+                        <div class="kpi-info">
+                            <h3>Overall Adherence</h3>
+                            <div class="kpi-value" id="kpi-adherence">0%</div>
+                        </div>
+                        <div class="kpi-icon" style="color: var(--success); background: rgba(16,185,129,0.1);"><i data-lucide="activity"></i></div>
+                    </div>
+                </div>
+
+                <div class="charts-grid">
+                    <div class="card animate-fade-in" style="animation-delay: 0.1s">
+                        <h3 style="margin-bottom: 1rem; font-size: 1rem;">User Distribution</h3>
+                        <div class="chart-container">
+                            <canvas id="userDistChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="card animate-fade-in" style="animation-delay: 0.2s">
+                        <h3 style="margin-bottom: 1rem; font-size: 1rem;">Medicine Logs Overview</h3>
+                        <div class="chart-container">
+                            <canvas id="logsChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="charts-grid">
+                    <div class="card animate-fade-in" style="animation-delay: 0.3s">
+                        <h3 style="margin-bottom: 1rem; font-size: 1rem; color: var(--danger);">Active Emergencies (<span id="activeEmergencyCount">0</span>)</h3>
+                        <div class="table-container" style="max-height: 300px; overflow-y: auto;">
+                            <table id="adminEmergencyTable">
+                                <thead>
+                                    <tr>
+                                        <th>Patient</th>
+                                        <th>Message</th>
+                                        <th>Time</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr><td colspan="3" style="text-align: center;">Loading...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="card animate-fade-in" style="animation-delay: 0.4s">
+                        <h3 style="margin-bottom: 1rem; font-size: 1rem; color: var(--warning);">Low Stock Medicines</h3>
+                        <div class="table-container" style="max-height: 300px; overflow-y: auto;">
+                            <table id="adminLowStockTable">
+                                <thead>
+                                    <tr>
+                                        <th>Medicine</th>
+                                        <th>Patient</th>
+                                        <th>Stock</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr><td colspan="3" style="text-align: center;">Loading...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/common.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/charts.js"></script>
+    <script src="js/admin-dashboard.js"></script>
+</body>
+</html>
