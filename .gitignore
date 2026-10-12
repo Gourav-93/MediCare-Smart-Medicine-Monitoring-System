@@ -1,9 +1,8 @@
-# Frontend
-MediCare-Frontend/
-
 # Build files
 bin/
 obj/
+
+MediCare-Frontend
 
 # Configuration files
 appsettings.json

@@ -21,40 +21,15 @@ public class AdminDashboardController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetDashboard()
     {
-        // Total users
         var totalUsers = await _context.Users.CountAsync();
-
-        // Total patients
         var totalPatients = await _context.Patients.CountAsync();
-
-        // Total caregivers
         var totalCaregivers = await _context.Caregivers.CountAsync();
-
-        // Total medicines
         var totalMedicines = await _context.Medicines.CountAsync();
-
-        // Total medicine logs
-        var totalMedicineLogs =
-            await _context.MedicineLogs.CountAsync();
-
-        // Taken doses
-        var totalTakenDoses =
-            await _context.MedicineLogs
-                .CountAsync(log => log.Status == "Taken");
-
-        // Missed doses
-        var totalMissedDoses =
-            await _context.MedicineLogs
-                .CountAsync(log => log.Status == "Missed");
-
-        // Pending doses
-        var totalPendingDoses =
-            await _context.MedicineLogs
-                .CountAsync(log => log.Status == "Pending");
-
-        // Overall adherence
-        var completedDoses =
-            totalTakenDoses + totalMissedDoses;
+        var totalMedicineLogs = await _context.MedicineLogs.CountAsync();
+        var totalTakenDoses = await _context.MedicineLogs.CountAsync(log => log.Status == "Taken");
+        var totalMissedDoses = await _context.MedicineLogs.CountAsync(log => log.Status == "Missed");
+        var totalPendingDoses = await _context.MedicineLogs.CountAsync(log => log.Status == "Pending");
+        var completedDoses = totalTakenDoses + totalMissedDoses;
 
         var overallAdherencePercentage =
             completedDoses == 0
@@ -64,34 +39,28 @@ public class AdminDashboardController : ControllerBase
                     completedDoses * 100,
                     2);
 
-        // Active emergency alerts
         var activeEmergencyAlerts =
             await _context.EmergencyAlerts
                 .CountAsync(e => e.Status == "ACTIVE");
 
-        // Total emergency alerts
         var totalEmergencyAlerts =
             await _context.EmergencyAlerts.CountAsync();
 
-        // Unread notifications
         var unreadNotifications =
             await _context.Notifications
                 .CountAsync(n => !n.IsRead);
 
-        // Caregiver-patient relationships
         var caregiverPatientRelationships =
             await _context.CaregiverPatients.CountAsync();
 
-        // Low stock medicines
         var lowStockMedicines =
             await _context.Medicines
                 .Include(m => m.Patient)
-                    .ThenInclude(p => p.User)
+                .ThenInclude(p => p.User)
                 .Where(m => m.Stock <= 5)
                 .OrderBy(m => m.Stock)
                 .ToListAsync();
 
-        // Active emergency details
         var activeEmergencies =
             await _context.EmergencyAlerts
                 .Include(e => e.Patient)
@@ -100,7 +69,6 @@ public class AdminDashboardController : ControllerBase
                 .OrderByDescending(e => e.CreatedAt)
                 .ToListAsync();
 
-        // Final dashboard
         var dashboard = new AdminDashboardDto
         {
             TotalUsers = totalUsers,

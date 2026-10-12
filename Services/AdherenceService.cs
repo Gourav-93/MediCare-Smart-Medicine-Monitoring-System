@@ -21,15 +21,11 @@ public class AdherenceService : IAdherenceService
 
         var totalDoses = logs.Count;
 
-        var takenDoses = logs.Count(x =>
-            x.Status == "Taken");
+        var takenDoses = logs.Count(x => x.Status == "Taken");
 
-        var missedDoses = logs.Count(x =>
-            x.Status == "Missed");
+        var missedDoses = logs.Count(x => x.Status == "Missed");
 
-        double adherencePercentage = totalDoses == 0
-            ? 0
-            : (double)takenDoses / totalDoses * 100;
+        double adherencePercentage = totalDoses == 0 ? 0: (double)takenDoses / totalDoses * 100;
 
         return new
         {

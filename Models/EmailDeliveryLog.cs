@@ -10,11 +10,11 @@ public class EmailDeliveryLog
     
     public DateTime ScheduledOccurrence { get; set; }
     
-    public string NotificationType { get; set; } = string.Empty; // "Reminder", "Missed", "CaregiverMissed"
+    public string NotificationType { get; set; } = string.Empty; 
     
     public string RecipientEmail { get; set; } = string.Empty;
     
-    public string Status { get; set; } = string.Empty; // "Pending", "Sent", "Failed"
+    public string Status { get; set; } = string.Empty; 
     
     public DateTime? SentAt { get; set; }
     
