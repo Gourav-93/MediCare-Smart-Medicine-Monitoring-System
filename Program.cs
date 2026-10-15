@@ -70,7 +70,7 @@ builder.Services.AddScoped<IMedicineScheduleRepository, MedicineScheduleReposito
 builder.Services.AddScoped<IMedicineLogRepository, MedicineLogRepository>();
 builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
 builder.Services.AddScoped<ICaregiverPatientRepository, CaregiverPatientRepository>();
-
+    
 // Service
 builder.Services.AddScoped<IMedicineService, MedicineService>();
 builder.Services.AddScoped<IMedicineScheduleService, MedicineScheduleService>();

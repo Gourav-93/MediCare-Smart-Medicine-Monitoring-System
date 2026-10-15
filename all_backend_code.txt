@@ -1,0 +1,3670 @@
+﻿==========================================
+FILE: C:\Users\Dell\OneDrive\Desktop\MediCare\Data\AppDbContext.cs
+==========================================
+using MediCare.Models;
+using Microsoft.EntityFrameworkCore;
+
+namespace MediCare.Data;
+
+public class AppDbContext : DbContext
+{
+    public AppDbContext(DbContextOptions<AppDbContext> options)
+        : base(options)
+    {
+    }
+
+    public DbSet<User> Users { get; set; }
+
+    public DbSet<Patient> Patients { get; set; }
+
+    public DbSet<Caregiver> Caregivers { get; set; }
+
+    public DbSet<CaregiverPatient> CaregiverPatients { get; set; }
+
+    public DbSet<Medicine> Medicines { get; set; }
+
+    public DbSet<MedicineSchedule> MedicineSchedules { get; set; }
+
+    public DbSet<MedicineLog> MedicineLogs { get; set; }
+
+    public DbSet<Notification> Notifications { get; set; }
+
+    public DbSet<EmergencyAlert> EmergencyAlerts { get; set; }
+
+    public DbSet<EmailDeliveryLog> EmailDeliveryLogs { get; set; }
+
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        base.OnModelCreating(modelBuilder);
+
+        // User -> Patient (One-to-One)
+        modelBuilder.Entity<Patient>()
+            .HasOne(p => p.User)
+            .WithOne(u => u.Patient)
+            .HasForeignKey<Patient>(p => p.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // User -> Caregiver (One-to-One)
+        modelBuilder.Entity<Caregiver>()
+            .HasOne(c => c.User)
+            .WithOne(u => u.Caregiver)
+            .HasForeignKey<Caregiver>(c => c.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Caregiver -> CaregiverPatient (One-to-Many)
+        modelBuilder.Entity<CaregiverPatient>()
+            .HasOne(cp => cp.Caregiver)
+            .WithMany(c => c.CaregiverPatients)
+            .HasForeignKey(cp => cp.CaregiverId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // Patient -> CaregiverPatient (One-to-Many)
+        modelBuilder.Entity<CaregiverPatient>()
+            .HasOne(cp => cp.Patient)
+            .WithMany(p => p.CaregiverPatients)
+            .HasForeignKey(cp => cp.PatientId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // Same caregiver cannot link to same patient twice
+        modelBuilder.Entity<CaregiverPatient>()
+            .HasIndex(cp => new { cp.CaregiverId, cp.PatientId })
+            .IsUnique();
+
+
+        modelBuilder.Entity<Notification>()
+            .HasOne(n => n.User)
+            .WithMany()
+            .HasForeignKey(n => n.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Medicine -> MedicineSchedule (One-to-Many)
+        modelBuilder.Entity<MedicineSchedule>()
+            .HasOne(ms => ms.Medicine)
+            .WithMany(m => m.MedicineSchedules)
+            .HasForeignKey(ms => ms.MedicineId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<EmergencyAlert>()
+            .HasOne(e => e.Patient)
+            .WithMany()
+            .HasForeignKey(e => e.PatientId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<EmailDeliveryLog>()
+            .HasIndex(e => new
+            {
+                e.MedicineScheduleId,
+                e.ScheduledOccurrence,
+                e.NotificationType,
+                e.RecipientEmail
+            })
+            .IsUnique();
+
+        modelBuilder.Entity<EmailDeliveryLog>()
+            .HasOne(e => e.MedicineSchedule)
+            .WithMany()
+            .HasForeignKey(e => e.MedicineScheduleId)
+            .OnDelete(DeleteBehavior.Cascade);
+    }
+}
+
+
+
+==========================================
+FILE: C:\Users\Dell\OneDrive\Desktop\MediCare\Models\Caregiver.cs
+==========================================
+using MediCare.Data;
+namespace MediCare.Models;
+
+public class Caregiver
+{
+    public int Id { get; set; }
+
+    public int UserId { get; set; }
+
+    public string Relationship { get; set; } = string.Empty;
+
+    public User User { get; set; } = null!;
+
+    public ICollection<CaregiverPatient> CaregiverPatients { get; set; }
+        = new List<CaregiverPatient>();
+}
+
+
+
+==========================================
+FILE: C:\Users\Dell\OneDrive\Desktop\MediCare\Models\CaregiverPatient.cs
+==========================================
+using MediCare.Data;
+namespace MediCare.Models;
+
+public class CaregiverPatient
+{
+    public int Id { get; set; }
+
+    public int CaregiverId { get; set; }
+
+    public int PatientId { get; set; }
+
+    public string RelationType { get; set; } = string.Empty;
+
+    public Caregiver Caregiver { get; set; } = null!;
+
+    public Patient Patient { get; set; } = null!;
+}
+
+
+
+==========================================
+FILE: C:\Users\Dell\OneDrive\Desktop\MediCare\Models\EmailDeliveryLog.cs
+==========================================
+using MediCare.Data;
+
+namespace MediCare.Models;
+
+public class EmailDeliveryLog
+{
+    public int Id { get; set; }
+    
+    public int MedicineScheduleId { get; set; }
+    
+    public DateTime ScheduledOccurrence { get; set; }
+    
+    public string NotificationType { get; set; } = string.Empty; 
+    
+    public string RecipientEmail { get; set; } = string.Empty;
+    
+    public string Status { get; set; } = string.Empty; 
+    
+    public DateTime? SentAt { get; set; }
+    
+    public int RetryCount { get; set; }
+    
+    public string? ErrorMessage { get; set; }
+    
+    public MedicineSchedule MedicineSchedule { get; set; } = null!;
+}
+
+
+
+==========================================
+FILE: C:\Users\Dell\OneDrive\Desktop\MediCare\Models\EmergencyAlert.cs
+==========================================
+namespace MediCare.Models;
+
+public class EmergencyAlert
+{
+    public int Id { get; set; }
+
+    public int PatientId { get; set; }
+
+    public string Message { get; set; } = string.Empty;
+
+    public string Status { get; set; } = "ACTIVE";
+
+    public DateTime CreatedAt { get; set; }
+
+    public DateTime? ResolvedAt { get; set; }
+
+    public Patient Patient { get; set; } = null!;
+}
+
+
+
+==========================================
+FILE: C:\Users\Dell\OneDrive\Desktop\MediCare\Models\Medicine.cs
+==========================================
+namespace MediCare.Models;
+
+public class Medicine
+{
+    public int Id { get; set; }
+
+    public int PatientId { get; set; }
+
+    public string Name { get; set; } = string.Empty;
+
+    public string Dosage { get; set; } = string.Empty;
+
+    public int Dose { get; set; }
+
+    public int Stock { get; set; }
+
+    public DateTime StartDate { get; set; }
+
+    public DateTime EndDate { get; set; }
+
+    public Patient Patient { get; set; } = null!;
+
+    public ICollection<MedicineSchedule> MedicineSchedules { get; set; }
+    = new List<MedicineSchedule>();
+
+    public ICollection<MedicineLog> MedicineLogs { get; set; }
+        = new List<MedicineLog>();
+}   
+
+
+
+==========================================
+FILE: C:\Users\Dell\OneDrive\Desktop\MediCare\Models\MedicineLog.cs
+==========================================
+namespace MediCare.Models;
+
+public class MedicineLog
+{
+    public int Id { get; set; }
+
+    public int MedicineId { get; set; }
+
+    public int PatientId { get; set; }  
+
+    public DateTime ScheduledTime { get; set; }
+
+    public DateTime? TakenTime { get; set; }
+
+    public string Status { get; set; } = string.Empty;
+
+    public Medicine Medicine { get; set; } = null!;
+
+    public Patient Patient { get; set; } = null!;
+}
+
+
+
+==========================================
+FILE: C:\Users\Dell\OneDrive\Desktop\MediCare\Models\MedicineSchedule.cs
+==========================================
+namespace MediCare.Models;
+
+public class MedicineSchedule
+{
+    public int Id { get; set; }
+
+    public int MedicineId { get; set; }
+
+    public TimeSpan Time { get; set; }
+
+    public string Frequency { get; set; } = string.Empty;
+
+    public Medicine Medicine { get; set; } = null!;
+}
+
+
+
+==========================================
+FILE: C:\Users\Dell\OneDrive\Desktop\MediCare\Models\Notification.cs
+==========================================
+using MediCare.Data;
+
+namespace MediCare.Models;
+
+public class Notification
+{
+    public int Id { get; set; }
+    public int UserId { get; set; }
+    public string Title { get; set; } = string.Empty;
+    public string Message { get; set; } = string.Empty;
+    public string Type { get; set; } = string.Empty;
+    public bool IsRead { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public User? User { get; set; }
+}
+
+
+
+==========================================
+FILE: C:\Users\Dell\OneDrive\Desktop\MediCare\Models\Patient.cs
+==========================================
+using MediCare.Data;
+namespace MediCare.Models;
+
+public class Patient
+{
+    public int Id { get; set; }
+
+    public int UserId { get; set; }
+
+    public DateTime DateOfBirth { get; set; }
+
+    public string EmergencyContact { get; set; } = string.Empty;
+
+    public User User { get; set; } = null!;
+
+    public ICollection<CaregiverPatient> CaregiverPatients { get; set; }
+        = new List<CaregiverPatient>();
+}
+
+
+
+==========================================
+FILE: C:\Users\Dell\OneDrive\Desktop\MediCare\Models\User.cs
+==========================================
+using MediCare.Models;
+
+namespace MediCare.Data;
+
+public class User
+{
+    public int Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string Email { get; set; } = string.Empty;
+    public string PasswordHash { get; set; } = string.Empty;
+    public string Role { get; set; } = string.Empty;
+    public Patient? Patient { get; set; }
+    public Caregiver? Caregiver { get; set; }
+
+}
+
+
+
+==========================================
+FILE: C:\Users\Dell\OneDrive\Desktop\MediCare\BackgroundServices\MedicineReminderBackgroundService.cs
+==========================================
+using MediCare.Data;
+using MediCare.Models;
+using MediCare.Services.Interfaces;
+using Microsoft.EntityFrameworkCore;
+
+namespace MediCare.BackgroundServices;
+
+public class MedicineReminderBackgroundService : BackgroundService
+{
+    private readonly IServiceScopeFactory _scopeFactory;
+        private readonly ILogger<MedicineReminderBackgroundService> _logger;
+
+    public MedicineReminderBackgroundService(
+        IServiceScopeFactory scopeFactory,
+        ILogger<MedicineReminderBackgroundService> logger)
+    {
+        _scopeFactory = scopeFactory;
+        _logger = logger;
+    }
+
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        _logger.LogInformation("Medicine Reminder Service started.");
+
+        while (!stoppingToken.IsCancellationRequested)
+        {
+            try
+            {
+                await CheckMedicineSchedulesAsync(stoppingToken);
+            }
+            catch (OperationCanceledException)
+                when (stoppingToken.IsCancellationRequested)
+            {
+                break;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "Error while checking medicine schedules.");
+            }
+
+            try
+            {
+                await Task.Delay(
+                    TimeSpan.FromSeconds(15),
+                    stoppingToken);
+            }
+            catch (OperationCanceledException)
+                when (stoppingToken.IsCancellationRequested)
+            {
+                break;
+            }
+        }
+    }
+
+    private async Task CheckMedicineSchedulesAsync(
+        CancellationToken stoppingToken)
+    {
+        using var scope = _scopeFactory.CreateScope();
+
+        var context =
+            scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        var emailService =
+            scope.ServiceProvider.GetRequiredService<IEmailService>();
+
+        var now = DateTime.Now;
+        var today = now.Date;
+
+        var medicines = await context.Medicines
+            .Include(m => m.MedicineSchedules)
+            .Include(m => m.Patient)
+                .ThenInclude(p => p.User)
+            .ToListAsync(stoppingToken);
+
+        foreach (var medicine in medicines)
+        {
+            if (medicine.StartDate.Date > today ||
+                medicine.EndDate.Date < today)
+            {
+                continue;
+            }
+
+            foreach (var schedule in medicine.MedicineSchedules)
+            {
+                if (!string.Equals(
+                        schedule.Frequency,
+                        "Daily",
+                        StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                var scheduledTime =
+                    today.Add(schedule.Time);
+
+                var log = await context.MedicineLogs
+                    .FirstOrDefaultAsync(
+                        x => x.MedicineId == medicine.Id &&
+                             x.ScheduledTime == scheduledTime,
+                        stoppingToken);
+
+                // Check Reminder (2 minutes before)
+                if (now >= scheduledTime.AddMinutes(-2))
+                {
+                    if (log == null)
+                    {
+                        log = new MedicineLog
+                        {
+                            MedicineId = medicine.Id,
+                            PatientId = medicine.PatientId,
+                            ScheduledTime = scheduledTime,
+                            Status = "Pending"
+                        };
+
+                        context.MedicineLogs.Add(log);
+                        await context.SaveChangesAsync(stoppingToken);
+                    }
+
+                    await TrySendReminderEmailAsync(context, emailService, schedule, medicine, scheduledTime, stoppingToken);
+                }
+
+                // Check Missed (5 minutes grace period)
+                if (log != null && log.Status == "Pending" && now >= scheduledTime.AddMinutes(5))
+                {
+                    log.Status = "Missed";
+                    await context.SaveChangesAsync(stoppingToken);
+
+                    await TrySendMissedEmailAsync(context, emailService, schedule, medicine, scheduledTime, stoppingToken);
+                }
+
+                // Check Caregiver Alert (30 minutes grace period)
+                if (log != null && log.Status == "Missed" && now >= scheduledTime.AddMinutes(30))
+                {
+                    await TrySendCaregiverAlertAsync(context, emailService, schedule, medicine, scheduledTime, stoppingToken);
+                }
+            }
+        }
+    }
+
+    private async Task TrySendReminderEmailAsync(AppDbContext context, IEmailService emailService, MedicineSchedule schedule, Medicine medicine, DateTime scheduledTime, CancellationToken stoppingToken)
+    {
+        var recipientEmail = medicine.Patient.User.Email;
+        if (string.IsNullOrWhiteSpace(recipientEmail)) return;
+
+        var deliveryLog = await context.EmailDeliveryLogs.FirstOrDefaultAsync(
+            l => l.MedicineScheduleId == schedule.Id && l.ScheduledOccurrence == scheduledTime && l.NotificationType == "Reminder" && l.RecipientEmail == recipientEmail, stoppingToken);
+        
+        if (deliveryLog != null && (deliveryLog.Status == "Sent" || deliveryLog.RetryCount >= 3))
+            return;
+
+        if (deliveryLog == null)
+        {
+            deliveryLog = new EmailDeliveryLog
+            {
+                MedicineScheduleId = schedule.Id,
+                ScheduledOccurrence = scheduledTime,
+                NotificationType = "Reminder",
+                RecipientEmail = recipientEmail,
+                Status = "Pending"
+            };
+            context.EmailDeliveryLogs.Add(deliveryLog);
+            
+            var patientNotification = new Notification
+            {
+                UserId = medicine.Patient.UserId,
+                Title = "Medicine Reminder",
+                Message = $"Time to take {medicine.Name}.",
+                Type = "MedicineReminder",
+                IsRead = false,
+                CreatedAt = DateTime.Now
+            };
+            context.Notifications.Add(patientNotification);
+            
+            await context.SaveChangesAsync(stoppingToken);
+        }
+
+        try
+        {
+            await emailService.SendEmailAsync(
+                recipientEmail,
+                "MediCare - Upcoming Medicine Reminder",
+                $"Hello {medicine.Patient.User.Name},\n\n" +
+                $"This is a reminder from MediCare that it is almost time to take your medicine.\n" +
+                $"Medicine: {medicine.Name}\n" +
+                $"Scheduled Time: {scheduledTime:t}\n" +
+                $"Dosage: {(string.IsNullOrEmpty(medicine.Dosage) ? "N/A" : medicine.Dosage)}\n" +
+                "Please take your medicine at the scheduled time and record your medicine intake in MediCare.\n" +
+                "Stay healthy!\n\n" +
+                "Regards,\n" +
+                "MediCare Team");
+
+            deliveryLog.Status = "Sent";
+            deliveryLog.SentAt = DateTime.Now;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to send reminder email to patient {Email}.", recipientEmail);
+            deliveryLog.Status = "Failed";
+            deliveryLog.ErrorMessage = ex.Message;
+            deliveryLog.RetryCount++;
+        }
+        finally
+        {
+            await context.SaveChangesAsync(stoppingToken);
+        }
+    }
+
+    private async Task TrySendMissedEmailAsync(AppDbContext context, IEmailService emailService, MedicineSchedule schedule, Medicine medicine, DateTime scheduledTime, CancellationToken stoppingToken)
+    {
+        var recipientEmail = medicine.Patient.User.Email;
+        if (string.IsNullOrWhiteSpace(recipientEmail)) return;
+
+        var deliveryLog = await context.EmailDeliveryLogs.FirstOrDefaultAsync(
+            l => l.MedicineScheduleId == schedule.Id && l.ScheduledOccurrence == scheduledTime && l.NotificationType == "Missed" && l.RecipientEmail == recipientEmail, stoppingToken);
+        
+        if (deliveryLog != null && (deliveryLog.Status == "Sent" || deliveryLog.RetryCount >= 3))
+            return;
+
+        if (deliveryLog == null)
+        {
+            deliveryLog = new EmailDeliveryLog
+            {
+                MedicineScheduleId = schedule.Id,
+                ScheduledOccurrence = scheduledTime,
+                NotificationType = "Missed",
+                RecipientEmail = recipientEmail,
+                Status = "Pending"
+            };
+            context.EmailDeliveryLogs.Add(deliveryLog);
+            
+            var patientNotification = new Notification
+            {
+                UserId = medicine.Patient.UserId,
+                Title = "Medicine Missed",
+                Message = $"You missed your {medicine.Name} dose.",
+                Type = "MedicineMissed",
+                IsRead = false,
+                CreatedAt = DateTime.Now
+            };
+            context.Notifications.Add(patientNotification);
+
+            await context.SaveChangesAsync(stoppingToken);
+        }
+
+        try
+        {
+            await emailService.SendEmailAsync(
+                recipientEmail,
+                "MediCare - Missed Medicine Alert",
+                $"Hello {medicine.Patient.User.Name},\n\n" +
+                $"Our MediCare system noticed that you have not recorded taking the following scheduled medicine.\n" +
+                $"Medicine: {medicine.Name}\n" +
+                $"Scheduled Time: {scheduledTime:t}\n" +
+                $"Status: Missed\n" +
+                "If you have already taken this medicine, please update your medicine record in MediCare.\n" +
+                "Please follow your healthcare professional's instructions.\n\n" +
+                "Regards,\n" +
+                "MediCare Team");
+
+            deliveryLog.Status = "Sent";
+            deliveryLog.SentAt = DateTime.Now;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to send missed medicine email to patient {Email}.", recipientEmail);
+            deliveryLog.Status = "Failed";
+            deliveryLog.ErrorMessage = ex.Message;
+            deliveryLog.RetryCount++;
+        }
+        finally
+        {
+            await context.SaveChangesAsync(stoppingToken);
+        }
+    }
+
+    private async Task TrySendCaregiverAlertAsync(AppDbContext context, IEmailService emailService, MedicineSchedule schedule, Medicine medicine, DateTime scheduledTime, CancellationToken stoppingToken)
+    {
+        var caregivers = await context.CaregiverPatients
+            .Include(cp => cp.Caregiver)
+                .ThenInclude(c => c.User)
+            .Where(cp => cp.PatientId == medicine.PatientId)
+            .ToListAsync(stoppingToken);
+
+        foreach (var caregiverPatient in caregivers)
+        {
+            var caregiverEmail = caregiverPatient.Caregiver.User.Email;
+            if (string.IsNullOrWhiteSpace(caregiverEmail)) continue;
+
+            var cgDeliveryLog = await context.EmailDeliveryLogs.FirstOrDefaultAsync(
+                l => l.MedicineScheduleId == schedule.Id && l.ScheduledOccurrence == scheduledTime && l.NotificationType == "CaregiverAlert30Min" && l.RecipientEmail == caregiverEmail, stoppingToken);
+
+            if (cgDeliveryLog != null && (cgDeliveryLog.Status == "Sent" || cgDeliveryLog.RetryCount >= 3))
+                continue;
+
+            if (cgDeliveryLog == null)
+            {
+                cgDeliveryLog = new EmailDeliveryLog
+                {
+                    MedicineScheduleId = schedule.Id,
+                    ScheduledOccurrence = scheduledTime,
+                    NotificationType = "CaregiverAlert30Min",
+                    RecipientEmail = caregiverEmail,
+                    Status = "Pending"
+                };
+                context.EmailDeliveryLogs.Add(cgDeliveryLog);
+                
+                var caregiverNotification = new Notification
+                {
+                    UserId = caregiverPatient.Caregiver.UserId,
+                    Title = "Patient Medicine Alert",
+                    Message = $"The patient {medicine.Patient.User.Name} missed {medicine.Name} for 30 minutes.",
+                    Type = "CaregiverMedicineAlert30Min",
+                    IsRead = false,
+                    CreatedAt = DateTime.Now
+                };
+                context.Notifications.Add(caregiverNotification);
+
+                await context.SaveChangesAsync(stoppingToken);
+            }
+
+            try
+            {
+                await emailService.SendEmailAsync(
+                    caregiverEmail,
+                    "MediCare - Patient Medicine Alert",
+                    $"Hello {caregiverPatient.Caregiver.User.Name},\n\n" +
+                    $"This is an important medicine alert from MediCare.\n\n" +
+                    $"The following patient has not recorded taking their scheduled medicine within 30 minutes of the scheduled time.\n\n" +
+                    $"Patient: {medicine.Patient.User.Name}\n" +
+                    $"Medicine: {medicine.Name}\n" +
+                    $"Scheduled Time: {scheduledTime:g}\n" +
+                    $"Status: Missed\n\n" +
+                    "Please contact the patient to check whether they have taken the medicine.\n\n" +
+                    "If the patient has already taken it, please ensure their medicine intake record is updated in MediCare.\n\n" +
+                    "Regards,\n" +
+                    "MediCare Team");
+
+                cgDeliveryLog.Status = "Sent";
+                cgDeliveryLog.SentAt = DateTime.Now;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to send 30-min caregiver alert to {Email}.", caregiverEmail);
+                cgDeliveryLog.Status = "Failed";
+                cgDeliveryLog.ErrorMessage = ex.Message;
+                cgDeliveryLog.RetryCount++;
+            }
+            finally
+            {
+                await context.SaveChangesAsync(stoppingToken);
+            }
+        }
+    }
+}
+
+
+
+==========================================
+FILE: C:\Users\Dell\OneDrive\Desktop\MediCare\Services\AdherenceService.cs
+==========================================
+using MediCare.Data;
+using MediCare.Services.Interfaces;
+using Microsoft.EntityFrameworkCore;
+
+namespace MediCare.Service;
+
+public class AdherenceService : IAdherenceService
+{
+    private readonly AppDbContext _context;
+
+    public AdherenceService(AppDbContext context)
+    {
+        _context = context;
+    }
+
+    public async Task<object> GetPatientAdherenceAsync(int patientId)
+    {
+        var logs = await _context.MedicineLogs
+            .Where(x => x.PatientId == patientId)
+            .ToListAsync();
+
+        var totalDoses = logs.Count;
+
+        var takenDoses = logs.Count(x => x.Status == "Taken");
+
+        var missedDoses = logs.Count(x => x.Status == "Missed");
+
+        double adherencePercentage = totalDoses == 0 ? 0: (double)takenDoses / totalDoses * 100;
+
+        return new
+        {
+            PatientId = patientId,
+            TotalDoses = totalDoses,
+            TakenDoses = takenDoses,
+            MissedDoses = missedDoses,
+            AdherencePercentage = Math.Round(adherencePercentage, 2)
+        };
+    }
+}
+
+
+
+==========================================
+FILE: C:\Users\Dell\OneDrive\Desktop\MediCare\Services\CaregiverPatientService.cs
+==========================================
+using MediCare.DTOs;
+using MediCare.Models;
+using MediCare.Repositories.Interfaces;
+using MediCare.Services.Interfaces;
+
+namespace MediCare.Service;
+
+public class CaregiverPatientService : ICaregiverPatientService
+{
+    private readonly ICaregiverPatientRepository _repository;
+
+    public CaregiverPatientService(
+        ICaregiverPatientRepository repository)
+    {
+        _repository = repository;
+    }
+
+    public async Task<CaregiverPatient> LinkPatientAsync(CaregiverPatientDto dto)
+    {
+        if (!await _repository.CaregiverExistsAsync(dto.CaregiverId))
+        {
+            throw new ArgumentException("Caregiver not found.");
+        }
+
+        if (!await _repository.PatientExistsAsync(dto.PatientId))
+        {
+            throw new ArgumentException("Patient not found.");
+        }
+
+        var existingRelationships = await _repository.GetByCaregiverIdAsync(dto.CaregiverId);
+        if (existingRelationships.Any(x => x.PatientId == dto.PatientId))
+        {
+            throw new ArgumentException("Relationship already exists.");
+        }
+
+        var relationship = new CaregiverPatient
+        {
+            CaregiverId = dto.CaregiverId,
+            PatientId = dto.PatientId,
+            RelationType = dto.RelationType
+        };
+
+        return await _repository.AddAsync(relationship);
+    }
+
+    public async Task<List<CaregiverPatient>> GetPatientsAsync(
+        int caregiverId)
+    {
+        return await _repository.GetByCaregiverIdAsync(caregiverId);
+    }
+
+    public async Task<List<CaregiverPatient>> GetCaregiversAsync(
+        int patientId)
+    {
+        return await _repository.GetByPatientIdAsync(patientId);
+    }
+
+    public async Task<bool> UnlinkPatientAsync(
+        int caregiverId,
+        int patientId)
+    {
+        return await _repository.DeleteAsync(
+            caregiverId,
+            patientId);
+    }
+}
+
+
+
+==========================================
+FILE: C:\Users\Dell\OneDrive\Desktop\MediCare\Services\EmailService.cs
+==========================================
+using MailKit.Net.Smtp;
+using MailKit.Security;
+using MimeKit;
+using MediCare.Services.Interfaces;
+
+namespace MediCare.Services;
+
+public class EmailService : IEmailService
+{
+    private readonly IConfiguration _configuration;
+    private readonly ILogger<EmailService> _logger;
+
+    public EmailService(
+        IConfiguration configuration,
+        ILogger<EmailService> logger)
+    {
+        _configuration = configuration;
+        _logger = logger;
+    }
+
+    public async Task SendEmailAsync(
+        string toEmail,
+        string subject,
+        string message)
+    {
+        var smtpHost = _configuration["Email:SmtpHost"];
+        var smtpPort = _configuration.GetValue<int>("Email:SmtpPort");
+        var senderEmail = _configuration["Email:SenderEmail"];
+        var senderName = _configuration["Email:SenderName"];
+        var password = _configuration["Email:Password"];
+
+        if (string.IsNullOrWhiteSpace(smtpHost) ||
+            string.IsNullOrWhiteSpace(senderEmail) ||
+            string.IsNullOrWhiteSpace(password) ||
+            password == "YourEmailPassword" ||
+            password == "your-gmail-app-password")
+        {
+            _logger.LogError("Email configuration is missing or invalid. Please check the 'Email' section in appsettings.json or provide environment variables (e.g., Email__Password).");
+            throw new InvalidOperationException("Email configuration is missing or invalid.");
+        }
+
+        var email = new MimeMessage();
+
+        email.From.Add(
+            new MailboxAddress(senderName, senderEmail));
+
+        email.To.Add(
+            MailboxAddress.Parse(toEmail));
+
+        email.Subject = subject;
+
+        email.Body = new TextPart("plain")
+        {
+            Text = message
+        };
+
+        using var smtp = new SmtpClient();
+
+        await smtp.ConnectAsync(
+            smtpHost,
+            smtpPort,
+            SecureSocketOptions.StartTls);
+
+        await smtp.AuthenticateAsync(
+            senderEmail,
+            password);
+
+        await smtp.SendAsync(email);
+
+        await smtp.DisconnectAsync(true);
+
+        _logger.LogInformation(
+            "Email sent successfully to {Email}.",
+            toEmail);
+    }
+}
+
+
+
+==========================================
+FILE: C:\Users\Dell\OneDrive\Desktop\MediCare\Services\JwtService.cs
+==========================================
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
+using Microsoft.IdentityModel.Tokens;
+using MediCare.Services.Interfaces;
+
+namespace MediCare.Services;
+
+public class JwtService : IJwtService
+{
+    private readonly IConfiguration _configuration;
+
+    public JwtService(IConfiguration configuration)
+    {
+        _configuration = configuration;
+    }
+
+    public string GenerateToken(int userId, string email, string role)
+    {
+        var key = _configuration["Jwt:Key"];
+
+        if (string.IsNullOrEmpty(key))
+        {
+            throw new InvalidOperationException("JWT Key is not configured.");
+        }
+
+        var claims = new[]
+        {
+            new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
+            new Claim(ClaimTypes.Email, email),
+            new Claim(ClaimTypes.Role, role)
+        };
+
+        var securityKey = new SymmetricSecurityKey(
+            Encoding.UTF8.GetBytes(key)
+        );
+
+        var credentials = new SigningCredentials(
+            securityKey,
+            SecurityAlgorithms.HmacSha256
+        );
+
+        var expiryMinutes =
+            _configuration.GetValue<int>("Jwt:ExpiryMinutes");
+
+        var token = new JwtSecurityToken(
+            issuer: _configuration["Jwt:Issuer"],
+            audience: _configuration["Jwt:Audience"],
+            claims: claims,
+            expires: DateTime.UtcNow.AddMinutes(expiryMinutes),
+            signingCredentials: credentials
+        );
+
+        return new JwtSecurityTokenHandler().WriteToken(token);
+    }
+}
+
+
+
+==========================================
+FILE: C:\Users\Dell\OneDrive\Desktop\MediCare\Services\MedicineLogService.cs
+==========================================
+using MediCare.DTOs;
+using MediCare.Models;
+using MediCare.Repositories.Interfaces;
+using MediCare.Services.Interfaces;
+
+namespace MediCare.Service;
+
+public class MedicineLogService : IMedicineLogService
+{
+    private readonly IMedicineLogRepository _repository;
+    private readonly INotificationRepository _notificationRepository;
+
+    public MedicineLogService(
+        IMedicineLogRepository repository,
+        INotificationRepository notificationRepository)
+    {
+        _repository = repository;
+        _notificationRepository = notificationRepository;
+    }
+
+    public async Task<List<MedicineLog>> GetAllAsync()
+    {
+        return await _repository.GetAllAsync();
+    }
+
+    public async Task<MedicineLog?> GetByIdAsync(int id)
+    {
+        return await _repository.GetByIdAsync(id);
+    }
+
+    public async Task<MedicineLog> AddAsync(MedicineLogDto dto)
+    {
+        if (!await _repository.MedicineExistsAsync(dto.MedicineId))
+        {
+            throw new ArgumentException("Medicine not found.");
+        }
+
+        if (!await _repository.PatientExistsAsync(dto.PatientId))
+        {
+            throw new ArgumentException("Patient not found.");
+        }
+
+        var log = new MedicineLog
+        {
+            MedicineId = dto.MedicineId,
+            PatientId = dto.PatientId,
+            ScheduledTime = dto.ScheduledTime,
+            Status = dto.Status
+        };
+
+        return await _repository.AddAsync(log);
+    }
+
+    public async Task<MedicineLog?> MarkAsTakenAsync(int id)
+    {
+        var log = await _repository.GetByIdAsync(id);
+
+        if (log == null)
+            return null;
+
+        if (log.Status == "Taken")
+            return log;
+
+        log.Status = "Taken";
+        log.TakenTime = DateTime.Now;
+
+        var previousStock = log.Medicine.Stock;
+
+
+        if (log.Medicine.Stock >= log.Medicine.Dose)
+        {
+            log.Medicine.Stock -= log.Medicine.Dose;
+        }
+        else
+        {
+            log.Medicine.Stock = 0;
+        }
+
+        if (previousStock > 5 && log.Medicine.Stock <= 5)
+        {
+            var notification = new Notification
+            {
+                UserId = log.Medicine.Patient.UserId,
+                Title = "Low Medicine Stockkk",
+                Message = $"{log.Medicine.Name} stock is low. Please refill the medicine.",
+                Type = "Low Stock",
+                IsRead = false,
+                CreatedAt = DateTime.Now
+            };
+            await _notificationRepository.AddAsync(notification);
+        }
+        return await _repository.UpdateAsync(log);
+    }
+}
+
+
+
+==========================================
+FILE: C:\Users\Dell\OneDrive\Desktop\MediCare\Services\MedicineScheduleService.cs
+==========================================
+using MediCare.DTOs;
+using MediCare.Models;
+using MediCare.Repositories.Interfaces;
+using MediCare.Services.Interfaces;
+
+namespace MediCare.Service;
+
+public class MedicineScheduleService : IMedicineScheduleService
+{
+    private readonly IMedicineScheduleRepository _repository;
+
+    public MedicineScheduleService(IMedicineScheduleRepository repository)
+    {
+        _repository = repository;
+    }
+
+    public async Task<List<MedicineSchedule>> GetAllAsync()
+    {
+        return await _repository.GetAllAsync();
+    }
+
+    public async Task<MedicineSchedule?> GetByIdAsync(int id)
+    {
+        return await _repository.GetByIdAsync(id);
+    }
+
+    public async Task<MedicineSchedule> AddAsync(MedicineScheduleDto dto)
+    {
+        if (!await _repository.MedicineExistsAsync(dto.MedicineId))
+        {
+            throw new ArgumentException("Medicine not found.");
+        }
+
+        var schedule = new MedicineSchedule
+        {
+            MedicineId = dto.MedicineId,
+            Time = dto.Time,
+            Frequency = dto.Frequency
+        };
+
+        return await _repository.AddAsync(schedule);
+    }
+
+    public async Task<MedicineSchedule?> UpdateAsync(
+        int id,
+        MedicineScheduleDto dto)
+    {
+        if (!await _repository.MedicineExistsAsync(dto.MedicineId))
+        {
+            throw new ArgumentException("Medicine not found.");
+        }
+
+        var schedule = await _repository.GetByIdAsync(id);
+
+        if (schedule == null)
+        {
+            return null;
+        }
+
+        schedule.MedicineId = dto.MedicineId;
+        schedule.Time = dto.Time;
+        schedule.Frequency = dto.Frequency;
+
+        return await _repository.UpdateAsync(schedule);
+    }
+
+    public async Task<bool> DeleteAsync(int id)
+    {
+        var schedule = await _repository.GetByIdAsync(id);
+
+        if (schedule == null)
+        {
+            return false;
+        }
+
+        await _repository.DeleteAsync(schedule);
+
+        return true;
+    }
+}
+
+
+
+==========================================
+FILE: C:\Users\Dell\OneDrive\Desktop\MediCare\Services\MedicineService.cs
+==========================================
+using MediCare.DTOs;
+using MediCare.Models;
+using MediCare.Repositories.Interfaces;
+using MediCare.Services.Interfaces;
+
+namespace MediCare.Service;
+
+public class MedicineService : IMedicineService
+{
+    private readonly IMedicineRepository _repository;
+
+    public MedicineService(IMedicineRepository repository)
+    {
+        _repository = repository;
+    }
+
+    public async Task<List<Medicine>> GetAllAsync()
+    {
+        return await _repository.GetAllAsync();
+    }
+
+    public async Task<Medicine?> GetByIdAsync(int id)
+    {
+        return await _repository.GetByIdAsync(id);
+    }
+
+    public async Task<Medicine> AddAsync(MedicineDto dto)
+    {
+        if (!await _repository.PatientExistsAsync(dto.PatientId))
+        {
+            throw new ArgumentException("Patient not found.");
+        }
+
+        var medicine = new Medicine
+        {
+            PatientId = dto.PatientId,
+            Name = dto.Name,
+            Dosage = dto.Dosage,
+            Dose = dto.Dose,
+            Stock = dto.Stock,
+            StartDate = dto.StartDate,
+            EndDate = dto.EndDate
+        };
+        return await _repository.AddAsync(medicine);
+    }
+
+    public async Task<Medicine?> UpdateAsync(int id, MedicineDto dto)
+    {
+        if (!await _repository.PatientExistsAsync(dto.PatientId))
+        {
+            throw new ArgumentException("Patient not found.");
+        }
+
+        var medicine = await _repository.GetByIdAsync(id);
+        if (medicine == null)
+        {
+            return null;
+        }
+        medicine.PatientId = dto.PatientId;
+        medicine.Name = dto.Name;
+        medicine.Dosage = dto.Dosage;
+        medicine.Dose = dto.Dose;
+        medicine.Stock = dto.Stock;
+        medicine.StartDate = dto.StartDate;
+        medicine.EndDate = dto.EndDate;
+
+        return await _repository.UpdateAsync(medicine);
+    }
+
+    public async Task<bool> DeleteAsync(int id)
+    {
+        var medicine = await _repository.GetByIdAsync(id);
+        if (medicine == null)
+        {
+            return false;
+        }
+        await _repository.DeleteAsync(medicine);
+        return true;
+    }
+}
+
+
+
+==========================================
+FILE: C:\Users\Dell\OneDrive\Desktop\MediCare\Services\NotificationService.cs
+==========================================
+using MediCare.Models;
+using MediCare.Repositories.Interfaces;
+using MediCare.Services.Interfaces;
+
+namespace MediCare.Service;
+
+public class NotificationService : INotificationService
+{
+    private readonly INotificationRepository _repository;
+
+    public NotificationService(INotificationRepository repository)
+    {
+        _repository = repository;
+    }
+
+    public async Task<List<Notification>> GetAllAsync()
+    {
+        return await _repository.GetAllAsync();
+    }
+
+    public async Task<Notification?> GetByIdAsync(int id)
+    {
+        return await _repository.GetByIdAsync(id);
+    }
+
+    public async Task<Notification> CreateAsync(Notification notification)
+    {
+        notification.IsRead = false;
+        notification.CreatedAt = DateTime.Now;
+
+        return await _repository.AddAsync(notification);
+    }
+
+    public async Task<Notification?> MarkAsReadAsync(int id)
+    {
+        return await _repository.MarkAsReadAsync(id);
+    }
+
+    public async Task MarkAllAsReadAsync(int userId)
+    {
+        await _repository.MarkAllAsReadAsync(userId);
+    }
+}
+
+
+
+==========================================
+FILE: C:\Users\Dell\OneDrive\Desktop\MediCare\Services\Interfaces\IAdherenceService.cs
+==========================================
+namespace MediCare.Services.Interfaces;
+
+public interface IAdherenceService
+{
+    Task<object> GetPatientAdherenceAsync(int patientId);
+}
+
+
+
+==========================================
+FILE: C:\Users\Dell\OneDrive\Desktop\MediCare\Services\Interfaces\ICaregiverPatientService.cs
+==========================================
+using MediCare.DTOs;
+using MediCare.Models;
+
+namespace MediCare.Services.Interfaces;
+
+public interface ICaregiverPatientService
+{
+    Task<CaregiverPatient> LinkPatientAsync(CaregiverPatientDto dto);
+    Task<List<CaregiverPatient>> GetPatientsAsync(int caregiverId);
+    Task<List<CaregiverPatient>> GetCaregiversAsync(int patientId);
+    Task<bool> UnlinkPatientAsync(int caregiverId, int patientId);
+}
+
+
+
+==========================================
+FILE: C:\Users\Dell\OneDrive\Desktop\MediCare\Services\Interfaces\IEmailService.cs
+==========================================
+namespace MediCare.Services.Interfaces;
+
+public interface IEmailService
+{
+    Task SendEmailAsync(
+        string toEmail,
+        string subject,
+        string message);
+}
+
+
+
+==========================================
+FILE: C:\Users\Dell\OneDrive\Desktop\MediCare\Services\Interfaces\IJwtService.cs
+==========================================
+namespace MediCare.Services.Interfaces;
+
+public interface IJwtService
+{
+    string GenerateToken( int userId , string email , string role );
+}
+
+
+
+==========================================
+FILE: C:\Users\Dell\OneDrive\Desktop\MediCare\Services\Interfaces\IMedicineLogService.cs
+==========================================
+using MediCare.DTOs;
+using MediCare.Models;
+
+namespace MediCare.Services.Interfaces;
+
+public interface IMedicineLogService
+{
+    Task<List<MedicineLog>> GetAllAsync();
+    Task<MedicineLog?> GetByIdAsync(int id);
+    Task<MedicineLog> AddAsync(MedicineLogDto dto);
+    Task<MedicineLog?> MarkAsTakenAsync(int id);
+}
+
+
+
+==========================================
+FILE: C:\Users\Dell\OneDrive\Desktop\MediCare\Services\Interfaces\IMedicineScheduleService.cs
+==========================================
+using MediCare.DTOs;
+using MediCare.Models;
+
+namespace MediCare.Services.Interfaces;
+
+public interface IMedicineScheduleService
+{
+    Task<List<MedicineSchedule>> GetAllAsync();
+    Task<MedicineSchedule?> GetByIdAsync(int id);
+    Task<MedicineSchedule> AddAsync(MedicineScheduleDto dto);
+    Task<MedicineSchedule?> UpdateAsync(int id, MedicineScheduleDto dto);
+    Task<bool> DeleteAsync(int id);
+}
+
+
+
+==========================================
+FILE: C:\Users\Dell\OneDrive\Desktop\MediCare\Services\Interfaces\IMedicineService.cs
+==========================================
+using MediCare.DTOs;
+using MediCare.Models;
+
+namespace MediCare.Services.Interfaces;
+
+public interface IMedicineService
+{
+    Task<List<Medicine>> GetAllAsync();
+
+    Task<Medicine?> GetByIdAsync(int id);
+
+    Task<Medicine> AddAsync(MedicineDto dto);
+
+    Task<Medicine?> UpdateAsync(int id, MedicineDto dto);
+
+    Task<bool> DeleteAsync(int id);
+}
+
+
+
+==========================================
+FILE: C:\Users\Dell\OneDrive\Desktop\MediCare\Services\Interfaces\INotificationService.cs
+==========================================
+using MediCare.Models;
+
+namespace MediCare.Services.Interfaces;
+
+public interface INotificationService
+{
+    Task<List<Notification>> GetAllAsync();
+    Task<Notification?> GetByIdAsync(int id);
+    Task<Notification> CreateAsync(Notification notification);
+    Task<Notification?> MarkAsReadAsync(int id);
+    Task MarkAllAsReadAsync(int userId);
+}
+
+
+
+==========================================
+FILE: C:\Users\Dell\OneDrive\Desktop\MediCare\Controllers\AdherenceController.cs
+==========================================
+using System.Security.Claims;
+using MediCare.Data;
+using MediCare.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+
+namespace MediCare.Controllers;
+
+[ApiController]
+[Route("api/adherence")]
+[Authorize(Roles = "ADMIN,PATIENT,CAREGIVER")]
+public class AdherenceController : ControllerBase
+{
+    private readonly IAdherenceService _service;
+    private readonly AppDbContext _context;
+
+    public AdherenceController(
+        IAdherenceService service,
+        AppDbContext context)
+    {
+        _service = service;
+        _context = context;
+    }
+
+    private int GetCurrentUserId()
+    {
+        return int.Parse(
+            User.FindFirstValue(ClaimTypes.NameIdentifier)!
+        );
+    }
+
+    private string GetCurrentRole()
+    {
+        return User.FindFirstValue(ClaimTypes.Role) ?? "";
+    }
+
+    [HttpGet("patient/{patientId}")]
+    public async Task<IActionResult> GetPatientAdherence(int patientId)
+    {
+        var userId = GetCurrentUserId();
+        var role = GetCurrentRole();
+
+        // ADMIN can access any existing patient
+        if (role == "ADMIN")
+        {
+            var patientExists = await _context.Patients
+                .AnyAsync(p => p.Id == patientId);
+
+            if (!patientExists)
+                return NotFound("Patient not found.");
+
+            var adminResult =
+                await _service.GetPatientAdherenceAsync(patientId);
+
+            return Ok(adminResult);
+        }
+
+        // PATIENT can access only their own adherence
+        if (role == "PATIENT")
+        {
+            var isOwnPatient = await _context.Patients
+                .AnyAsync(p =>
+                    p.Id == patientId &&
+                    p.UserId == userId);
+
+            if (!isOwnPatient)
+                return Forbid();
+
+            var patientResult =
+                await _service.GetPatientAdherenceAsync(patientId);
+
+            return Ok(patientResult);
+        }
+
+        // CAREGIVER can access only linked patient's adherence
+        if (role == "CAREGIVER")
+        {
+            var caregiver = await _context.Caregivers
+                .FirstOrDefaultAsync(c => c.UserId == userId);
+
+            if (caregiver == null)
+                return NotFound("Caregiver profile not found.");
+
+            var isLinked = await _context.CaregiverPatients
+                .AnyAsync(cp =>
+                    cp.CaregiverId == caregiver.Id &&
+                    cp.PatientId == patientId);
+
+            if (!isLinked)
+                return Forbid();
+
+            var caregiverResult =
+                await _service.GetPatientAdherenceAsync(patientId);
+
+            return Ok(caregiverResult);
+        }
+
+        return Forbid();
+    }
+}
+
+
+
+==========================================
+FILE: C:\Users\Dell\OneDrive\Desktop\MediCare\Controllers\AdminDashboardController.cs
+==========================================
+using MediCare.Data;
+using MediCare.DTOs;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+
+namespace MediCare.Controllers;
+
+[ApiController]
+[Route("api/dashboard/admin")]
+[Authorize(Roles = "ADMIN")]
+public class AdminDashboardController : ControllerBase
+{
+    private readonly AppDbContext _context;
+
+    public AdminDashboardController(AppDbContext context)
+    {
+        _context = context;
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> GetDashboard()
+    {
+        var totalUsers = await _context.Users.CountAsync();
+        var totalPatients = await _context.Patients.CountAsync();
+        var totalCaregivers = await _context.Caregivers.CountAsync();
+        var totalMedicines = await _context.Medicines.CountAsync();
+        var totalMedicineLogs = await _context.MedicineLogs.CountAsync();
+        var totalTakenDoses = await _context.MedicineLogs.CountAsync(log => log.Status == "Taken");
+        var totalMissedDoses = await _context.MedicineLogs.CountAsync(log => log.Status == "Missed");
+        var totalPendingDoses = await _context.MedicineLogs.CountAsync(log => log.Status == "Pending");
+        var completedDoses = totalTakenDoses + totalMissedDoses;
+
+        var overallAdherencePercentage =
+            completedDoses == 0
+                ? 0
+                : Math.Round(
+                    (double)totalTakenDoses /
+                    completedDoses * 100,
+                    2);
+
+        var activeEmergencyAlerts =
+            await _context.EmergencyAlerts
+                .CountAsync(e => e.Status == "ACTIVE");
+
+        var totalEmergencyAlerts =
+            await _context.EmergencyAlerts.CountAsync();
+
+        var unreadNotifications =
+            await _context.Notifications
+                .CountAsync(n => !n.IsRead);
+
+        var caregiverPatientRelationships =
+            await _context.CaregiverPatients.CountAsync();
+
+        var lowStockMedicines =
+            await _context.Medicines
+                .Include(m => m.Patient)
+                .ThenInclude(p => p.User)
+                .Where(m => m.Stock <= 5)
+                .OrderBy(m => m.Stock)
+                .ToListAsync();
+
+        var activeEmergencies =
+            await _context.EmergencyAlerts
+                .Include(e => e.Patient)
+                    .ThenInclude(p => p.User)
+                .Where(e => e.Status == "ACTIVE")
+                .OrderByDescending(e => e.CreatedAt)
+                .ToListAsync();
+
+        var dashboard = new AdminDashboardDto
+        {
+            TotalUsers = totalUsers,
+
+            TotalPatients = totalPatients,
+
+            TotalCaregivers = totalCaregivers,
+
+            TotalMedicines = totalMedicines,
+
+            TotalMedicineLogs = totalMedicineLogs,
+
+            TotalTakenDoses = totalTakenDoses,
+
+            TotalMissedDoses = totalMissedDoses,
+
+            TotalPendingDoses = totalPendingDoses,
+
+            OverallAdherencePercentage =
+                overallAdherencePercentage,
+
+            ActiveEmergencyAlerts =
+                activeEmergencyAlerts,
+
+            TotalEmergencyAlerts =
+                totalEmergencyAlerts,
+
+            UnreadNotifications =
+                unreadNotifications,
+
+            CaregiverPatientRelationships =
+                caregiverPatientRelationships,
+
+            LowStockMedicines =
+                lowStockMedicines,
+
+            ActiveEmergencies =
+                activeEmergencies
+        };
+
+        return Ok(dashboard);
+    }
+}
+
+
+
+==========================================
+FILE: C:\Users\Dell\OneDrive\Desktop\MediCare\Controllers\AuthController.cs
+==========================================
+using MediCare.Data;
+using MediCare.DTOs;
+using MediCare.Models;
+using MediCare.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+
+namespace MediCare.Controllers;
+
+[ApiController]
+[Route("api/[controller]")]
+[AllowAnonymous]
+public class AuthController : ControllerBase
+{
+    private readonly AppDbContext _context;
+    private readonly IJwtService _jwtService;
+    private readonly PasswordHasher<User> _passwordHasher;
+
+    public AuthController(
+        AppDbContext context,
+        IJwtService jwtService)
+    {
+        _context = context;
+        _jwtService = jwtService;
+        _passwordHasher = new PasswordHasher<User>();
+    }
+
+    // POST: api/Auth/register
+    [HttpPost("register")]
+    public async Task<IActionResult> Register(RegisterDto dto)
+    {
+        if (string.IsNullOrWhiteSpace(dto.Name) ||
+            string.IsNullOrWhiteSpace(dto.Email) ||
+            string.IsNullOrWhiteSpace(dto.Password) ||
+            string.IsNullOrWhiteSpace(dto.Role))
+        {
+            return BadRequest(new { message = "Name, Email, Password and Role are required." });
+        }
+
+        if (dto.Password.Length < 6)
+        {
+            return BadRequest(new { message = "Password must be at least 6 characters long." });
+        }
+
+
+        var email = dto.Email.Trim().ToLower();
+
+        var existingUser = await _context.Users
+            .FirstOrDefaultAsync(u =>
+                u.Email.ToLower() == email);
+
+        if (existingUser != null)
+        {
+            return BadRequest(new { message = "Email already exists." });
+        }
+
+        var role = dto.Role.Trim().ToUpper();
+
+        // ADMIN cannot register publicly
+        if (role != "PATIENT" && role != "CAREGIVER")
+        {
+            return BadRequest(new { message = "Only PATIENT or CAREGIVER registration is allowed." });
+        }
+
+        var user = new User
+        {
+            Name = dto.Name.Trim(),
+            Email = email,
+            Role = role
+        };
+
+        user.PasswordHash =
+            _passwordHasher.HashPassword(
+                user,
+                dto.Password
+            );
+
+        _context.Users.Add(user);
+
+        await _context.SaveChangesAsync();
+
+        if (role == "PATIENT")
+        {
+            var patient = new Patient
+            {
+                UserId = user.Id,
+                DateOfBirth = DateTime.Today,
+                EmergencyContact = ""
+            };
+            _context.Patients.Add(patient);
+            await _context.SaveChangesAsync();
+        }
+        else if (role == "CAREGIVER")
+        {
+            var caregiver = new Caregiver
+            {
+                UserId = user.Id,
+                Relationship = ""
+            };
+            _context.Caregivers.Add(caregiver);
+            await _context.SaveChangesAsync();
+        }
+
+        return Ok(new
+        {
+            message = "User registered successfully.",
+            userId = user.Id,
+            role = user.Role
+        });
+    }
+
+    // POST: api/Auth/login
+    [HttpPost("login")]
+    public async Task<IActionResult> Login(LoginDto dto)
+    {
+        if (string.IsNullOrWhiteSpace(dto.Email) ||
+            string.IsNullOrWhiteSpace(dto.Password))
+        {
+            return BadRequest(new { message = "Email and Password are required." });
+        }
+
+        var email = dto.Email.Trim().ToLower();
+
+        var user = await _context.Users
+            .FirstOrDefaultAsync(u =>
+                u.Email.ToLower() == email);
+
+        if (user == null)
+        {
+            return Unauthorized(new { message = "Invalid email or password." });
+        }
+
+        var result = _passwordHasher.VerifyHashedPassword(
+            user,
+            user.PasswordHash,
+            dto.Password
+        );
+
+        if (result == PasswordVerificationResult.Failed)
+        {
+            return Unauthorized(new { message = "Invalid email or password." });
+        }
+
+        var token = _jwtService.GenerateToken(
+            user.Id,
+            user.Email,
+            user.Role
+        );
+
+        return Ok(new
+        {
+            message = "Login successful.",
+            token = token,
+            userId = user.Id,
+            name = user.Name,
+            email = user.Email,
+            role = user.Role
+        });
+    }
+}
+
+
+
+==========================================
+FILE: C:\Users\Dell\OneDrive\Desktop\MediCare\Controllers\CaregiverDashboardController.cs
+==========================================
+using System.Security.Claims;
+using MediCare.Data;
+using MediCare.DTOs;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using MediCare.Models;
+
+namespace MediCare.Controllers;
+
+[ApiController]
+[Route("api/dashboard/caregiver")]
+[Authorize(Roles = "CAREGIVER")]
+public class CaregiverDashboardController : ControllerBase
+{
+    private readonly AppDbContext _context;
+
+    public CaregiverDashboardController(AppDbContext context)
+    {
+        _context = context;
+    }
+
+    private int GetCurrentUserId()
+    {
+        return int.Parse(
+            User.FindFirstValue(ClaimTypes.NameIdentifier)!
+        );
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> GetDashboard()
+    {
+        var userId = GetCurrentUserId();
+
+        // Find caregiver profile
+        var caregiver = await _context.Caregivers
+            .Include(c => c.User)
+            .FirstOrDefaultAsync(c => c.UserId == userId);
+
+        if (caregiver == null)
+            return NotFound("Caregiver profile not found.");
+
+        // Find linked patients
+        var linkedPatients = await _context.CaregiverPatients
+            .Include(cp => cp.Patient)
+                .ThenInclude(p => p.User)
+            .Where(cp => cp.CaregiverId == caregiver.Id)
+            .Select(cp => cp.Patient)
+            .ToListAsync();
+
+        var patientIds = linkedPatients
+            .Select(p => p.Id)
+            .ToList();
+
+        // Caregiver information
+        var caregiverInfo = new CaregiverInfoDto
+        {
+            Id = caregiver.Id,
+            UserId = caregiver.UserId,
+            Name = caregiver.User.Name,
+            Email = caregiver.User.Email,
+            Relationship = caregiver.Relationship
+        };
+
+        // Patient information
+        var patients = linkedPatients
+            .Select(p => new CaregiverDashboardPatientDto
+            {
+                PatientId = p.Id,
+                UserId = p.UserId,
+                Name = p.User.Name,
+                Email = p.User.Email,
+                DateOfBirth = p.DateOfBirth,
+                EmergencyContact = p.EmergencyContact
+            })
+                    .ToList();
+
+        // Active emergency alerts
+        var activeEmergencies = await _context.EmergencyAlerts
+            .Include(e => e.Patient)
+                .ThenInclude(p => p.User)
+            .Where(e =>
+                patientIds.Contains(e.PatientId) &&
+                e.Status == "ACTIVE")
+            .OrderByDescending(e => e.CreatedAt)
+            .ToListAsync();
+
+        // Missed medicines
+        var missedMedicines = await _context.MedicineLogs
+            .Include(log => log.Medicine)
+            .Include(log => log.Patient)
+                .ThenInclude(p => p.User)
+            .Where(log =>
+                patientIds.Contains(log.PatientId) &&
+                log.Status == "Missed")
+            .OrderByDescending(log => log.ScheduledTime)
+            .Take(20)
+            .ToListAsync();
+
+        // Today's medicine schedules
+        var today = DateTime.Today;
+
+        var todaySchedules = await _context.MedicineSchedules
+            .Include(schedule => schedule.Medicine)
+            .Where(schedule =>
+                patientIds.Contains(schedule.Medicine.PatientId) &&
+                schedule.Medicine.StartDate.Date <= today &&
+                schedule.Medicine.EndDate.Date >= today)
+            .OrderBy(schedule => schedule.Time)
+            .ToListAsync();
+
+        // Today's medicine logs for pending calculation
+        var todaysLogs = await _context.MedicineLogs
+            .Include(log => log.Medicine)
+            .Include(log => log.Patient)
+                .ThenInclude(p => p.User)
+            .Where(log =>
+                patientIds.Contains(log.PatientId) &&
+                log.ScheduledTime.Date == today)
+            .ToListAsync();
+
+        var pendingMedicines = new List<MedicineLog>();
+
+        foreach (var schedule in todaySchedules)
+        {
+            var scheduledTime = today.Add(schedule.Time);
+            var log = todaysLogs.FirstOrDefault(l =>
+                l.MedicineId == schedule.MedicineId &&
+                l.ScheduledTime == scheduledTime);
+
+            if (log == null)
+            {
+                pendingMedicines.Add(new MedicineLog
+                {
+                    MedicineId = schedule.MedicineId,
+                    Medicine = schedule.Medicine,
+                    PatientId = schedule.Medicine.PatientId,
+                    ScheduledTime = scheduledTime,
+                    Status = "Pending"
+                });
+            }
+            else if (log.Status == "Pending")
+            {
+                pendingMedicines.Add(log);
+            }
+        }
+
+        pendingMedicines = pendingMedicines.OrderBy(log => log.ScheduledTime).Take(20).ToList();
+
+        // Adherence calculation
+        var logs = await _context.MedicineLogs
+            .Where(log => patientIds.Contains(log.PatientId))
+            .ToListAsync();
+
+        var adherence = linkedPatients
+            .Select(patient =>
+            {
+                var patientLogs = logs
+                    .Where(log => log.PatientId == patient.Id)
+                    .ToList();
+
+                var total = patientLogs.Count;
+
+                var taken = patientLogs.Count(log =>
+                    string.Equals(
+                        log.Status,
+                        "Taken",
+                        StringComparison.OrdinalIgnoreCase));
+
+                var missed = patientLogs.Count(log =>
+                    string.Equals(
+                        log.Status,
+                        "Missed",
+                        StringComparison.OrdinalIgnoreCase));
+
+                var percentage = total == 0
+                    ? 0
+                    : Math.Round(
+                        (double)taken / total * 100,
+                        2);
+
+                return new PatientAdherenceDto
+                {
+                    PatientId = patient.Id,
+                    PatientName = patient.User.Name,
+                    TotalDoses = total,
+                    TakenDoses = taken,
+                    MissedDoses = missed,
+                    AdherencePercentage = percentage
+                };
+            })
+            .ToList();
+
+        // Unread notifications for this caregiver
+        var unreadNotifications = await _context.Notifications
+            .CountAsync(n =>
+                n.UserId == userId &&
+                !n.IsRead);
+
+        // Final dashboard response
+        var dashboard = new CaregiverDashboardDto
+        {
+            Caregiver = caregiverInfo,
+            Patients = patients,
+            ActiveEmergencies = activeEmergencies,
+            MissedMedicines = missedMedicines,
+            TodaySchedules = todaySchedules,
+            PendingMedicines = pendingMedicines,
+            Adherence = adherence,
+            UnreadNotifications = unreadNotifications
+        };
+
+        return Ok(dashboard);
+    }
+}
+
+
+
+==========================================
+FILE: C:\Users\Dell\OneDrive\Desktop\MediCare\Controllers\CaregiverPatientController.cs
+==========================================
+using System.Security.Claims;
+using MediCare.Data;
+using MediCare.DTOs;
+using MediCare.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+
+namespace MediCare.Controllers;
+
+[ApiController]
+[Route("api/Caregiverpatient")]
+[Authorize]
+public class CaregiverPatientController : ControllerBase
+{
+    private readonly ICaregiverPatientService _service;
+    private readonly AppDbContext _context;
+
+    public CaregiverPatientController(
+        ICaregiverPatientService service,
+        AppDbContext context)
+    {
+        _service = service;
+        _context = context;
+    }
+
+    private int GetCurrentUserId()
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (!int.TryParse(userId, out var id))
+        {
+            return 0;
+        }
+
+        return id;
+    }
+
+    private string GetCurrentRole()
+    {
+        return User.FindFirstValue(ClaimTypes.Role) ?? string.Empty;
+    }
+
+    [HttpPost("link")]
+    [Authorize(Roles = "ADMIN,CAREGIVER")]
+    public async Task<IActionResult> LinkPatient(
+        CaregiverPatientDto dto)
+    {
+        if (dto.CaregiverId <= 0)
+        {
+            return BadRequest("Valid caregiverId is required.");
+        }
+
+        if (dto.PatientId <= 0 && string.IsNullOrWhiteSpace(dto.PatientEmail))
+        {
+            return BadRequest("Either PatientId or PatientEmail is required.");
+        }
+
+        var role = GetCurrentRole();
+        var currentUserId = GetCurrentUserId();
+
+        var caregiver = await _context.Caregivers
+            .FirstOrDefaultAsync(c => c.Id == dto.CaregiverId);
+
+        if (caregiver == null)
+        {
+            return NotFound("Caregiver not found.");
+        }
+
+        // Caregiver can only link himself.
+        if (role == "CAREGIVER" &&
+            caregiver.UserId != currentUserId)
+        {
+            return Forbid();
+        }
+
+        if (dto.PatientId <= 0 && !string.IsNullOrWhiteSpace(dto.PatientEmail))
+        {
+            var pUser = await _context.Users.FirstOrDefaultAsync(u => u.Email.ToLower() == dto.PatientEmail.ToLower() && u.Role == "PATIENT");
+            if (pUser == null) 
+            {
+                return NotFound("Patient with that email not found.");
+            }
+            var pat = await _context.Patients.FirstOrDefaultAsync(p => p.UserId == pUser.Id);
+            if (pat == null)
+            {
+                return NotFound("Patient profile not found.");
+            }
+            dto.PatientId = pat.Id;
+        }
+
+        var patientExists = await _context.Patients
+            .AnyAsync(p => p.Id == dto.PatientId);
+
+        if (!patientExists)
+        {
+            return NotFound("Patient not found.");
+        }
+
+        try
+        {
+            var result = await _service.LinkPatientAsync(dto);
+
+            return Ok(result);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+
+    [HttpGet("caregiver/{caregiverId}")]
+    [Authorize(Roles = "ADMIN,CAREGIVER")]
+    public async Task<IActionResult> GetPatients(
+        int caregiverId)
+    {
+        if (caregiverId <= 0)
+        {
+            return BadRequest("Invalid caregiverId.");
+        }
+
+        var role = GetCurrentRole();
+        var currentUserId = GetCurrentUserId();
+
+        var caregiver = await _context.Caregivers
+            .FirstOrDefaultAsync(c => c.Id == caregiverId);
+
+        if (caregiver == null)
+        {
+            return NotFound("Caregiver not found.");
+        }
+
+        // Caregiver can only see his own linked patients.
+        if (role == "CAREGIVER" &&
+            caregiver.UserId != currentUserId)
+        {
+            return Forbid();
+        }
+
+        var patients = await _service
+            .GetPatientsAsync(caregiverId);
+
+        return Ok(patients);
+    }
+
+    // =========================================================
+    // GET CAREGIVERS OF PATIENT
+    // ADMIN -> any patient
+    // PATIENT -> only himself
+    // CAREGIVER -> only patients linked to himself
+    // =========================================================
+
+    [HttpGet("patient/{patientId}")]
+    [Authorize(Roles = "ADMIN,PATIENT,CAREGIVER")]
+    public async Task<IActionResult> GetCaregivers(
+        int patientId)
+    {
+        if (patientId <= 0)
+        {
+            return BadRequest("Invalid patientId.");
+        }
+
+        var role = GetCurrentRole();
+        var currentUserId = GetCurrentUserId();
+
+        var patient = await _context.Patients
+            .FirstOrDefaultAsync(p => p.Id == patientId);
+
+        if (patient == null)
+        {
+            return NotFound("Patient not found.");
+        }
+
+        // Patient can only see caregivers connected to himself.
+        if (role == "PATIENT" &&
+            patient.UserId != currentUserId)
+        {
+            return Forbid();
+        }
+
+        // Caregiver can only see caregivers of a patient
+        // who is linked to that caregiver.
+        if (role == "CAREGIVER")
+        {
+            var caregiver = await _context.Caregivers
+                .FirstOrDefaultAsync(c => c.UserId == currentUserId);
+
+            if (caregiver == null)
+            {
+                return Forbid();
+            }
+
+            var isLinked = await _context.CaregiverPatients
+                .AnyAsync(cp =>
+                    cp.CaregiverId == caregiver.Id &&
+                    cp.PatientId == patientId);
+
+            if (!isLinked)
+            {
+                return Forbid();
+            }
+        }
+
+        var caregivers = await _service
+            .GetCaregiversAsync(patientId);
+
+        return Ok(caregivers);
+    }
+
+    [HttpDelete("unlink")]
+    [Authorize(Roles = "ADMIN,CAREGIVER")]
+    public async Task<IActionResult> UnlinkPatient(
+        int caregiverId,
+        int patientId)
+    {
+        if (caregiverId <= 0 || patientId <= 0)
+        {
+            return BadRequest("Valid caregiverId and patientId are required.");
+        }
+
+        var role = GetCurrentRole();
+        var currentUserId = GetCurrentUserId();
+
+        var caregiver = await _context.Caregivers
+            .FirstOrDefaultAsync(c => c.Id == caregiverId);
+
+        if (caregiver == null)
+        {
+            return NotFound("Caregiver not found.");
+        }
+
+        // Caregiver can only unlink his own relationship.
+        if (role == "CAREGIVER" &&
+            caregiver.UserId != currentUserId)
+        {
+            return Forbid();
+        }
+
+        var relationshipExists = await _context.CaregiverPatients
+            .AnyAsync(cp =>
+                cp.CaregiverId == caregiverId &&
+                cp.PatientId == patientId);
+
+        if (!relationshipExists)
+        {
+            return NotFound("Relationship not found.");
+        }
+
+        var result = await _service
+            .UnlinkPatientAsync(caregiverId, patientId);
+
+        if (!result)
+        {
+            return NotFound("Relationship not found.");
+        }
+
+        return Ok("Patient unlinked successfully.");
+    }
+}
+
+
+
+==========================================
+FILE: C:\Users\Dell\OneDrive\Desktop\MediCare\Controllers\EmergencyController.cs
+==========================================
+using System.Security.Claims;
+using MediCare.Data;
+using MediCare.DTOs;
+using MediCare.Models;
+using MediCare.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+
+namespace MediCare.Controllers;
+
+[ApiController]
+[Route("api/emergency")]
+[Authorize(Roles = "PATIENT,CAREGIVER,ADMIN")]
+public class EmergencyController : ControllerBase
+{
+    private readonly AppDbContext _context;
+    private readonly IEmailService _emailService;
+
+    public EmergencyController(
+        AppDbContext context,
+        IEmailService emailService)
+    {
+        _context = context;
+        _emailService = emailService;
+    }
+
+    private int GetCurrentUserId()
+    {
+        return int.Parse(
+            User.FindFirstValue(ClaimTypes.NameIdentifier)!
+        );
+    }
+
+    private string GetCurrentRole()
+    {
+        return User.FindFirstValue(ClaimTypes.Role) ?? "";
+    }
+
+    // POST: api/emergency
+    [HttpPost]
+    [Authorize(Roles = "PATIENT")]
+    public async Task<IActionResult> CreateEmergency(
+        EmergencyAlertDto dto)
+    {
+        if (string.IsNullOrWhiteSpace(dto.Message))
+            return BadRequest("Emergency message is required.");
+
+        var userId = GetCurrentUserId();
+
+        var patient = await _context.Patients
+            .Include(p => p.User)
+            .FirstOrDefaultAsync(p => p.UserId == userId);
+
+        if (patient == null)
+            return NotFound("Patient profile not found.");
+
+        var emergency = new EmergencyAlert
+        {
+            PatientId = patient.Id,
+            Message = dto.Message.Trim(),
+            Status = "ACTIVE",
+            CreatedAt = DateTime.Now
+        };
+
+        _context.EmergencyAlerts.Add(emergency);
+
+        // Find all linked caregivers
+        var caregivers = await _context.CaregiverPatients
+            .Include(cp => cp.Caregiver)
+                .ThenInclude(c => c.User)
+            .Where(cp => cp.PatientId == patient.Id)
+            .ToListAsync();
+
+        foreach (var caregiverPatient in caregivers)
+        {
+            var caregiver = caregiverPatient.Caregiver;
+
+            // Database notification
+            var notification = new Notification
+            {
+                UserId = caregiver.UserId,
+                Title = "ðŸš¨ Emergency Alert",
+                Message =
+                    $"Emergency alert from patient {patient.User.Name}: " +
+                    $"{dto.Message}",
+                Type = "EmergencyAlert",
+                IsRead = false,
+                CreatedAt = DateTime.Now
+            };
+
+            _context.Notifications.Add(notification);
+
+            // Email notification
+            if (!string.IsNullOrWhiteSpace(
+                    caregiver.User.Email))
+            {
+                try
+                {
+                    await _emailService.SendEmailAsync(
+                        caregiver.User.Email,
+                        "ðŸš¨ Emergency Alert - MediCare",
+                        $"Hello {caregiver.User.Name},\n\n" +
+                        $"An emergency alert has been triggered by " +
+                        $"patient {patient.User.Name}.\n\n" +
+                        $"Message: {dto.Message}\n\n" +
+                        $"Please check on the patient immediately.\n\n" +
+                        $"Regards,\n" +
+                        $"MediCare"
+                    );
+                }
+                catch (Exception ex)
+                {
+                    // Email failure should not stop emergency creation
+                    Console.WriteLine(
+                        $"Emergency email failed: {ex.Message}"
+                    );
+                }
+            }
+        }
+
+        await _context.SaveChangesAsync();
+
+        return Ok(new
+        {
+            message = "Emergency alert created successfully.",
+            emergencyId = emergency.Id,
+            status = emergency.Status,
+            caregiversNotified = caregivers.Count
+        });
+    }
+
+    // GET: api/emergency
+    [HttpGet]
+    public async Task<IActionResult> GetEmergencies()
+    {
+        var userId = GetCurrentUserId();
+        var role = GetCurrentRole();
+
+        if (role == "PATIENT")
+        {
+            var patient = await _context.Patients
+                .FirstOrDefaultAsync(p => p.UserId == userId);
+
+            if (patient == null)
+                return NotFound("Patient profile not found.");
+
+            var emergencies = await _context.EmergencyAlerts
+                .Where(e => e.PatientId == patient.Id)
+                .OrderByDescending(e => e.CreatedAt)
+                .ToListAsync();
+
+            return Ok(emergencies);
+        }
+
+        if (role == "CAREGIVER")
+        {
+            var caregiver = await _context.Caregivers
+                .FirstOrDefaultAsync(c => c.UserId == userId);
+
+            if (caregiver == null)
+                return NotFound("Caregiver profile not found.");
+
+            var emergencies = await _context.EmergencyAlerts
+                .Include(e => e.Patient)
+                    .ThenInclude(p => p.User)
+                .Where(e =>
+                    _context.CaregiverPatients.Any(cp =>
+                        cp.CaregiverId == caregiver.Id &&
+                        cp.PatientId == e.PatientId))
+                .OrderByDescending(e => e.CreatedAt)
+                .ToListAsync();
+
+            return Ok(emergencies);
+        }
+
+        // ADMIN
+        var allEmergencies = await _context.EmergencyAlerts
+            .Include(e => e.Patient)
+                .ThenInclude(p => p.User)
+            .OrderByDescending(e => e.CreatedAt)
+            .ToListAsync();
+
+        return Ok(allEmergencies);
+    }
+
+    // PUT: api/emergency/{id}/resolve
+    [HttpPut("{id}/resolve")]
+    public async Task<IActionResult> ResolveEmergency(int id)
+    {
+        var userId = GetCurrentUserId();
+        var role = GetCurrentRole();
+
+        var emergency = await _context.EmergencyAlerts
+            .Include(e => e.Patient)
+            .FirstOrDefaultAsync(e => e.Id == id);
+
+        if (emergency == null)
+            return NotFound("Emergency alert not found.");
+
+        if (role == "PATIENT")
+        {
+            if (emergency.Patient.UserId != userId)
+                return Forbid();
+        }
+        else if (role == "CAREGIVER")
+        {
+            var caregiver = await _context.Caregivers
+                .FirstOrDefaultAsync(c => c.UserId == userId);
+
+            if (caregiver == null)
+                return Forbid();
+
+            var linked = await _context.CaregiverPatients
+                .AnyAsync(cp =>
+                    cp.CaregiverId == caregiver.Id &&
+                    cp.PatientId == emergency.PatientId);
+
+            if (!linked)
+                return Forbid();
+        }
+
+        if (emergency.Status == "RESOLVED")
+            return BadRequest("Emergency is already resolved.");
+
+        emergency.Status = "RESOLVED";
+        emergency.ResolvedAt = DateTime.Now;
+
+        await _context.SaveChangesAsync();
+
+        return Ok(new
+        {
+            message = "Emergency resolved successfully.",
+            emergencyId = emergency.Id,
+            status = emergency.Status,
+            resolvedAt = emergency.ResolvedAt
+        });
+    }
+}
+
+
+
+==========================================
+FILE: C:\Users\Dell\OneDrive\Desktop\MediCare\Controllers\MedicineController.cs
+==========================================
+using System.Security.Claims;
+using MediCare.Data;
+using MediCare.DTOs;
+using MediCare.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+
+namespace MediCare.Controllers;
+
+[ApiController]
+[Route("api/medicine")]
+[Authorize(Roles = "ADMIN,PATIENT,CAREGIVER")]
+public class MedicineController : ControllerBase
+{
+    private readonly IMedicineService _service;
+    private readonly AppDbContext _context;
+
+    public MedicineController(
+        IMedicineService service,
+        AppDbContext context)
+    {
+        _service = service;
+        _context = context;
+    }
+
+    private int GetCurrentUserId()
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        return int.TryParse(userId, out var id) ? id : 0;
+    }
+
+    private string GetCurrentRole()
+    {
+        return User.FindFirstValue(ClaimTypes.Role) ?? string.Empty;
+    }
+
+    // Check whether the current user is allowed to access a patient.
+    private async Task<bool> CanAccessPatientAsync(int patientId)
+    {
+        var currentUserId = GetCurrentUserId();
+        var role = GetCurrentRole();
+
+        if (currentUserId <= 0)
+        {
+            return false;
+        }
+
+        // ADMIN can access every patient.
+        if (role == "ADMIN")
+        {
+            return await _context.Patients
+                .AnyAsync(p => p.Id == patientId);
+        }
+
+        // PATIENT can access only his own patient record.
+        if (role == "PATIENT")
+        {
+            return await _context.Patients
+                .AnyAsync(p =>
+                    p.Id == patientId &&
+                    p.UserId == currentUserId);
+        }
+
+        // CAREGIVER can access only linked patients.
+        if (role == "CAREGIVER")
+        {
+            var caregiver = await _context.Caregivers
+                .FirstOrDefaultAsync(c => c.UserId == currentUserId);
+
+            if (caregiver == null)
+            {
+                return false;
+            }
+
+            return await _context.CaregiverPatients
+                .AnyAsync(cp =>
+                    cp.CaregiverId == caregiver.Id &&
+                    cp.PatientId == patientId);
+        }
+
+        return false;
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> GetAll()
+    {
+        var currentUserId = GetCurrentUserId();
+        var role = GetCurrentRole();
+
+        if (currentUserId <= 0)
+        {
+            return Unauthorized();
+        }
+
+        if (role == "ADMIN")
+        {
+            var allMedicines = await _service.GetAllAsync();
+            return Ok(allMedicines);
+        }
+
+        if (role == "PATIENT")
+        {
+            var patient = await _context.Patients
+                .FirstOrDefaultAsync(p => p.UserId == currentUserId);
+
+            if (patient == null)
+            {
+                return NotFound("Patient profile not found.");
+            }
+
+            var medicines = await _context.Medicines
+                .Where(m => m.PatientId == patient.Id)
+                .ToListAsync();
+
+            return Ok(medicines);
+        }
+
+        if (role == "CAREGIVER")
+        {
+            var caregiver = await _context.Caregivers
+                .FirstOrDefaultAsync(c => c.UserId == currentUserId);
+
+            if (caregiver == null)
+            {
+                return NotFound("Caregiver profile not found.");
+            }
+
+            var medicines = await _context.Medicines
+                .Where(m => _context.CaregiverPatients
+                    .Any(cp =>
+                        cp.CaregiverId == caregiver.Id &&
+                        cp.PatientId == m.PatientId))
+                .ToListAsync();
+
+            return Ok(medicines);
+        }
+
+        return Forbid();
+    }
+
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetById(int id)
+    {
+        var medicine = await _service.GetByIdAsync(id);
+
+        if (medicine == null)
+        {
+            return NotFound("Medicine not found.");
+        }
+
+        if (!await CanAccessPatientAsync(medicine.PatientId))
+        {
+            return Forbid();
+        }
+
+        return Ok(medicine);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> Add(MedicineDto dto)
+    {
+        var role = GetCurrentRole();
+        if (role == "PATIENT")
+        {
+            var currentUserId = GetCurrentUserId();
+            var patient = await _context.Patients.FirstOrDefaultAsync(p => p.UserId == currentUserId);
+            if (patient != null)
+            {
+                dto.PatientId = patient.Id;
+            }
+        }
+
+        if (dto.PatientId <= 0)
+        {
+            return BadRequest("Valid patientId is required.");
+        }
+
+        if (!await CanAccessPatientAsync(dto.PatientId))
+        {
+            var patientExists = await _context.Patients
+                .AnyAsync(p => p.Id == dto.PatientId);
+
+            if (!patientExists)
+            {
+                return NotFound("Patient not found.");
+            }
+
+            return Forbid();
+        }
+
+        try
+        {
+            var medicine = await _service.AddAsync(dto);
+
+            return Ok(medicine);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+
+    [HttpPut("{id}")]
+    public async Task<IActionResult> Update(
+        int id,
+        MedicineDto dto)
+    {
+        var role = GetCurrentRole();
+        if (role == "PATIENT")
+        {
+            var currentUserId = GetCurrentUserId();
+            var patient = await _context.Patients.FirstOrDefaultAsync(p => p.UserId == currentUserId);
+            if (patient != null)
+            {
+                dto.PatientId = patient.Id;
+            }
+        }
+
+        if (dto.PatientId <= 0)
+        {
+            return BadRequest("Valid patientId is required.");
+        }
+
+        var medicine = await _service.GetByIdAsync(id);
+
+        if (medicine == null)
+        {
+            return NotFound("Medicine not found.");
+        }
+
+        if (!await CanAccessPatientAsync(medicine.PatientId))
+        {
+            return Forbid();
+        }
+        if (!await CanAccessPatientAsync(dto.PatientId))
+        {
+            var patientExists = await _context.Patients
+                .AnyAsync(p => p.Id == dto.PatientId);
+
+            if (!patientExists)
+            {
+                return NotFound("Patient not found.");
+            }
+
+            return Forbid();
+        }
+
+        try
+        {
+            var updatedMedicine =
+                await _service.UpdateAsync(id, dto);
+
+            if (updatedMedicine == null)
+            {
+                return NotFound("Medicine not found.");
+            }
+
+            return Ok(updatedMedicine);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> Delete(int id)
+    {
+        var medicine = await _service.GetByIdAsync(id);
+
+        if (medicine == null)
+        {
+            return NotFound("Medicine not found.");
+        }
+
+        if (!await CanAccessPatientAsync(medicine.PatientId))
+        {
+            return Forbid();
+        }
+
+        var deleted = await _service.DeleteAsync(id);
+
+        if (!deleted)
+        {
+            return NotFound("Medicine not found.");
+        }
+
+        return Ok("Medicine deleted successfully.");
+    }
+}
+
+
+
+==========================================
+FILE: C:\Users\Dell\OneDrive\Desktop\MediCare\Controllers\MedicineLogController.cs
+==========================================
+using System.Security.Claims;
+using MediCare.Data;
+using MediCare.DTOs;
+using MediCare.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+
+namespace MediCare.Controllers;
+
+[ApiController]
+[Route("api/medicinelog")]
+[Authorize(Roles = "ADMIN,PATIENT,CAREGIVER")]
+public class MedicineLogController : ControllerBase
+{
+    private readonly IMedicineLogService _service;
+    private readonly AppDbContext _context;
+
+    public MedicineLogController(
+        IMedicineLogService service,
+        AppDbContext context)
+    {
+        _service = service;
+        _context = context;
+    }
+
+    private int GetCurrentUserId()
+    {
+        return int.Parse(
+            User.FindFirstValue(ClaimTypes.NameIdentifier)!
+        );
+    }
+
+    private string GetCurrentRole()
+    {
+        return User.FindFirstValue(ClaimTypes.Role) ?? "";
+    }
+
+    private async Task<bool> CanAccessPatientAsync(int patientId)
+    {
+        var userId = GetCurrentUserId();
+        var role = GetCurrentRole();
+
+        if (role == "ADMIN")
+        {
+            return await _context.Patients
+                .AnyAsync(p => p.Id == patientId);
+        }
+
+        if (role == "PATIENT")
+        {
+            return await _context.Patients
+                .AnyAsync(p =>
+                    p.Id == patientId &&
+                    p.UserId == userId);
+        }
+
+        if (role == "CAREGIVER")
+        {
+            var caregiver = await _context.Caregivers
+                .FirstOrDefaultAsync(c => c.UserId == userId);
+
+            if (caregiver == null)
+                return false;
+
+            return await _context.CaregiverPatients
+                .AnyAsync(cp =>
+                    cp.CaregiverId == caregiver.Id &&
+                    cp.PatientId == patientId);
+        }
+
+        return false;
+    }
+
+    // GET: api/medicinelog
+    [HttpGet]
+    public async Task<IActionResult> GetAll()
+    {
+        var role = GetCurrentRole();
+        var userId = GetCurrentUserId();
+
+        if (role == "ADMIN")
+        {
+            var allLogs = await _context.MedicineLogs
+                .Include(l => l.Medicine)
+                .Include(l => l.Patient)
+                    .ThenInclude(p => p.User)
+                .ToListAsync();
+
+            return Ok(allLogs);
+        }
+
+        if (role == "PATIENT")
+        {
+            var patient = await _context.Patients
+                .FirstOrDefaultAsync(p => p.UserId == userId);
+
+            if (patient == null)
+                return NotFound("Patient profile not found.");
+
+            var logs = await _context.MedicineLogs
+                .Include(l => l.Medicine)
+                .Where(l => l.PatientId == patient.Id)
+                .ToListAsync();
+
+            return Ok(logs);
+        }
+
+        if (role == "CAREGIVER")
+        {
+            var caregiver = await _context.Caregivers
+                .FirstOrDefaultAsync(c => c.UserId == userId);
+
+            if (caregiver == null)
+                return NotFound("Caregiver profile not found.");
+
+            var logs = await _context.MedicineLogs
+                .Include(l => l.Medicine)
+                .Where(l =>
+                    _context.CaregiverPatients.Any(cp =>
+                        cp.CaregiverId == caregiver.Id &&
+                        cp.PatientId == l.PatientId))
+                .ToListAsync();
+
+            return Ok(logs);
+        }
+
+        return Forbid();
+    }
+
+    // GET: api/medicinelog/{id}
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetById(int id)
+    {
+        var log = await _context.MedicineLogs
+            .Include(l => l.Medicine)
+            .Include(l => l.Patient)
+                .ThenInclude(p => p.User)
+            .FirstOrDefaultAsync(l => l.Id == id);
+
+        if (log == null)
+            return NotFound("Medicine log not found.");
+
+        if (!await CanAccessPatientAsync(log.PatientId))
+            return Forbid();
+
+        return Ok(log);
+    }
+
+    // POST: api/medicinelog
+    [HttpPost]
+    public async Task<IActionResult> Add(MedicineLogDto dto)
+    {
+        var medicine = await _context.Medicines
+            .FirstOrDefaultAsync(m => m.Id == dto.MedicineId);
+
+        if (medicine == null)
+            return NotFound("Medicine not found.");
+
+        // Medicine must belong to the same patient
+        if (medicine.PatientId != dto.PatientId)
+            return BadRequest(
+                "Medicine does not belong to the specified patient."
+            );
+
+        if (!await CanAccessPatientAsync(dto.PatientId))
+            return Forbid();
+
+        try
+        {
+            var log = await _service.AddAsync(dto);
+            return Ok(log);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+
+    // PUT: api/medicinelog/{id}/taken
+    [HttpPut("{id}/taken")]
+    [Authorize(Roles = "PATIENT")]
+    public async Task<IActionResult> MarkAsTaken(int id)
+    {
+        var userId = GetCurrentUserId();
+
+        var log = await _context.MedicineLogs
+            .Include(l => l.Patient)
+            .FirstOrDefaultAsync(l => l.Id == id);
+
+        if (log == null)
+            return NotFound("Medicine log not found.");
+
+        // Patient can mark only their own medicine as taken
+        if (log.Patient.UserId != userId)
+            return Forbid();
+
+        var result = await _service.MarkAsTakenAsync(id);
+
+        if (result == null)
+            return NotFound("Medicine log not found.");
+
+        return Ok(result);
+    }
+}
+
+
+
+==========================================
+FILE: C:\Users\Dell\OneDrive\Desktop\MediCare\Controllers\MedicineScheduleController.cs
+==========================================
+using System.Security.Claims;
+using MediCare.Data;
+using MediCare.DTOs;
+using MediCare.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+
+namespace MediCare.Controllers;
+
+[ApiController]
+[Route("api/Medicineschedule")]
+[Authorize(Roles = "ADMIN,PATIENT,CAREGIVER")]
+public class MedicineScheduleController : ControllerBase
+{
+    private readonly IMedicineScheduleService _service;
+    private readonly AppDbContext _context;
+
+    public MedicineScheduleController(
+        IMedicineScheduleService service,
+        AppDbContext context)
+    {
+        _service = service;
+        _context = context;
+    }
+
+    private int GetCurrentUserId()
+    {
+        return int.Parse(
+            User.FindFirstValue(ClaimTypes.NameIdentifier)!
+        );
+    }
+
+    private string GetCurrentRole()
+    {
+        return User.FindFirstValue(ClaimTypes.Role) ?? "";
+    }
+
+    private async Task<bool> CanAccessPatientAsync(int patientId)
+    {
+        var userId = GetCurrentUserId();
+        var role = GetCurrentRole();
+
+        // ADMIN can access all patients
+        if (role == "ADMIN")
+        {
+            return await _context.Patients
+                .AnyAsync(p => p.Id == patientId);
+        }
+
+        // PATIENT can access only own data
+        if (role == "PATIENT")
+        {
+            return await _context.Patients
+                .AnyAsync(p =>
+                    p.Id == patientId &&
+                    p.UserId == userId);
+        }
+
+        // CAREGIVER can access only linked patients
+        if (role == "CAREGIVER")
+        {
+            var caregiver = await _context.Caregivers
+                .FirstOrDefaultAsync(c => c.UserId == userId);
+
+            if (caregiver == null)
+                return false;
+
+            return await _context.CaregiverPatients
+                .AnyAsync(cp =>
+                    cp.CaregiverId == caregiver.Id &&
+                    cp.PatientId == patientId);
+        }
+
+        return false;
+    }
+
+    // GET: api/Medicineschedule
+    [HttpGet]
+    public async Task<IActionResult> GetAll()
+    {
+        var role = GetCurrentRole();
+        var userId = GetCurrentUserId();
+
+        if (role == "ADMIN")
+        {
+            var allSchedules = await _context.MedicineSchedules
+                .Include(s => s.Medicine)
+                .ToListAsync();
+
+            return Ok(allSchedules);
+        }
+
+        if (role == "PATIENT")
+        {
+            var patient = await _context.Patients
+                .FirstOrDefaultAsync(p => p.UserId == userId);
+
+            if (patient == null)
+                return NotFound("Patient profile not found.");
+
+            var schedules = await _context.MedicineSchedules
+                .Include(s => s.Medicine)
+                .Where(s => s.Medicine.PatientId == patient.Id)
+                .ToListAsync();
+
+            return Ok(schedules);
+        }
+
+        if (role == "CAREGIVER")
+        {
+            var caregiver = await _context.Caregivers
+                .FirstOrDefaultAsync(c => c.UserId == userId);
+
+            if (caregiver == null)
+                return NotFound("Caregiver profile not found.");
+
+            var schedules = await _context.MedicineSchedules
+                .Include(s => s.Medicine)
+                .Where(s =>
+                    _context.CaregiverPatients.Any(cp =>
+                        cp.CaregiverId == caregiver.Id &&
+                        cp.PatientId == s.Medicine.PatientId))
+                .ToListAsync();
+
+            return Ok(schedules);
+        }
+
+        return Forbid();
+    }
+
+    // GET: api/Medicineschedule/{id}
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetById(int id)
+    {
+        var schedule = await _context.MedicineSchedules
+            .Include(s => s.Medicine)
+            .FirstOrDefaultAsync(s => s.Id == id);
+
+        if (schedule == null)
+            return NotFound("Schedule not found.");
+
+        if (!await CanAccessPatientAsync(schedule.Medicine.PatientId))
+            return Forbid();
+
+        return Ok(schedule);
+    }
+
+    // POST: api/Medicineschedule
+    [HttpPost]
+    public async Task<IActionResult> Add(MedicineScheduleDto dto)
+    {
+        var medicine = await _context.Medicines
+            .FirstOrDefaultAsync(m => m.Id == dto.MedicineId);
+
+        if (medicine == null)
+            return NotFound("Medicine not found.");
+
+        if (!await CanAccessPatientAsync(medicine.PatientId))
+            return Forbid();
+
+        try
+        {
+            var schedule = await _service.AddAsync(dto);
+            return Ok(schedule);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+
+    // PUT: api/Medicineschedule/{id}
+    [HttpPut("{id}")]
+    public async Task<IActionResult> Update(
+        int id,
+        MedicineScheduleDto dto)
+    {
+        var existingSchedule = await _context.MedicineSchedules
+            .Include(s => s.Medicine)
+            .FirstOrDefaultAsync(s => s.Id == id);
+
+        if (existingSchedule == null)
+            return NotFound("Schedule not found.");
+
+        // Check access to existing medicine
+        if (!await CanAccessPatientAsync(existingSchedule.Medicine.PatientId))
+            return Forbid();
+
+        // Check new medicine
+        var newMedicine = await _context.Medicines
+            .FirstOrDefaultAsync(m => m.Id == dto.MedicineId);
+
+        if (newMedicine == null)
+            return NotFound("Medicine not found.");
+
+        // Prevent moving schedule to another unauthorized patient
+        if (!await CanAccessPatientAsync(newMedicine.PatientId))
+            return Forbid();
+
+        try
+        {
+            var schedule = await _service.UpdateAsync(id, dto);
+
+            if (schedule == null)
+                return NotFound("Schedule not found.");
+
+            return Ok(schedule);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+
+    // DELETE: api/Medicineschedule/{id}
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> Delete(int id)
+    {
+        var schedule = await _context.MedicineSchedules
+            .Include(s => s.Medicine)
+            .FirstOrDefaultAsync(s => s.Id == id);
+
+        if (schedule == null)
+            return NotFound("Schedule not found.");
+
+        if (!await CanAccessPatientAsync(schedule.Medicine.PatientId))
+            return Forbid();
+
+        var deleted = await _service.DeleteAsync(id);
+
+        if (!deleted)
+            return NotFound("Schedule not found.");
+
+        return Ok("Schedule deleted successfully.");
+    }
+}
+
+
+
+==========================================
+FILE: C:\Users\Dell\OneDrive\Desktop\MediCare\Controllers\NotificationController.cs
+==========================================
+using System.Security.Claims;
+using MediCare.Data;
+using MediCare.Models;
+using MediCare.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+
+namespace MediCare.Controllers;
+
+[ApiController]
+[Route("api/notification")]
+[Authorize(Roles = "ADMIN,PATIENT,CAREGIVER")]
+public class NotificationController : ControllerBase
+{
+    private readonly INotificationService _service;
+    private readonly AppDbContext _context;
+
+    public NotificationController(
+        INotificationService service,
+        AppDbContext context)
+    {
+        _service = service;
+        _context = context;
+    }
+
+    private int GetCurrentUserId()
+    {
+        return int.Parse(
+            User.FindFirstValue(ClaimTypes.NameIdentifier)!
+        );
+    }
+
+    private string GetCurrentRole()
+    {
+        return User.FindFirstValue(ClaimTypes.Role) ?? "";
+    }
+
+    // GET: api/notification
+    [HttpGet]
+    public async Task<IActionResult> GetAll()
+    {
+        var userId = GetCurrentUserId();
+        var role = GetCurrentRole();
+
+        if (role == "ADMIN")
+        {
+            var allNotifications = await _service.GetAllAsync();
+            return Ok(allNotifications);
+        }
+
+        var notifications = await _context.Notifications
+            .Where(n => n.UserId == userId)
+            .OrderByDescending(n => n.CreatedAt)
+            .ToListAsync();
+
+        return Ok(notifications);
+    }
+
+    // GET: api/notification/{id}
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetById(int id)
+    {
+        var notification = await _context.Notifications
+            .FirstOrDefaultAsync(n => n.Id == id);
+
+        if (notification == null)
+            return NotFound("Notification not found.");
+
+        var userId = GetCurrentUserId();
+        var role = GetCurrentRole();
+
+        if (role != "ADMIN" && notification.UserId != userId)
+            return Forbid();
+
+        return Ok(notification);
+    }
+
+    // POST: api/notification
+    // Only ADMIN can manually create notifications.
+    // System notifications are still created through the service.
+    [HttpPost]
+    [Authorize(Roles = "ADMIN")]
+    public async Task<IActionResult> Create(Notification notification)
+    {
+        var userExists = await _context.Users
+            .AnyAsync(u => u.Id == notification.UserId);
+
+        if (!userExists)
+            return NotFound("User not found.");
+
+        var result = await _service.CreateAsync(notification);
+
+        return Ok(result);
+    }
+
+    // PUT: api/notification/{id}/read
+    [HttpPut("{id}/read")]
+    public async Task<IActionResult> MarkAsRead(int id)
+    {
+        var notification = await _context.Notifications
+            .FirstOrDefaultAsync(n => n.Id == id);
+
+        if (notification == null)
+            return NotFound("Notification not found.");
+
+        var userId = GetCurrentUserId();
+        var role = GetCurrentRole();
+
+        if (role != "ADMIN" && notification.UserId != userId)
+            return Forbid();
+
+        var result = await _service.MarkAsReadAsync(id);
+
+        if (result == null)
+            return NotFound("Notification not found.");
+
+        return Ok(result);
+    }
+
+    // PUT: api/notification/read-all
+    [HttpPut("read-all")]
+    public async Task<IActionResult> MarkAllAsRead()
+    {
+        var userId = GetCurrentUserId();
+
+        await _service.MarkAllAsReadAsync(userId);
+
+        return Ok("All notifications marked as read.");
+    }
+}
+
+
+
+==========================================
+FILE: C:\Users\Dell\OneDrive\Desktop\MediCare\Controllers\PatientDashboardController.cs
+==========================================
+using System.Security.Claims;
+using MediCare.Data;
+using MediCare.DTOs;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using MediCare.Models;
+
+namespace MediCare.Controllers;
+
+[ApiController]
+[Route("api/dashboard/patient")]
+[Authorize(Roles = "PATIENT")]
+public class PatientDashboardController : ControllerBase
+{
+    private readonly AppDbContext _context;
+
+    public PatientDashboardController(AppDbContext context)
+    {
+        _context = context;
+    }
+
+    private int GetCurrentUserId()
+    {
+        return int.Parse(
+            User.FindFirstValue(ClaimTypes.NameIdentifier)!
+        );
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> GetDashboard()
+    {
+        var userId = GetCurrentUserId();
+
+        // Find patient profile
+        var patient = await _context.Patients
+            .Include(p => p.User)
+            .FirstOrDefaultAsync(p => p.UserId == userId);
+
+        if (patient == null)
+            return NotFound("Patient profile not found.");
+
+        // Get all medicines
+        var medicines = await _context.Medicines
+            .Where(m => m.PatientId == patient.Id)
+            .OrderBy(m => m.Name)
+            .ToListAsync();
+
+        // Total medicines
+        var totalMedicines = medicines.Count;
+
+        // Today's date
+        var today = DateTime.Today;
+
+        // Today's schedules
+        var todaySchedules = await _context.MedicineSchedules
+            .Include(s => s.Medicine)
+            .Where(s =>
+                s.Medicine.PatientId == patient.Id &&
+                s.Medicine.StartDate.Date <= today &&
+                s.Medicine.EndDate.Date >= today)
+            .OrderBy(s => s.Time)
+            .ToListAsync();
+
+        // Today's medicine logs for pending calculation
+        var todaysLogs = await _context.MedicineLogs
+            .Include(log => log.Medicine)
+            .Where(log =>
+                log.PatientId == patient.Id &&
+                log.ScheduledTime.Date == today)
+            .ToListAsync();
+
+        var pendingMedicines = new List<MedicineLog>();
+
+        foreach (var schedule in todaySchedules)
+        {
+            var scheduledTime = today.Add(schedule.Time);
+            var log = todaysLogs.FirstOrDefault(l =>
+                l.MedicineId == schedule.MedicineId &&
+                l.ScheduledTime == scheduledTime);
+
+            if (log == null)
+            {
+                pendingMedicines.Add(new MedicineLog
+                {
+                    MedicineId = schedule.MedicineId,
+                    Medicine = schedule.Medicine,
+                    PatientId = patient.Id,
+                    ScheduledTime = scheduledTime,
+                    Status = "Pending"
+                });
+            }
+            else if (log.Status == "Pending")
+            {
+                pendingMedicines.Add(log);
+            }
+        }
+
+        pendingMedicines = pendingMedicines.OrderBy(log => log.ScheduledTime).ToList();
+
+        // Missed medicine logs
+        var missedMedicines = await _context.MedicineLogs
+            .Include(log => log.Medicine)
+            .Where(log =>
+                log.PatientId == patient.Id &&
+                log.Status == "Missed")
+            .OrderByDescending(log => log.ScheduledTime)
+            .Take(20)
+            .ToListAsync();
+
+        // Taken medicine logs
+        var takenMedicines = await _context.MedicineLogs
+            .Include(log => log.Medicine)
+            .Where(log =>
+                log.PatientId == patient.Id &&
+                log.Status == "Taken")
+            .OrderByDescending(log => log.TakenTime)
+            .Take(20)
+            .ToListAsync();
+
+        // All logs for adherence
+        var allLogs = await _context.MedicineLogs
+            .Where(log => log.PatientId == patient.Id)
+            .ToListAsync();
+
+        var totalDoses = allLogs.Count;
+
+        var takenDoses = allLogs.Count(log =>
+            string.Equals(
+                log.Status,
+                "Taken",
+                StringComparison.OrdinalIgnoreCase));
+
+        var missedDoses = allLogs.Count(log =>
+            string.Equals(
+                log.Status,
+                "Missed",
+                StringComparison.OrdinalIgnoreCase));
+
+        var adherencePercentage = totalDoses == 0
+            ? 0
+            : Math.Round(
+                (double)takenDoses / totalDoses * 100,
+                2);
+
+        // Low stock medicines
+        var lowStockMedicines = medicines
+            .Where(m => m.Stock <= 5)
+            .ToList();
+
+        // Active emergency alerts
+        var activeEmergencies = await _context.EmergencyAlerts
+            .Where(e =>
+                e.PatientId == patient.Id &&
+                e.Status == "ACTIVE")
+            .OrderByDescending(e => e.CreatedAt)
+            .ToListAsync();
+
+        // Unread notifications
+        var unreadNotifications = await _context.Notifications
+            .CountAsync(n =>
+                n.UserId == userId &&
+                !n.IsRead);
+
+        // Patient information
+        var patientInfo = new PatientInfoDto
+        {
+            Id = patient.Id,
+            UserId = patient.UserId,
+            Name = patient.User.Name,
+            Email = patient.User.Email,
+            DateOfBirth = patient.DateOfBirth,
+            EmergencyContact = patient.EmergencyContact
+        };
+
+        // Final dashboard
+        var dashboard = new PatientDashboardDto
+        {
+            Patient = patientInfo,
+
+            TotalMedicines = totalMedicines,
+
+            Medicines = medicines,
+
+            TodaySchedules = todaySchedules,
+
+            PendingMedicines = pendingMedicines,
+
+            MissedMedicines = missedMedicines,
+
+            TakenMedicines = takenMedicines,
+
+            TotalDoses = totalDoses,
+
+            TakenDoses = takenDoses,
+
+            MissedDoses = missedDoses,
+
+            AdherencePercentage = adherencePercentage,
+
+            LowStockMedicines = lowStockMedicines,
+
+            ActiveEmergencies = activeEmergencies,
+
+            UnreadNotifications = unreadNotifications
+        };
+
+        return Ok(dashboard);
+    }
+}
+
+
+

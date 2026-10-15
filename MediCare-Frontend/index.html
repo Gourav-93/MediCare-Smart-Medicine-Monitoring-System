@@ -1,101 +1,126 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>MediCare - Smart Medicine Reminder & Family Monitoring</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="css/animations.css">
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/animations.css" />
     <style>
-        .landing-nav {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 1.5rem 5%;
-            background: rgba(255, 255, 255, 0.8);
-            backdrop-filter: blur(10px);
-            position: fixed;
-            top: 0; left: 0; right: 0;
-            z-index: 1000;
-        }
-        [data-theme="dark"] .landing-nav {
-            background: rgba(15, 23, 42, 0.8);
-        }
-        .brand {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--primary);
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        .hero {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            padding: 0 5%;
-            position: relative;
-            overflow: hidden;
-            background: linear-gradient(135deg, rgba(37, 99, 235, 0.05) 0%, rgba(14, 165, 233, 0.05) 100%);
-        }
-        .hero-content {
-            max-width: 600px;
-            position: relative;
-            z-index: 10;
-        }
+      .landing-nav {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1.5rem 5%;
+        background: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(10px);
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 1000;
+      }
+      [data-theme="dark"] .landing-nav {
+        background: rgba(15, 23, 42, 0.8);
+      }
+      .brand {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--primary);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+      .hero {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        padding: 0 5%;
+        position: relative;
+        overflow: hidden;
+        background: linear-gradient(
+          135deg,
+          rgba(37, 99, 235, 0.05) 0%,
+          rgba(14, 165, 233, 0.05) 100%
+        );
+      }
+      .hero-content {
+        max-width: 600px;
+        position: relative;
+        z-index: 10;
+      }
+      .hero-title {
+        font-size: 3.5rem;
+        font-weight: 800;
+        line-height: 1.2;
+        margin-bottom: 1.5rem;
+        color: var(--text-main);
+      }
+      .hero-subtitle {
+        font-size: 1.25rem;
+        color: var(--text-muted);
+        margin-bottom: 2.5rem;
+      }
+      .hero-buttons {
+        display: flex;
+        gap: 1rem;
+      }
+      #canvas-container {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        width: 50%;
+        z-index: 1;
+      }
+      @media (max-width: 768px) {
         .hero-title {
-            font-size: 3.5rem;
-            font-weight: 800;
-            line-height: 1.2;
-            margin-bottom: 1.5rem;
-            color: var(--text-main);
-        }
-        .hero-subtitle {
-            font-size: 1.25rem;
-            color: var(--text-muted);
-            margin-bottom: 2.5rem;
-        }
-        .hero-buttons {
-            display: flex;
-            gap: 1rem;
+          font-size: 2.5rem;
         }
         #canvas-container {
-            position: absolute;
-            top: 0; right: 0; bottom: 0;
-            width: 50%;
-            z-index: 1;
+          width: 100%;
+          opacity: 0.3;
         }
-        @media (max-width: 768px) {
-            .hero-title { font-size: 2.5rem; }
-            #canvas-container { width: 100%; opacity: 0.3; }
-        }
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <nav class="landing-nav">
-        <div class="brand">
-            <i data-lucide="activity"></i>
-            MediCare
-        </div>
-        <div class="nav-links">
-            <a href="login.html" class="btn btn-outline" style="margin-right: 1rem;">Login</a>
-            <a href="register.html" class="btn btn-primary">Get Started</a>
-        </div>
+      <div class="brand">
+        <i data-lucide="activity"></i>
+        MediCare
+      </div>
+      <div class="nav-links">
+        <a href="login.html" class="btn btn-outline" style="margin-right: 1rem"
+          >Login</a
+        >
+        <a href="register.html" class="btn btn-primary">Get Started</a>
+      </div>
     </nav>
 
     <main class="hero">
-        <div class="hero-content animate-fade-in">
-            <h1 class="hero-title">Never Miss Your <br><span style="color: var(--primary)">Medicine</span> Again.</h1>
-            <p class="hero-subtitle">
-                MediCare helps patients manage medicines, track adherence and stay connected with caregivers through smart reminders and emergency monitoring.
-            </p>
-            <div class="hero-buttons">
-                <a href="register.html" class="btn btn-primary btn-lg">Get Started</a>
-                <a href="login.html" class="btn btn-outline btn-lg">Login</a>
-            </div>
+      <div class="hero-content animate-fade-in">
+        <h1 class="hero-title">
+          Never Miss Your <br /><span style="color: var(--primary)"
+            >Medicine</span
+          >
+          Again.
+        </h1>
+        <p class="hero-subtitle">
+          MediCare helps patients manage medicines, track adherence and stay
+          connected with caregivers through smart reminders and emergency
+          monitoring.
+        </p>
+        <div class="hero-buttons">
+          <a href="register.html" class="btn btn-primary btn-lg">Get Started</a>
+          <a href="login.html" class="btn btn-outline btn-lg">Login</a>
         </div>
-        <div id="canvas-container"></div>
+      </div>
+      <div id="canvas-container"></div>
     </main>
 
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -103,8 +128,8 @@
     <script src="js/common.js"></script>
     <script src="js/three-scenes.js"></script>
     <script>
-        lucide.createIcons();
-        initHero3D('canvas-container');
+      lucide.createIcons();
+      initHero3D("canvas-container");
     </script>
-</body>
+  </body>
 </html>
