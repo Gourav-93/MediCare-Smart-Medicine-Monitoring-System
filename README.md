@@ -458,6 +458,8 @@ Represents emergency-related records for a patient workflow.
 
 Entity Framework Core migrations are the source of truth for the exact database schema created by the current code.
 
+
+
 # Authentication and Authorization
 
 MediCare uses JWT Bearer Authentication for protected API requests.
@@ -594,18 +596,6 @@ After cloning, open the project folder and check the `.csproj` file to confirm t
 The EF Core runtime, EF Core design package, and MySQL provider must be compatible with one another. If `dotnet restore` reports package downgrade or compatibility warnings, investigate them rather than ignoring them.
 
 # Installation and Setup
-
-### 1. Clone the repository
-
-```bash
-git clone https://github.com/Gourav-93/MediCare-Smart-Medicine-Monitoring-System.git
-```
-
-### 2. Move into the project directory
-
-```bash
-cd MediCare-Smart-Medicine-Monitoring-System
-```
 
 If the solution or API project is in a nested folder, change to the directory containing `MediCare.csproj`.
 
