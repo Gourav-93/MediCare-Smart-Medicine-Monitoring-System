@@ -2,8 +2,6 @@
 bin/
 obj/
 
-MediCare-Frontend
-
 # Configuration files
 appsettings.json
 appsettings.*.json
