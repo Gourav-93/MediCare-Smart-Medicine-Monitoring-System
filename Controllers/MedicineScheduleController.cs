@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 namespace MediCare.Controllers;
 
 [ApiController]
-[Route("api/Medicineschedule")]
+[Route("api/medicineschedule")]
 [Authorize(Roles = "ADMIN,PATIENT,CAREGIVER")]
 public class MedicineScheduleController : ControllerBase
 {
