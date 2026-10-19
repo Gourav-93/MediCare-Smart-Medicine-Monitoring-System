@@ -202,4 +202,17 @@ public class MedicineLogController : ControllerBase
 
         return Ok(result);
     }
+    
+    [HttpGet("patient/{patientId}/history")]
+    public async Task<IActionResult> GetCompleteHistory(int patientId, [FromQuery] MedicineLogFilterDto filter)
+    {
+        if (patientId <= 0)
+            return BadRequest("Valid PatientId is required.");
+
+        if (!await CanAccessPatientAsync(patientId))
+            return Forbid();
+
+        var history = await _service.GetPatientHistoryAsync(patientId, filter);
+        return Ok(history);
+    }
 }
