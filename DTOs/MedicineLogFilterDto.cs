@@ -1,4 +1,4 @@
-namespace mediCare.DTOs;
+namespace MediCare.DTOs;
 
 public class MedicineLogFilterDto
 {

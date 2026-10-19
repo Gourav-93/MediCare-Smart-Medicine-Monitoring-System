@@ -9,4 +9,5 @@ public interface IMedicineLogService
     Task<MedicineLog?> GetByIdAsync(int id);
     Task<MedicineLog> AddAsync(MedicineLogDto dto);
     Task<MedicineLog?> MarkAsTakenAsync(int id);
+    Task<object> GetPatientHistoryAsync(int patientId, MedicineLogFilterDto filter);
 }
