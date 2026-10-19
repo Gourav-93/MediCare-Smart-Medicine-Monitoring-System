@@ -80,19 +80,42 @@ public class MedicineLogService : IMedicineLogService
             log.Medicine.Stock = 0;
         }
 
+        // Low Stock Alert Trigger (Patient + Linked Caregivers)
         if (previousStock > 5 && log.Medicine.Stock <= 5)
         {
-            var notification = new Notification
+            // 1. Patient Notification
+            var patientNotification = new Notification
             {
                 UserId = log.Medicine.Patient.UserId,
                 Title = "Low Medicine Stock",
-                Message = $"{log.Medicine.Name} stock is low. Please refill the medicine.",
+                Message = $"{log.Medicine.Name} stock is low ({log.Medicine.Stock} left). Please refill.",
                 Type = "Low Stock",
                 IsRead = false,
                 CreatedAt = DateTime.Now
             };
-            await _notificationRepository.AddAsync(notification);
+            await _notificationRepository.AddAsync(patientNotification);
+
+            // 2. Linked Caregivers Notifications
+            var caregivers = await _context.CaregiverPatients
+                .Include(cp => cp.Caregiver)
+                .Where(cp => cp.PatientId == log.PatientId)
+                .ToListAsync();
+
+            foreach (var cp in caregivers)
+            {
+                var caregiverNotification = new Notification
+                {
+                    UserId = cp.Caregiver.UserId,
+                    Title = "Patient Medicine Low Stock Alert",
+                    Message = $"Medicine '{log.Medicine.Name}' for patient is running low ({log.Medicine.Stock} doses remaining).",
+                    Type = "Low Stock",
+                    IsRead = false,
+                    CreatedAt = DateTime.Now
+                };
+                await _notificationRepository.AddAsync(caregiverNotification);
+            }
         }
+
         return await _repository.UpdateAsync(log);
     }
 

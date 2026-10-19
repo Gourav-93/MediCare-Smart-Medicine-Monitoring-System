@@ -289,4 +289,63 @@ public class MedicineController : ControllerBase
 
         return Ok("Medicine deleted successfully.");
     }
+
+    // GET: api/medicine/low-stock
+    [HttpGet("low-stock")]
+    public async Task<IActionResult> GetLowStockMedicines([FromQuery] int threshold = 5)
+    {
+        var currentUserId = GetCurrentUserId();
+        var role = GetCurrentRole();
+
+        if (currentUserId <= 0)
+            return Unauthorized();
+
+        if (role == "ADMIN")
+        {
+            var adminLowStock = await _context.Medicines
+                .Include(m => m.Patient)
+                    .ThenInclude(p => p.User)
+                .Where(m => m.Stock <= threshold)
+                .OrderBy(m => m.Stock)
+                .ToListAsync();
+            return Ok(adminLowStock);
+        }
+
+        if (role == "PATIENT")
+        {
+            var patient = await _context.Patients
+                .FirstOrDefaultAsync(p => p.UserId == currentUserId);
+
+            if (patient == null)
+                return NotFound("Patient profile not found.");
+
+            var patientLowStock = await _context.Medicines
+                .Where(m => m.PatientId == patient.Id && m.Stock <= threshold)
+                .OrderBy(m => m.Stock)
+                .ToListAsync();
+
+            return Ok(patientLowStock);
+        }
+
+        if (role == "CAREGIVER")
+        {
+            var caregiver = await _context.Caregivers
+                .FirstOrDefaultAsync(c => c.UserId == currentUserId);
+
+            if (caregiver == null)
+                return NotFound("Caregiver profile not found.");
+
+            var caregiverLowStock = await _context.Medicines
+                .Include(m => m.Patient)
+                    .ThenInclude(p => p.User)
+                .Where(m => _context.CaregiverPatients
+                    .Any(cp => cp.CaregiverId == caregiver.Id && cp.PatientId == m.PatientId) && m.Stock <= threshold)
+                .OrderBy(m => m.Stock)
+                .ToListAsync();
+
+            return Ok(caregiverLowStock);
+        }
+
+        return Forbid();
+    }
 }
