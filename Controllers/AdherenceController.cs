@@ -98,5 +98,37 @@ public class AdherenceController : ControllerBase
 
         return Forbid();
     }
+
+    // GET: api/adherence/patient/{patientId}/report?period=Daily
+    [HttpGet("patient/{patientId}/report")]
+    public async Task<IActionResult> GetPeriodicAdherence(int patientId, [FromQuery] string period = "Daily")
+    {
+        var userId = GetCurrentUserId();
+        var role = GetCurrentRole();
+
+        // Security check: Role ke hisab se validation
+        if (role == "PATIENT")
+        {
+            var isOwnPatient = await _context.Patients
+                .AnyAsync(p => p.Id == patientId && p.UserId == userId);
+
+            if (!isOwnPatient) return Forbid();
+        }
+        else if (role == "CAREGIVER")
+        {
+            var caregiver = await _context.Caregivers
+                .FirstOrDefaultAsync(c => c.UserId == userId);
+
+            if (caregiver == null) return NotFound("Caregiver profile not found.");
+
+            var isLinked = await _context.CaregiverPatients
+                .AnyAsync(cp => cp.CaregiverId == caregiver.Id && cp.PatientId == patientId);
+
+            if (!isLinked) return Forbid();
+        }
+
+        var result = await _service.GetPeriodicAdherenceAsync(patientId, period);
+        return Ok(result);
+    }
 }
 
