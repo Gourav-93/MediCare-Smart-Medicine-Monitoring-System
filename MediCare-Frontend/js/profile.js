@@ -4,7 +4,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!user) return;
 
     const role = Auth.getRole();
-    setupSidebar(role);
+    Auth.setupNavbar();
+    Auth.renderSidebar('profile');
 
     // Populate profile fields from verified user object
     const name = user.name || (user.email ? user.email.split('@')[0] : 'User');

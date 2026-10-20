@@ -176,11 +176,20 @@ window.filterLogs = function() {
 
 window.markLogAsTaken = async function(id) {
     if (!id) return;
+    const btn = event?.target?.closest('button');
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = 'Updating...';
+    }
     try {
         await api.put(`/medicinelog/${id}/taken`);
-        Utils.showToast('Medication recorded as taken!', 'success');
+        Utils.showToast('Medication recorded as taken successfully!', 'success');
         await loadLogsData();
     } catch (err) {
         console.error('Failed to mark log as taken:', err);
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = 'Mark Taken';
+        }
     }
 };

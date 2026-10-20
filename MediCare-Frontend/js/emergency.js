@@ -185,6 +185,13 @@ async function handleSosAlertSubmit(e) {
         return;
     }
 
+    const confirmed = await Utils.confirmAction(
+        `Are you sure you want to broadcast this distress alert to your linked caregivers? "${msg}"`,
+        'Confirm Emergency SOS Broadcast',
+        'warning'
+    );
+    if (!confirmed) return;
+
     try {
         submitBtn.disabled = true;
         submitBtn.innerHTML = '<span class="spinner" style="width: 16px; height: 16px; border-width: 2px;"></span> Broadcasting SOS...';

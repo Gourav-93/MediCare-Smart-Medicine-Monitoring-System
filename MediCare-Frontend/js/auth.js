@@ -135,8 +135,10 @@ const Auth = {
             { id: 'schedules', label: 'Schedules', href: 'schedules.html', icon: 'calendar', roles: ['PATIENT', 'CAREGIVER', 'ADMIN'] },
             { id: 'logs', label: 'Intake Logs', href: 'medicine-logs.html', icon: 'clipboard-list', roles: ['PATIENT', 'CAREGIVER', 'ADMIN'] },
             { id: 'caregiver-patient', label: role === 'PATIENT' ? 'My Caregivers' : (role === 'CAREGIVER' ? 'Linked Patients' : 'Caregiver & Patient'), href: 'caregiver-patient.html', icon: 'users', roles: ['PATIENT', 'CAREGIVER', 'ADMIN'] },
+            { id: 'adherence', label: 'Adherence & Reports', href: 'adherence.html', icon: 'trending-up', roles: ['PATIENT', 'CAREGIVER', 'ADMIN'] },
             { id: 'emergency', label: 'Emergency Safety', href: 'emergency.html', icon: 'alert-octagon', danger: true, roles: ['PATIENT', 'CAREGIVER', 'ADMIN'] },
-            { id: 'notifications', label: 'Notifications', href: 'notifications.html', icon: 'bell', roles: ['PATIENT', 'CAREGIVER', 'ADMIN'] }
+            { id: 'notifications', label: 'Notifications', href: 'notifications.html', icon: 'bell', roles: ['PATIENT', 'CAREGIVER', 'ADMIN'] },
+            { id: 'profile', label: 'My Profile', href: 'profile.html', icon: 'user', roles: ['PATIENT', 'CAREGIVER', 'ADMIN'] }
         ];
 
         let html = '';

@@ -7,65 +7,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     const user = Auth.requireAuth(['PATIENT', 'CAREGIVER', 'ADMIN']);
     if (!user) return;
 
+    Auth.setupNavbar();
+    Auth.renderSidebar('adherence');
+
     userRole = Auth.getRole();
-    setupSidebar(userRole);
     setupUI();
 
     await initPatient();
 });
-
-function setupSidebar(role) {
-    const menu = document.getElementById('sidebarMenu');
-    const brandLink = document.getElementById('brandLink');
-    const roleLabel = document.getElementById('sidebarRoleLabel');
-
-    if (role === 'PATIENT') {
-        if (brandLink) brandLink.href = 'patient-dashboard.html';
-        if (roleLabel) roleLabel.textContent = 'Patient';
-        menu.innerHTML = `
-            <div class="menu-category">Health Dashboard</div>
-            <a href="patient-dashboard.html" class="menu-item"><i data-lucide="layout-grid"></i><span>Bento Hub</span></a>
-            <a href="medicines.html" class="menu-item"><i data-lucide="pill"></i><span>My Medicines</span></a>
-            <a href="schedule.html" class="menu-item"><i data-lucide="calendar"></i><span>Dose Schedule</span></a>
-            <a href="medicine-logs.html" class="menu-item"><i data-lucide="clipboard-list"></i><span>Intake History</span></a>
-            <a href="adherence.html" class="menu-item active"><i data-lucide="trending-up"></i><span>Adherence Reports</span></a>
-            <div class="menu-category">Communication & Care</div>
-            <a href="notifications.html" class="menu-item"><i data-lucide="bell"></i><span>Notifications</span></a>
-            <a href="emergency.html" class="menu-item text-danger" style="color: #f87171;"><i data-lucide="alert-octagon"></i><span>Emergency Alerts</span></a>
-            <a href="profile.html" class="menu-item"><i data-lucide="user"></i><span>My Profile</span></a>
-        `;
-    } else if (role === 'CAREGIVER') {
-        if (brandLink) brandLink.href = 'caregiver-dashboard.html';
-        if (roleLabel) roleLabel.textContent = 'Caregiver';
-        menu.innerHTML = `
-            <div class="menu-category">Patient Monitoring</div>
-            <a href="caregiver-dashboard.html" class="menu-item"><i data-lucide="layout-dashboard"></i><span>Overview</span></a>
-            <a href="patients.html" class="menu-item"><i data-lucide="users"></i><span>Linked Patients</span></a>
-            <a href="medicines.html" class="menu-item"><i data-lucide="pill"></i><span>Prescriptions</span></a>
-            <a href="schedule.html" class="menu-item"><i data-lucide="calendar"></i><span>Schedules</span></a>
-            <a href="medicine-logs.html" class="menu-item"><i data-lucide="clipboard-list"></i><span>Intake Logs</span></a>
-            <div class="menu-category">Safety & Alerts</div>
-            <a href="emergency.html" class="menu-item text-danger" style="color: #f87171;"><i data-lucide="alert-octagon"></i><span>Emergency Alerts</span></a>
-            <a href="notifications.html" class="menu-item"><i data-lucide="bell"></i><span>Notifications</span></a>
-            <a href="profile.html" class="menu-item"><i data-lucide="user"></i><span>My Profile</span></a>
-        `;
-    } else if (role === 'ADMIN') {
-        if (brandLink) brandLink.href = 'admin-dashboard.html';
-        if (roleLabel) roleLabel.textContent = 'Admin';
-        menu.innerHTML = `
-            <div class="menu-category">System Administration</div>
-            <a href="admin-dashboard.html" class="menu-item"><i data-lucide="layout-dashboard"></i><span>Overview</span></a>
-            <a href="medicines.html" class="menu-item"><i data-lucide="pill"></i><span>All Medicines</span></a>
-            <a href="schedule.html" class="menu-item"><i data-lucide="calendar"></i><span>Dose Schedules</span></a>
-            <a href="medicine-logs.html" class="menu-item"><i data-lucide="clipboard-list"></i><span>Intake Logs</span></a>
-            <div class="menu-category">System Health & Alerts</div>
-            <a href="emergency.html" class="menu-item text-danger" style="color: #f87171;"><i data-lucide="alert-octagon"></i><span>Emergency Alerts</span></a>
-            <a href="notifications.html" class="menu-item"><i data-lucide="bell"></i><span>Broadcast Notifications</span></a>
-            <a href="profile.html" class="menu-item"><i data-lucide="user"></i><span>My Profile</span></a>
-        `;
-    }
-    if (window.lucide) lucide.createIcons();
-}
 
 function setupUI() {
     const toggleBtn = document.getElementById('sidebarToggle');
@@ -97,6 +46,19 @@ async function initPatient() {
                 if (userRole === 'CAREGIVER') {
                     const dash = await api.get('/dashboard/caregiver');
                     patients = dash.patients || [];
+                } else if (userRole === 'ADMIN') {
+                    const meds = await api.get('/medicine');
+                    const patientMap = new Map();
+                    (meds || []).forEach(m => {
+                        if (m.patient && !patientMap.has(m.patientId)) {
+                            patientMap.set(m.patientId, {
+                                patientId: m.patientId,
+                                name: m.patient.user ? m.patient.user.name : `Patient #${m.patientId}`,
+                                email: m.patient.user ? m.patient.user.email : ''
+                            });
+                        }
+                    });
+                    patients = Array.from(patientMap.values());
                 }
 
                 if (patients.length > 0) {

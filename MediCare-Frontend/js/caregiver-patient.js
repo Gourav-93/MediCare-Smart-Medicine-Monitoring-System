@@ -294,9 +294,12 @@ async function handleLinkSubmit(e) {
 window.unlinkPatient = async function(patientId) {
     if (!currentCaregiverId || !patientId) return;
 
-    if (!confirm('Are you sure you want to unlink this patient? You will no longer receive their dose alerts or emergency notifications.')) {
-        return;
-    }
+    const confirmed = await Utils.confirmAction(
+        'Are you sure you want to unlink this patient? You will no longer receive their dose alerts or emergency notifications.',
+        'Unlink Patient',
+        'warning'
+    );
+    if (!confirmed) return;
 
     try {
         await api.delete('/Caregiverpatient/unlink', {

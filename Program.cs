@@ -80,6 +80,7 @@ builder.Services.AddScoped<ICaregiverPatientService, CaregiverPatientService>();
 builder.Services.AddScoped<IAdherenceService, AdherenceService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<IAiChatService, AiChatService>();
 
 // Background Service
 builder.Services.AddHostedService<MedicineReminderBackgroundService>();

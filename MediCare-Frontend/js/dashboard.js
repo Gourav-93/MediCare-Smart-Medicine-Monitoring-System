@@ -239,6 +239,44 @@ async function loadPatientDashboard() {
         </div>
     `;
 
+    // Render Patient Charts
+    const taken = data.takenDoses || 0;
+    const missed = data.missedDoses || 0;
+    const pending = (data.pendingMedicines || []).length;
+    const hasDoseData = (taken + missed + pending) > 0;
+
+    let weeklyReport = null;
+    if (patient && patient.id) {
+        try {
+            weeklyReport = await api.get(`/adherence/patient/${patient.id}/report`, { period: 'Weekly' });
+        } catch (e) {
+            console.warn('Could not fetch weekly adherence report:', e);
+        }
+    }
+
+    const timeline = (weeklyReport && weeklyReport.timeline) ? weeklyReport.timeline : [];
+    const hasTimeline = timeline.length > 0;
+
+    renderDashboardCharts({
+        chart1: {
+            title: "Today's Dose Status Distribution",
+            subtitle: "Distribution of taken, missed, and pending doses",
+            hasData: hasDoseData,
+            labels: ['Taken', 'Missed', 'Pending'],
+            data: [taken, missed, pending],
+            colors: ['#10b981', '#ef4444', '#f59e0b']
+        },
+        chart2: {
+            title: "Weekly Adherence Progression",
+            subtitle: "Percentage compliance per weekly interval",
+            hasData: hasTimeline,
+            labels: timeline.map(t => t.periodLabel),
+            data: timeline.map(t => Math.round(t.adherencePercentage)),
+            colors: timeline.map(() => '#2563eb'),
+            labelName: 'Compliance %'
+        }
+    });
+
     if (window.lucide) {
         lucide.createIcons();
     }
@@ -443,17 +481,50 @@ async function loadCaregiverDashboard() {
         </div>
     `;
 
+    // Render Caregiver Charts
+    const totalTaken = adherenceList.reduce((acc, a) => acc + (a.takenDoses || 0), 0);
+    const totalMissed = adherenceList.reduce((acc, a) => acc + (a.missedDoses || 0), 0);
+    const totalPending = (data.pendingMedicines || []).length;
+    const hasCaregiverDoseData = (totalTaken + totalMissed + totalPending) > 0;
+    const hasPatientAdherence = adherenceList.length > 0;
+
+    renderDashboardCharts({
+        chart1: {
+            title: "Supervised Dose Distribution",
+            subtitle: "Aggregated dose intake status across all patients",
+            hasData: hasCaregiverDoseData,
+            labels: ['Taken Doses', 'Missed Doses', 'Pending Doses'],
+            data: [totalTaken, totalMissed, totalPending],
+            colors: ['#10b981', '#ef4444', '#f59e0b']
+        },
+        chart2: {
+            title: "Patient Compliance Comparison",
+            subtitle: "Adherence rate percentage per linked patient",
+            hasData: hasPatientAdherence,
+            labels: adherenceList.map(a => a.patientName || `Patient #${a.patientId}`),
+            data: adherenceList.map(a => Math.round(a.adherencePercentage || 0)),
+            colors: adherenceList.map(() => '#2563eb'),
+            labelName: 'Compliance %'
+        }
+    });
+
     if (window.lucide) {
         lucide.createIcons();
     }
 }
 
-// Resolve emergency
+// Resolve emergency (using SweetAlert2 if available)
 async function resolveEmergencyAlert(id) {
-    if (!id || !confirm('Are you sure you want to mark this emergency alert as resolved?')) return;
+    if (!id) return;
+    const confirmed = await Utils.confirmAction(
+        'Are you sure you want to mark this emergency alert as resolved?',
+        'Resolve Emergency Incident'
+    );
+    if (!confirmed) return;
+
     try {
         await api.put(`/emergency/${id}/resolve`);
-        Utils.showToast('Emergency alert resolved.', 'success');
+        Utils.showToast('Emergency alert resolved successfully.', 'success');
         const role = Auth.getRole();
         if (role === 'CAREGIVER') await loadCaregiverDashboard();
         else if (role === 'ADMIN') await loadAdminDashboard();
@@ -627,6 +698,35 @@ async function loadAdminDashboard() {
         </div>
     `;
 
+    // Render Admin Charts
+    const adminTaken = data.totalTakenDoses || 0;
+    const adminMissed = data.totalMissedDoses || 0;
+    const adminPending = data.totalPendingDoses || 0;
+    const hasAdminDoses = (adminTaken + adminMissed + adminPending) > 0;
+
+    const sysLabels = ['Patients', 'Caregivers', 'Prescriptions', 'Active Emergencies'];
+    const sysData = [data.totalPatients || 0, data.totalCaregivers || 0, data.totalMedicines || 0, data.activeEmergencyAlerts || 0];
+
+    renderDashboardCharts({
+        chart1: {
+            title: "System-Wide Dose Statistics",
+            subtitle: "Overall recorded taken, missed, and pending doses",
+            hasData: hasAdminDoses,
+            labels: ['Taken Doses', 'Missed Doses', 'Pending Doses'],
+            data: [adminTaken, adminMissed, adminPending],
+            colors: ['#10b981', '#ef4444', '#f59e0b']
+        },
+        chart2: {
+            title: "Platform Telemetry & Resources",
+            subtitle: "Users, medicines, and active alerts overview",
+            hasData: true,
+            labels: sysLabels,
+            data: sysData,
+            colors: ['#2563eb', '#0d9488', '#8b5cf6', '#ef4444'],
+            labelName: 'Count'
+        }
+    });
+
     if (window.lucide) {
         lucide.createIcons();
     }
@@ -648,6 +748,13 @@ async function submitSosAlert() {
         return;
     }
 
+    const confirmed = await Utils.confirmAction(
+        `Are you sure you want to broadcast this emergency alert to your caregivers? "${msg}"`,
+        'Trigger Emergency SOS Alert?',
+        'warning'
+    );
+    if (!confirmed) return;
+
     const btn = document.getElementById('btnSendSos');
     try {
         btn.disabled = true;
@@ -663,5 +770,48 @@ async function submitSosAlert() {
         btn.disabled = false;
         btn.innerHTML = '<i data-lucide="phone-call"></i> Send Emergency Alert';
         if (window.lucide) lucide.createIcons();
+    }
+}
+
+// Render Charts Section dynamically
+function renderDashboardCharts(config) {
+    const section = document.getElementById('dashboardChartsSection');
+    if (!section) return;
+    section.style.display = 'block';
+
+    // Chart 1 (Doughnut)
+    const c1Title = document.getElementById('chart1Title');
+    const c1Sub = document.getElementById('chart1Subtitle');
+    const c1Wrapper = document.getElementById('chart1Wrapper');
+    const c1Empty = document.getElementById('chart1Empty');
+
+    if (c1Title) c1Title.textContent = config.chart1.title;
+    if (c1Sub) c1Sub.textContent = config.chart1.subtitle;
+
+    if (config.chart1.hasData && window.createDoughnutChart) {
+        if (c1Wrapper) c1Wrapper.style.display = 'block';
+        if (c1Empty) c1Empty.style.display = 'none';
+        createDoughnutChart('dashboardDoughnutChart', config.chart1.data, config.chart1.labels, config.chart1.colors);
+    } else {
+        if (c1Wrapper) c1Wrapper.style.display = 'none';
+        if (c1Empty) c1Empty.style.display = 'block';
+    }
+
+    // Chart 2 (Bar)
+    const c2Title = document.getElementById('chart2Title');
+    const c2Sub = document.getElementById('chart2Subtitle');
+    const c2Wrapper = document.getElementById('chart2Wrapper');
+    const c2Empty = document.getElementById('chart2Empty');
+
+    if (c2Title) c2Title.textContent = config.chart2.title;
+    if (c2Sub) c2Sub.textContent = config.chart2.subtitle;
+
+    if (config.chart2.hasData && window.createBarChart) {
+        if (c2Wrapper) c2Wrapper.style.display = 'block';
+        if (c2Empty) c2Empty.style.display = 'none';
+        createBarChart('dashboardBarChart', config.chart2.data, config.chart2.labels, config.chart2.colors, config.chart2.labelName || 'Adherence');
+    } else {
+        if (c2Wrapper) c2Wrapper.style.display = 'none';
+        if (c2Empty) c2Empty.style.display = 'block';
     }
 }

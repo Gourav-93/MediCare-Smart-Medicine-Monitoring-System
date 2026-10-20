@@ -167,6 +167,7 @@ const Utils = {
         const modal = document.getElementById(modalId);
         if (modal) {
             modal.classList.add('active');
+            modal.style.display = 'flex';
             document.body.style.overflow = 'hidden';
             if (window.lucide) lucide.createIcons({ root: modal });
         }
@@ -176,16 +177,28 @@ const Utils = {
         const modal = document.getElementById(modalId);
         if (modal) {
             modal.classList.remove('active');
+            modal.style.display = 'none';
             document.body.style.overflow = '';
         }
     },
 
-    // Simple custom confirmation dialog
-    confirmAction(message, title = 'Confirmation') {
-        return new Promise((resolve) => {
-            const confirmed = window.confirm(`${title}\n\n${message}`);
-            resolve(confirmed);
-        });
+    // Simple custom confirmation dialog (SweetAlert2 supported)
+    async confirmAction(message, title = 'Confirmation', icon = 'warning') {
+        if (window.Swal) {
+            const res = await Swal.fire({
+                title: title,
+                text: message,
+                icon: icon,
+                showCancelButton: true,
+                confirmButtonColor: '#2563eb',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'Yes, proceed',
+                cancelButtonText: 'Cancel',
+                reverseButtons: true
+            });
+            return res.isConfirmed;
+        }
+        return window.confirm(`${title}\n\n${message}`);
     },
 
     // Theme Management
