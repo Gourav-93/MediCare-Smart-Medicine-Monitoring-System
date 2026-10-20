@@ -1,71 +1,142 @@
-const API_BASE = 'http://localhost:5095/api'; // Updated to match backend port
-
+// MediCare Centralized API Layer
 const api = {
     async request(endpoint, options = {}) {
-        const token = localStorage.getItem('token');
-        
-        const defaultHeaders = {
-            'Content-Type': 'application/json',
-            ...(token && { 'Authorization': `Bearer ${token}` })
+        // Ensure endpoint starts with a slash
+        const normalizedEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+        const url = `${CONFIG.API_BASE}${normalizedEndpoint}`;
+
+        // Retrieve current JWT token from Auth module or storage
+        const token = Auth ? Auth.getToken() : localStorage.getItem(CONFIG.STORAGE_KEYS.TOKEN);
+
+        const headers = {
+            'Accept': 'application/json',
+            ...(options.body && !(options.body instanceof FormData) && { 'Content-Type': 'application/json' }),
+            ...(token && { 'Authorization': `Bearer ${token}` }),
+            ...options.headers
         };
 
-        const config = {
+        const fetchConfig = {
             ...options,
-            headers: {
-                ...defaultHeaders,
-                ...options.headers
-            }
+            headers
         };
 
         try {
-            showLoader();
-            const response = await fetch(`${API_BASE}${endpoint}`, config);
-            
+            Utils.showLoader();
+            const response = await fetch(url, fetchConfig);
+
+            // Handle 401 Unauthorized (Expired / Missing Token)
             if (response.status === 401) {
-                // Unauthorized - token expired or invalid
-                localStorage.removeItem('token');
-                window.location.href = 'login.html';
+                if (Auth) {
+                    Auth.clearSession();
+                } else {
+                    localStorage.removeItem(CONFIG.STORAGE_KEYS.TOKEN);
+                    localStorage.removeItem(CONFIG.STORAGE_KEYS.USER);
+                }
+                
+                // Do not redirect in an endless loop if already on login page
+                if (!window.location.pathname.endsWith('login.html') && !window.location.pathname.endsWith('register.html')) {
+                    Utils.showToast('Your session has expired. Please sign in again.', 'warning');
+                    setTimeout(() => {
+                        window.location.href = 'login.html';
+                    }, 1200);
+                }
                 return null;
             }
 
+            // Handle 403 Forbidden (Insufficient Role Permissions)
             if (response.status === 403) {
-                showToast('You do not have permission to perform this action', 'error');
-                return null;
+                const msg = 'You are not authorized to perform this operation with your current role.';
+                Utils.showToast(msg, 'error');
+                throw new Error(msg);
             }
 
-            // Some endpoints might return 204 No Content
+            // Handle 204 No Content
             if (response.status === 204) {
                 return true;
             }
 
-            const data = await response.json().catch(() => ({}));
+            // Safely parse JSON or text response
+            const contentType = response.headers.get('content-type') || '';
+            let responseData = null;
 
-            if (!response.ok) {
-                throw new Error(data.message || data.title || 'An error occurred');
+            if (contentType.includes('application/json') || contentType.includes('application/problem+json')) {
+                responseData = await response.json().catch(() => null);
+            } else {
+                responseData = await response.text().catch(() => '');
             }
 
-            return data;
+            // If response is not OK (e.g. 400, 404, 500)
+            if (!response.ok) {
+                let errorMessage = 'An unexpected server error occurred.';
+
+                if (responseData) {
+                    if (typeof responseData === 'string' && responseData.trim().length > 0) {
+                        errorMessage = responseData;
+                    } else if (responseData.message) {
+                        errorMessage = responseData.message;
+                    } else if (responseData.title) {
+                        errorMessage = responseData.title;
+                    }
+
+                    // Extract detailed ASP.NET Core ModelState validation errors if present
+                    if (responseData.errors && typeof responseData.errors === 'object') {
+                        const errorDetails = Object.values(responseData.errors)
+                            .flat()
+                            .filter(Boolean)
+                            .join(' ');
+                        if (errorDetails) {
+                            errorMessage = `${errorMessage} ${errorDetails}`;
+                        }
+                    }
+                }
+
+                Utils.showToast(errorMessage, 'error');
+                const err = new Error(errorMessage);
+                err.status = response.status;
+                err.data = responseData;
+                throw err;
+            }
+
+            return responseData;
+
         } catch (error) {
-            console.error('API Error:', error);
-            showToast(error.message, 'error');
+            // Check for network connection / CORS error
+            if (error.name === 'TypeError' && error.message === 'Failed to fetch') {
+                const netErrMsg = `Unable to connect to MediCare API at ${CONFIG.API_BASE}. Please ensure the backend is running and CORS is enabled.`;
+                console.error(netErrMsg, error);
+                Utils.showToast(netErrMsg, 'error', 5000);
+            }
             throw error;
         } finally {
-            hideLoader();
+            Utils.hideLoader();
         }
     },
 
-    get(endpoint) {
-        return this.request(endpoint, { method: 'GET' });
+    get(endpoint, params = null) {
+        let url = endpoint;
+        if (params && typeof params === 'object') {
+            const queryParams = new URLSearchParams();
+            Object.entries(params).forEach(([key, val]) => {
+                if (val !== null && val !== undefined && val !== '') {
+                    queryParams.append(key, val);
+                }
+            });
+            const qs = queryParams.toString();
+            if (qs) {
+                url += (url.includes('?') ? '&' : '?') + qs;
+            }
+        }
+        return this.request(url, { method: 'GET' });
     },
 
-    post(endpoint, body) {
+    post(endpoint, body = {}) {
         return this.request(endpoint, {
             method: 'POST',
             body: JSON.stringify(body)
         });
     },
 
-    put(endpoint, body) {
+    put(endpoint, body = {}) {
         return this.request(endpoint, {
             method: 'PUT',
             body: JSON.stringify(body)

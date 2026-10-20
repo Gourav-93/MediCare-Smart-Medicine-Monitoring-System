@@ -3,83 +3,96 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Medicine Schedule - MediCare</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>Medication Schedules — MediCare</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="css/dashboard.css">
-    <link rel="stylesheet" href="css/responsive.css">
     <link rel="stylesheet" href="css/animations.css">
 </head>
 <body>
     <div class="app-container">
-        <!-- Sidebar -->
+        <!-- Sidebar Navigation -->
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
-                <div class="sidebar-brand">
+                <a href="patient-dashboard.html" class="sidebar-brand" id="brandLink">
                     <i data-lucide="activity"></i>
-                    MediCare
-                </div>
+                    <span>MediCare</span>
+                </a>
+                <span class="sidebar-role-pill" id="sidebarRoleLabel">Schedule</span>
             </div>
-            <div class="sidebar-menu">
-                <a href="patient-dashboard.html" class="menu-item">
-                    <i data-lucide="layout-dashboard"></i> Dashboard
-                </a>
-                <a href="medicines.html" class="menu-item">
-                    <i data-lucide="pill"></i> My Medicines
-                </a>
-                <a href="schedule.html" class="menu-item active">
-                    <i data-lucide="calendar"></i> Schedule
-                </a>
-                <a href="medicine-logs.html" class="menu-item">
-                    <i data-lucide="clipboard-list"></i> History
-                </a>
-                <a href="notifications.html" class="menu-item">
-                    <i data-lucide="bell"></i> Notifications
-                </a>
-                <a href="emergency.html" class="menu-item text-danger" style="color: var(--danger);">
-                    <i data-lucide="alert-circle"></i> Emergency
-                </a>
+
+            <div class="sidebar-menu" id="sidebarMenu">
+                <!-- Dynamically populated -->
             </div>
         </aside>
 
-        <!-- Main Content -->
+        <!-- Main Content Area -->
         <main class="main-content">
+            <!-- Navbar -->
             <nav class="navbar">
                 <div class="navbar-left">
-                    <i data-lucide="menu" class="nav-icon" id="sidebarToggle"></i>
-                    <h2 class="hide-mobile" style="font-size: 1.1rem;">Medicine Schedule</h2>
+                    <button class="sidebar-toggle-btn" id="sidebarToggle" aria-label="Toggle navigation drawer">
+                        <i data-lucide="menu"></i>
+                    </button>
+                    <h2 class="navbar-title hide-mobile">Dose Timing & Schedules</h2>
                 </div>
+
                 <div class="navbar-right">
-                    <i data-lucide="moon" class="nav-icon" onclick="toggleTheme()"></i>
+                    <button class="nav-action-btn" onclick="toggleTheme()" title="Toggle Theme">
+                        <i data-lucide="moon"></i>
+                    </button>
+
+                    <a href="notifications.html" class="nav-action-btn" title="Notifications">
+                        <i data-lucide="bell"></i>
+                    </a>
+
                     <div class="user-profile" onclick="window.location.href='profile.html'">
-                        <div class="avatar">P</div>
+                        <div class="avatar" id="nav-initial">U</div>
+                        <div class="user-info hide-mobile">
+                            <span class="user-name" id="nav-username">User</span>
+                            <span class="user-role" id="nav-role">Role</span>
+                        </div>
                     </div>
-                    <i data-lucide="log-out" class="nav-icon" onclick="logout()" title="Logout"></i>
+
+                    <button class="nav-action-btn" onclick="logout()" title="Logout">
+                        <i data-lucide="log-out"></i>
+                    </button>
                 </div>
             </nav>
 
+            <!-- Page Content -->
             <div class="page-content">
                 <div class="page-header">
-                    <h1 class="page-title">Manage Schedule</h1>
-                    <button class="btn btn-primary" onclick="openAddModal()">
-                        <i data-lucide="plus"></i> Add Schedule
-                    </button>
+                    <div class="page-title-group">
+                        <h1 class="page-title">Medication Schedules</h1>
+                        <p class="page-subtitle">Configure exact daily intake hours and dosing frequency</p>
+                    </div>
+
+                    <div class="page-actions">
+                        <button class="btn btn-primary" onclick="openAddScheduleModal()">
+                            <i data-lucide="plus"></i>
+                            Add Schedule Time
+                        </button>
+                    </div>
                 </div>
 
+                <!-- Schedules Table -->
                 <div class="card animate-fade-in">
                     <div class="table-container">
                         <table id="scheduleTable">
                             <thead>
                                 <tr>
-                                    <th>Medicine</th>
-                                    <th>Time</th>
+                                    <th>Medicine Name</th>
+                                    <th>Scheduled Dose Time</th>
                                     <th>Frequency</th>
+                                    <th>Patient Association</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody id="schedulesTbody">
                                 <tr>
-                                    <td colspan="4" style="text-align: center;">Loading...</td>
+                                    <td colspan="5" style="text-align: center;">Loading schedules...</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -89,45 +102,66 @@
         </main>
     </div>
 
-    <!-- Add/Edit Modal -->
+    <!-- Add/Edit Schedule Modal -->
     <div class="modal-overlay" id="scheduleModal">
         <div class="modal">
             <div class="modal-header">
-                <h2 class="page-title" id="modalTitle" style="font-size: 1.25rem;">Add Schedule</h2>
-                <button class="modal-close" onclick="closeModal()"><i data-lucide="x"></i></button>
+                <div class="modal-title" id="modalTitle">
+                    <i data-lucide="calendar"></i>
+                    Add Schedule Time
+                </div>
+                <button class="modal-close" onclick="closeModal('scheduleModal')">
+                    <i data-lucide="x"></i>
+                </button>
             </div>
             <form id="scheduleForm">
                 <input type="hidden" id="schId">
-                
-                <div class="form-group">
-                    <label class="form-label">Select Medicine</label>
-                    <select id="schMedicine" class="form-control" required></select>
-                </div>
 
                 <div class="form-group">
-                    <label class="form-label">Time</label>
-                    <input type="time" id="schTime" class="form-control" required>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Frequency</label>
-                    <select id="schFrequency" class="form-control" required>
-                        <option value="Daily">Daily</option>
-                        <option value="Weekly">Weekly</option>
-                        <option value="Monthly">Monthly</option>
-                        <option value="As Needed">As Needed</option>
+                    <label class="form-label" for="schMedicine">Select Medication</label>
+                    <select id="schMedicine" class="form-select" required>
+                        <option value="">-- Choose Prescribed Medicine --</option>
                     </select>
                 </div>
 
-                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">Save Schedule</button>
+                <div class="form-group">
+                    <label class="form-label" for="schTime">Daily Dose Time</label>
+                    <input 
+                        type="time" 
+                        id="schTime" 
+                        class="form-control" 
+                        required
+                    >
+                    <div class="form-text">System triggers smart reminders and logs at this exact time.</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="schFrequency">Intake Frequency</label>
+                    <select id="schFrequency" class="form-select" required>
+                        <option value="Daily" selected>Daily</option>
+                        <option value="Twice Daily">Twice Daily</option>
+                        <option value="Weekly">Weekly</option>
+                        <option value="Monthly">Monthly</option>
+                        <option value="As Needed (PRN)">As Needed (PRN)</option>
+                    </select>
+                </div>
+
+                <div style="display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1.5rem;">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('scheduleModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="btnSaveSchedule">
+                        <i data-lucide="save"></i>
+                        Save Schedule
+                    </button>
+                </div>
             </form>
         </div>
     </div>
 
     <!-- Scripts -->
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="js/config.js"></script>
+    <script src="js/utils.js"></script>
     <script src="js/api.js"></script>
-    <script src="js/common.js"></script>
     <script src="js/auth.js"></script>
     <script src="js/schedules.js"></script>
 </body>

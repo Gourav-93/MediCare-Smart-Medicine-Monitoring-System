@@ -3,135 +3,279 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - MediCare</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>Enterprise Administration Portal — MediCare</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="css/dashboard.css">
-    <link rel="stylesheet" href="css/responsive.css">
     <link rel="stylesheet" href="css/animations.css">
 </head>
 <body>
     <div class="app-container">
-        <!-- Sidebar -->
+        <!-- Sidebar Navigation -->
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
-                <div class="sidebar-brand">
+                <a href="admin-dashboard.html" class="sidebar-brand">
                     <i data-lucide="activity"></i>
-                    MediCare Admin
-                </div>
-            </div>
-            <div class="sidebar-menu">
-                <a href="admin-dashboard.html" class="menu-item active">
-                    <i data-lucide="layout-dashboard"></i> Dashboard
+                    <span>MediCare</span>
                 </a>
-                <a href="emergency.html" class="menu-item text-danger" style="color: var(--danger);">
-                    <i data-lucide="alert-circle"></i> Emergency Alerts
+                <span class="sidebar-role-pill" style="color: #a78bfa; background: rgba(139, 92, 246, 0.2); border-color: rgba(167, 139, 250, 0.3);">Admin</span>
+            </div>
+
+            <div class="sidebar-menu">
+                <div class="menu-category">System Administration</div>
+                <a href="admin-dashboard.html" class="menu-item active">
+                    <i data-lucide="layout-dashboard"></i>
+                    <span>Overview</span>
+                </a>
+                <a href="medicines.html" class="menu-item">
+                    <i data-lucide="pill"></i>
+                    <span>All Medicines</span>
+                </a>
+                <a href="schedule.html" class="menu-item">
+                    <i data-lucide="calendar"></i>
+                    <span>Dose Schedules</span>
+                </a>
+                <a href="medicine-logs.html" class="menu-item">
+                    <i data-lucide="clipboard-list"></i>
+                    <span>Intake Logs</span>
+                </a>
+
+                <div class="menu-category">System Health & Alerts</div>
+                <a href="emergency.html" class="menu-item text-danger" style="color: #f87171;">
+                    <i data-lucide="alert-octagon"></i>
+                    <span>Emergency Alerts</span>
+                    <span class="menu-item-badge" id="adminEmergencyBadge" style="display: none;">0</span>
+                </a>
+                <a href="notifications.html" class="menu-item">
+                    <i data-lucide="bell"></i>
+                    <span>Broadcast Notifications</span>
+                    <span class="menu-item-badge" id="adminNotifBadge" style="display: none;">0</span>
+                </a>
+                <a href="profile.html" class="menu-item">
+                    <i data-lucide="user"></i>
+                    <span>My Profile</span>
                 </a>
             </div>
         </aside>
 
-        <!-- Main Content -->
+        <!-- Main Content Area -->
         <main class="main-content">
+            <!-- Navbar -->
             <nav class="navbar">
                 <div class="navbar-left">
-                    <i data-lucide="menu" class="nav-icon" id="sidebarToggle"></i>
-                    <h2 class="hide-mobile" style="font-size: 1.1rem;">Admin Portal</h2>
+                    <button class="sidebar-toggle-btn" id="sidebarToggle" aria-label="Toggle navigation drawer">
+                        <i data-lucide="menu"></i>
+                    </button>
+                    <h2 class="navbar-title hide-mobile">System Administration Dashboard</h2>
                 </div>
+
                 <div class="navbar-right">
-                    <i data-lucide="moon" class="nav-icon" onclick="toggleTheme()"></i>
+                    <button class="nav-action-btn" onclick="toggleTheme()" title="Toggle Theme">
+                        <i data-lucide="moon"></i>
+                    </button>
+
+                    <a href="notifications.html" class="nav-action-btn" title="Notifications">
+                        <i data-lucide="bell"></i>
+                        <span class="nav-badge" id="navUnreadBadge" style="display: none;">0</span>
+                    </a>
+
                     <div class="user-profile" onclick="window.location.href='profile.html'">
-                        <div class="avatar" id="nav-initial">A</div>
-                        <div class="hide-mobile">
-                            <div style="font-weight: 600; font-size: 0.875rem;" id="nav-username">Admin</div>
-                            <div style="font-size: 0.75rem; color: var(--text-muted);" id="nav-role">Admin</div>
+                        <div class="avatar" id="nav-initial" style="background: linear-gradient(135deg, #7c3aed, #4f46e5);">A</div>
+                        <div class="user-info hide-mobile">
+                            <span class="user-name" id="nav-username">Administrator</span>
+                            <span class="user-role" id="nav-role">System Admin</span>
                         </div>
                     </div>
-                    <i data-lucide="log-out" class="nav-icon" onclick="logout()" title="Logout"></i>
+
+                    <button class="nav-action-btn" onclick="logout()" title="Logout">
+                        <i data-lucide="log-out"></i>
+                    </button>
                 </div>
             </nav>
 
+            <!-- Page Content -->
             <div class="page-content">
                 <div class="page-header">
-                    <h1 class="page-title">System Overview</h1>
+                    <div class="page-title-group">
+                        <h1 class="page-title">Hospital & System Overview</h1>
+                        <p class="page-subtitle">Real-time metrics, medication tracking, system compliance, and safety incidents</p>
+                    </div>
+
+                    <div class="page-actions">
+                        <a href="emergency.html" class="btn btn-danger emergency-pulse" id="btnActiveEmergenciesAlert" style="display: none;">
+                            <i data-lucide="alert-octagon"></i>
+                            <span id="activeEmergenciesBtnCount">0</span> Active Emergencies
+                        </a>
+                    </div>
                 </div>
 
-                <div class="kpi-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
-                    <div class="card kpi-card">
+                <!-- 8-Card KPI Matrix -->
+                <div class="kpi-grid">
+                    <div class="card kpi-card animate-fade-in">
                         <div class="kpi-info">
-                            <h3>Total Users</h3>
-                            <div class="kpi-value" id="kpi-users">0</div>
+                            <h3>Total System Users</h3>
+                            <div class="kpi-value" id="kpiUsers">0</div>
+                            <div class="kpi-subtext" id="kpiUserBreakdown">0 Patients • 0 Caregivers</div>
                         </div>
-                        <div class="kpi-icon"><i data-lucide="users"></i></div>
-                    </div>
-                    <div class="card kpi-card">
-                        <div class="kpi-info">
-                            <h3>Patients</h3>
-                            <div class="kpi-value" id="kpi-patients">0</div>
+                        <div class="kpi-icon" style="background: rgba(37, 99, 235, 0.1); color: var(--primary);">
+                            <i data-lucide="users"></i>
                         </div>
-                        <div class="kpi-icon" style="color: var(--info); background: rgba(59,130,246,0.1);"><i data-lucide="user"></i></div>
                     </div>
-                    <div class="card kpi-card">
-                        <div class="kpi-info">
-                            <h3>Caregivers</h3>
-                            <div class="kpi-value" id="kpi-caregivers">0</div>
-                        </div>
-                        <div class="kpi-icon" style="color: var(--success); background: rgba(16,185,129,0.1);"><i data-lucide="heart"></i></div>
-                    </div>
-                    <div class="card kpi-card">
+
+                    <div class="card kpi-card animate-fade-in">
                         <div class="kpi-info">
                             <h3>Overall Adherence</h3>
-                            <div class="kpi-value" id="kpi-adherence">0%</div>
+                            <div class="kpi-value" id="kpiOverallAdherence">0%</div>
+                            <div class="kpi-subtext">Taken vs. Total doses</div>
                         </div>
-                        <div class="kpi-icon" style="color: var(--success); background: rgba(16,185,129,0.1);"><i data-lucide="activity"></i></div>
+                        <div class="kpi-icon" style="background: rgba(16, 185, 129, 0.1); color: var(--success);">
+                            <i data-lucide="activity"></i>
+                        </div>
+                    </div>
+
+                    <div class="card kpi-card animate-fade-in">
+                        <div class="kpi-info">
+                            <h3>Total Medications</h3>
+                            <div class="kpi-value" id="kpiMedicines">0</div>
+                            <div class="kpi-subtext">Active Prescriptions</div>
+                        </div>
+                        <div class="kpi-icon" style="background: rgba(2, 132, 199, 0.1); color: var(--secondary);">
+                            <i data-lucide="pill"></i>
+                        </div>
+                    </div>
+
+                    <div class="card kpi-card animate-fade-in">
+                        <div class="kpi-info">
+                            <h3>Active Emergencies</h3>
+                            <div class="kpi-value" id="kpiActiveEmergencies" style="color: var(--danger);">0</div>
+                            <div class="kpi-subtext" id="kpiTotalEmergencies">0 total lifetime</div>
+                        </div>
+                        <div class="kpi-icon" style="background: rgba(239, 68, 68, 0.1); color: var(--danger);">
+                            <i data-lucide="alert-octagon"></i>
+                        </div>
                     </div>
                 </div>
 
+                <!-- Secondary Metric Row -->
+                <div class="kpi-grid">
+                    <div class="card kpi-card animate-fade-in">
+                        <div class="kpi-info">
+                            <h3>Doses Administered</h3>
+                            <div class="kpi-value" id="kpiTakenDoses" style="color: var(--success);">0</div>
+                            <div class="kpi-subtext">Recorded as Taken</div>
+                        </div>
+                        <div class="kpi-icon" style="background: rgba(16, 185, 129, 0.1); color: var(--success);">
+                            <i data-lucide="check-circle-2"></i>
+                        </div>
+                    </div>
+
+                    <div class="card kpi-card animate-fade-in">
+                        <div class="kpi-info">
+                            <h3>Missed Doses</h3>
+                            <div class="kpi-value" id="kpiMissedDoses" style="color: var(--danger);">0</div>
+                            <div class="kpi-subtext">Skipped intakes</div>
+                        </div>
+                        <div class="kpi-icon" style="background: rgba(239, 68, 68, 0.1); color: var(--danger);">
+                            <i data-lucide="x-circle"></i>
+                        </div>
+                    </div>
+
+                    <div class="card kpi-card animate-fade-in">
+                        <div class="kpi-info">
+                            <h3>Pending Doses</h3>
+                            <div class="kpi-value" id="kpiPendingDoses" style="color: var(--warning-dark);">0</div>
+                            <div class="kpi-subtext">Awaiting intake</div>
+                        </div>
+                        <div class="kpi-icon" style="background: rgba(245, 158, 11, 0.1); color: var(--warning-dark);">
+                            <i data-lucide="clock"></i>
+                        </div>
+                    </div>
+
+                    <div class="card kpi-card animate-fade-in">
+                        <div class="kpi-info">
+                            <h3>Caregiver Links</h3>
+                            <div class="kpi-value" id="kpiCaregiverLinks">0</div>
+                            <div class="kpi-subtext">Connected Relationships</div>
+                        </div>
+                        <div class="kpi-icon" style="background: rgba(13, 148, 136, 0.1); color: var(--accent-teal);">
+                            <i data-lucide="heart-handshake"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts Grid -->
                 <div class="charts-grid">
-                    <div class="card animate-fade-in" style="animation-delay: 0.1s">
-                        <h3 style="margin-bottom: 1rem; font-size: 1rem;">User Distribution</h3>
+                    <!-- User Distribution Chart -->
+                    <div class="card chart-card animate-fade-in">
+                        <div class="chart-card-header">
+                            <h3 class="chart-title">User Distribution</h3>
+                        </div>
                         <div class="chart-container">
                             <canvas id="userDistChart"></canvas>
                         </div>
                     </div>
-                    <div class="card animate-fade-in" style="animation-delay: 0.2s">
-                        <h3 style="margin-bottom: 1rem; font-size: 1rem;">Medicine Logs Overview</h3>
+
+                    <!-- Medication Compliance Breakdown -->
+                    <div class="card chart-card animate-fade-in">
+                        <div class="chart-card-header">
+                            <h3 class="chart-title">Medication Intake Breakdown</h3>
+                        </div>
                         <div class="chart-container">
                             <canvas id="logsChart"></canvas>
                         </div>
                     </div>
                 </div>
 
+                <!-- Critical Monitoring Tables (Active Emergencies & Low-Stock Alerts) -->
                 <div class="charts-grid">
-                    <div class="card animate-fade-in" style="animation-delay: 0.3s">
-                        <h3 style="margin-bottom: 1rem; font-size: 1rem; color: var(--danger);">Active Emergencies (<span id="activeEmergencyCount">0</span>)</h3>
+                    <!-- Active Emergencies Table -->
+                    <div class="card animate-fade-in">
+                        <div class="chart-card-header">
+                            <h3 class="chart-title" style="color: var(--danger); display: flex; align-items: center; gap: 0.5rem;">
+                                <i data-lucide="alert-octagon"></i>
+                                Active Emergency Alerts
+                            </h3>
+                            <a href="emergency.html" class="btn btn-outline btn-sm">All Emergencies</a>
+                        </div>
                         <div class="table-container" style="max-height: 300px; overflow-y: auto;">
-                            <table id="adminEmergencyTable">
+                            <table>
                                 <thead>
                                     <tr>
                                         <th>Patient</th>
-                                        <th>Message</th>
+                                        <th>Emergency Message</th>
                                         <th>Time</th>
+                                        <th>Action</th>
                                     </tr>
                                 </thead>
-                                <tbody>
-                                    <tr><td colspan="3" style="text-align: center;">Loading...</td></tr>
+                                <tbody id="adminEmergencyTbody">
+                                    <tr><td colspan="4" style="text-align: center;">Loading emergencies...</td></tr>
                                 </tbody>
                             </table>
                         </div>
                     </div>
-                    <div class="card animate-fade-in" style="animation-delay: 0.4s">
-                        <h3 style="margin-bottom: 1rem; font-size: 1rem; color: var(--warning);">Low Stock Medicines</h3>
+
+                    <!-- Low Stock Inventory Warnings -->
+                    <div class="card animate-fade-in">
+                        <div class="chart-card-header">
+                            <h3 class="chart-title" style="color: var(--warning-dark); display: flex; align-items: center; gap: 0.5rem;">
+                                <i data-lucide="package-minus"></i>
+                                Low Stock Prescriptions (<= 5 Remaining)
+                            </h3>
+                            <a href="medicines.html" class="btn btn-outline btn-sm">All Inventory</a>
+                        </div>
                         <div class="table-container" style="max-height: 300px; overflow-y: auto;">
-                            <table id="adminLowStockTable">
+                            <table>
                                 <thead>
                                     <tr>
                                         <th>Medicine</th>
                                         <th>Patient</th>
                                         <th>Stock</th>
+                                        <th>Dosage</th>
                                     </tr>
                                 </thead>
-                                <tbody>
-                                    <tr><td colspan="3" style="text-align: center;">Loading...</td></tr>
+                                <tbody id="adminLowStockTbody">
+                                    <tr><td colspan="4" style="text-align: center;">Loading inventory...</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -144,8 +288,9 @@
     <!-- Scripts -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/utils.js"></script>
     <script src="js/api.js"></script>
-    <script src="js/common.js"></script>
     <script src="js/auth.js"></script>
     <script src="js/charts.js"></script>
     <script src="js/admin-dashboard.js"></script>

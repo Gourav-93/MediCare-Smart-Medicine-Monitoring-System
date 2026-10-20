@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adherence & Compliance Dossier — MediCare</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/animations.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <a href="patient-dashboard.html" class="sidebar-brand" id="brandLink">
+                    <i data-lucide="activity"></i>
+                    <span>MediCare</span>
+                </a>
+                <span class="sidebar-role-pill" id="sidebarRoleLabel">Adherence</span>
+            </div>
+
+            <div class="sidebar-menu" id="sidebarMenu">
+                <!-- Dynamically populated -->
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Navbar -->
+            <nav class="navbar">
+                <div class="navbar-left">
+                    <button class="sidebar-toggle-btn" id="sidebarToggle" aria-label="Toggle navigation drawer">
+                        <i data-lucide="menu"></i>
+                    </button>
+                    <h2 class="navbar-title hide-mobile">Clinical Adherence Reports</h2>
+                </div>
+
+                <div class="navbar-right">
+                    <button class="nav-action-btn" onclick="toggleTheme()" title="Toggle Theme">
+                        <i data-lucide="moon"></i>
+                    </button>
+
+                    <a href="notifications.html" class="nav-action-btn" title="Notifications">
+                        <i data-lucide="bell"></i>
+                    </a>
+
+                    <div class="user-profile" onclick="window.location.href='profile.html'">
+                        <div class="avatar" id="nav-initial">U</div>
+                        <div class="user-info hide-mobile">
+                            <span class="user-name" id="nav-username">User</span>
+                            <span class="user-role" id="nav-role">Role</span>
+                        </div>
+                    </div>
+
+                    <button class="nav-action-btn" onclick="logout()" title="Logout">
+                        <i data-lucide="log-out"></i>
+                    </button>
+                </div>
+            </nav>
+
+            <!-- Page Content -->
+            <div class="page-content">
+                <div class="page-header">
+                    <div class="page-title-group">
+                        <h1 class="page-title">Adherence & Clinical Compliance</h1>
+                        <p class="page-subtitle">Detailed medication intake rates, periodic compliance timelines, and printable dossiers</p>
+                    </div>
+
+                    <div class="page-actions">
+                        <!-- Patient Selector (If Caregiver / Admin) -->
+                        <div id="patientSelectorWrap" style="display: none;">
+                            <select id="adherencePatientSelect" class="form-select" style="min-width: 200px;" onchange="onPatientSelectChange()">
+                                <option value="">-- Choose Patient --</option>
+                            </select>
+                        </div>
+
+                        <a id="btnPrintDossier" href="#" target="_blank" class="btn btn-primary">
+                            <i data-lucide="printer"></i>
+                            Download / Print Dossier
+                        </a>
+                    </div>
+                </div>
+
+                <!-- KPI Metric Cards Grid -->
+                <div class="kpi-grid">
+                    <div class="card kpi-card animate-fade-in">
+                        <div class="kpi-info">
+                            <h3>Overall Compliance</h3>
+                            <div class="kpi-value" id="kpiAdherenceRate">0%</div>
+                            <div class="kpi-subtext" id="kpiAdherenceRating">Rating: Calculating...</div>
+                        </div>
+                        <div class="kpi-icon" style="background: rgba(16, 185, 129, 0.1); color: var(--success);">
+                            <i data-lucide="activity"></i>
+                        </div>
+                    </div>
+
+                    <div class="card kpi-card animate-fade-in">
+                        <div class="kpi-info">
+                            <h3>Total Doses Due</h3>
+                            <div class="kpi-value" id="kpiTotalDoses">0</div>
+                            <div class="kpi-subtext">Cumulative intake requirement</div>
+                        </div>
+                        <div class="kpi-icon" style="background: rgba(37, 99, 235, 0.1); color: var(--primary);">
+                            <i data-lucide="calendar"></i>
+                        </div>
+                    </div>
+
+                    <div class="card kpi-card animate-fade-in">
+                        <div class="kpi-info">
+                            <h3>Doses Taken</h3>
+                            <div class="kpi-value" id="kpiTakenDoses" style="color: var(--success);">0</div>
+                            <div class="kpi-subtext">On-time administration</div>
+                        </div>
+                        <div class="kpi-icon" style="background: rgba(16, 185, 129, 0.1); color: var(--success);">
+                            <i data-lucide="check-circle-2"></i>
+                        </div>
+                    </div>
+
+                    <div class="card kpi-card animate-fade-in">
+                        <div class="kpi-info">
+                            <h3>Missed Doses</h3>
+                            <div class="kpi-value" id="kpiMissedDoses" style="color: var(--danger);">0</div>
+                            <div class="kpi-subtext">Requires follow-up</div>
+                        </div>
+                        <div class="kpi-icon" style="background: rgba(239, 68, 68, 0.1); color: var(--danger);">
+                            <i data-lucide="x-circle"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Timeline Chart -->
+                <div class="card animate-fade-in" style="margin-bottom: 2rem;">
+                    <div class="chart-card-header">
+                        <h3 class="chart-title" style="display: flex; align-items: center; gap: 0.5rem;">
+                            <i data-lucide="trending-up"></i>
+                            Adherence Timeline Progression
+                        </h3>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button class="btn btn-sm btn-outline active-period" id="btnPeriodDaily" onclick="setAdherencePeriod('Daily')">Daily</button>
+                            <button class="btn btn-sm btn-outline" id="btnPeriodWeekly" onclick="setAdherencePeriod('Weekly')">Weekly</button>
+                            <button class="btn btn-sm btn-outline" id="btnPeriodMonthly" onclick="setAdherencePeriod('Monthly')">Monthly</button>
+                        </div>
+                    </div>
+                    <div class="chart-container" style="height: 320px;">
+                        <canvas id="adherenceReportChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Timeline Breakdown Table -->
+                <div class="card animate-fade-in">
+                    <div class="chart-card-header">
+                        <h3 class="chart-title">Period Breakdown Table</h3>
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Period Interval</th>
+                                    <th>Total Doses</th>
+                                    <th>Taken Doses</th>
+                                    <th>Missed Doses</th>
+                                    <th>Compliance Rate</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adherenceBreakdownTbody">
+                                <tr><td colspan="5" style="text-align: center;">Loading compliance details...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/charts.js"></script>
+    <script src="js/adherence.js"></script>
+</body>
+</html>

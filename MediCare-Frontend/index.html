@@ -1,135 +1,529 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>MediCare - Smart Medicine Reminder & Family Monitoring</title>
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
-      rel="stylesheet"
-    />
-    <link rel="stylesheet" href="css/style.css" />
-    <link rel="stylesheet" href="css/animations.css" />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediCare — Smart Medicine Reminder & Family Monitoring System</title>
+    <meta name="description" content="Intelligent medicine monitoring, real-time caregiver synchronization, compliance analytics, and emergency alerts.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/animations.css">
     <style>
-      .landing-nav {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 1.5rem 5%;
-        background: rgba(255, 255, 255, 0.8);
-        backdrop-filter: blur(10px);
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        z-index: 1000;
-      }
-      [data-theme="dark"] .landing-nav {
-        background: rgba(15, 23, 42, 0.8);
-      }
-      .brand {
-        font-size: 1.5rem;
-        font-weight: 700;
-        color: var(--primary);
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-      }
-      .hero {
-        min-height: 100vh;
-        display: flex;
-        align-items: center;
-        padding: 0 5%;
-        position: relative;
-        overflow: hidden;
-        background: linear-gradient(
-          135deg,
-          rgba(37, 99, 235, 0.05) 0%,
-          rgba(14, 165, 233, 0.05) 100%
-        );
-      }
-      .hero-content {
-        max-width: 600px;
-        position: relative;
-        z-index: 10;
-      }
-      .hero-title {
-        font-size: 3.5rem;
-        font-weight: 800;
-        line-height: 1.2;
-        margin-bottom: 1.5rem;
-        color: var(--text-main);
-      }
-      .hero-subtitle {
-        font-size: 1.25rem;
-        color: var(--text-muted);
-        margin-bottom: 2.5rem;
-      }
-      .hero-buttons {
-        display: flex;
-        gap: 1rem;
-      }
-      #canvas-container {
-        position: absolute;
-        top: 0;
-        right: 0;
-        bottom: 0;
-        width: 50%;
-        z-index: 1;
-      }
-      @media (max-width: 768px) {
-        .hero-title {
-          font-size: 2.5rem;
+        .landing-header {
+            position: fixed;
+            top: 0;gi
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-color);
+            transition: background var(--transition-fast);
         }
-        #canvas-container {
-          width: 100%;
-          opacity: 0.3;
+        [data-theme="dark"] .landing-header {
+            background: rgba(15, 23, 42, 0.85);
         }
-      }
+        .landing-nav-container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .brand-logo {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            font-size: 1.35rem;
+            font-weight: 800;
+            color: var(--primary);
+            text-decoration: none;
+        }
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+        }
+        .landing-hero {
+            padding-top: 7rem;
+            padding-bottom: 4rem;
+            background: radial-gradient(circle at 80% 20%, rgba(37, 99, 235, 0.08) 0%, transparent 60%),
+                        radial-gradient(circle at 10% 80%, rgba(14, 165, 233, 0.08) 0%, transparent 50%);
+            min-height: 85vh;
+            display: flex;
+            align-items: center;
+        }
+        .hero-grid {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+            display: grid;
+            grid-template-columns: 1.15fr 0.85fr;
+            gap: 3.5rem;
+            align-items: center;
+        }
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--primary-light);
+            color: var(--primary);
+            font-size: 0.8rem;
+            font-weight: 700;
+            padding: 0.4rem 0.9rem;
+            border-radius: var(--radius-full);
+            margin-bottom: 1.5rem;
+            letter-spacing: 0.02em;
+            text-transform: uppercase;
+        }
+        .hero-headline {
+            font-size: 3.4rem;
+            font-weight: 800;
+            line-height: 1.15;
+            color: var(--text-main);
+            margin-bottom: 1.5rem;
+            letter-spacing: -0.03em;
+        }
+        .hero-headline span {
+            background: linear-gradient(135deg, var(--primary) 0%, #06b6d4 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .hero-desc {
+            font-size: 1.15rem;
+            color: var(--text-muted);
+            line-height: 1.6;
+            margin-bottom: 2rem;
+            max-width: 540px;
+        }
+        .hero-cta-group {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-bottom: 2.5rem;
+        }
+        .hero-stats-row {
+            display: flex;
+            gap: 2rem;
+            border-top: 1px solid var(--border-color);
+            padding-top: 1.75rem;
+        }
+        .hero-stat-item strong {
+            display: block;
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: var(--text-main);
+        }
+        .hero-stat-item span {
+            font-size: 0.825rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+        .interactive-preview-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-lg);
+            padding: 1.75rem;
+            position: relative;
+            overflow: hidden;
+        }
+        .feature-section {
+            padding: 5rem 1.5rem;
+            max-width: 1280px;
+            margin: 0 auto;
+        }
+        .section-header {
+            text-align: center;
+            max-width: 650px;
+            margin: 0 auto 3.5rem;
+        }
+        .section-header h2 {
+            font-size: 2.25rem;
+            font-weight: 800;
+            color: var(--text-main);
+            margin-bottom: 0.75rem;
+        }
+        .section-header p {
+            color: var(--text-muted);
+            font-size: 1.05rem;
+        }
+        .bento-features {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+        }
+        .bento-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            box-shadow: var(--shadow-sm);
+            transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+        }
+        .bento-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-md);
+        }
+        .bento-icon-wrapper {
+            width: 48px;
+            height: 48px;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.25rem;
+        }
+        .bento-card h3 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 0.5rem;
+        }
+        .bento-card p {
+            font-size: 0.925rem;
+            color: var(--text-muted);
+            line-height: 1.55;
+        }
+        .roles-section {
+            background: var(--card-bg-subtle);
+            padding: 5rem 1.5rem;
+            border-top: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color);
+        }
+        .roles-grid {
+            max-width: 1280px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.75rem;
+        }
+        .role-portal-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-xl);
+            padding: 2.25rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .portal-tag {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.75rem;
+            display: inline-block;
+        }
+        .landing-footer {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 3rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            color: var(--text-muted);
+            font-size: 0.875rem;
+        }
+        @media (max-width: 1024px) {
+            .hero-grid { grid-template-columns: 1fr; gap: 2.5rem; }
+            .hero-headline { font-size: 2.75rem; }
+            .bento-features { grid-template-columns: 1fr 1fr; }
+            .roles-grid { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 640px) {
+            .hero-headline { font-size: 2.2rem; }
+            .bento-features { grid-template-columns: 1fr; }
+            .hero-stats-row { flex-direction: column; gap: 1rem; }
+            .hero-cta-group { flex-direction: column; align-items: stretch; }
+        }
     </style>
-  </head>
-  <body>
-    <nav class="landing-nav">
-      <div class="brand">
-        <i data-lucide="activity"></i>
-        MediCare
-      </div>
-      <div class="nav-links">
-        <a href="login.html" class="btn btn-outline" style="margin-right: 1rem"
-          >Login</a
-        >
-        <a href="register.html" class="btn btn-primary">Get Started</a>
-      </div>
-    </nav>
+</head>
+<body>
+    <!-- Top Nav -->
+    <header class="landing-header">
+        <div class="landing-nav-container">
+            <a href="index.html" class="brand-logo">
+                <i data-lucide="activity"></i>
+                <span>MediCare</span>
+            </a>
 
-    <main class="hero">
-      <div class="hero-content animate-fade-in">
-        <h1 class="hero-title">
-          Never Miss Your <br /><span style="color: var(--primary)"
-            >Medicine</span
-          >
-          Again.
-        </h1>
-        <p class="hero-subtitle">
-          MediCare helps patients manage medicines, track adherence and stay
-          connected with caregivers through smart reminders and emergency
-          monitoring.
-        </p>
-        <div class="hero-buttons">
-          <a href="register.html" class="btn btn-primary btn-lg">Get Started</a>
-          <a href="login.html" class="btn btn-outline btn-lg">Login</a>
+            <div class="nav-actions">
+                <button class="btn btn-secondary" onclick="toggleTheme()" title="Toggle Theme" style="padding: 0.5rem 0.75rem;">
+                    <i data-lucide="moon"></i>
+                </button>
+                <div id="authNavButtons" style="display: flex; gap: 0.75rem; align-items: center;">
+                    <a href="login.html" class="btn btn-outline" id="navLoginBtn">Sign In</a>
+                    <a href="register.html" class="btn btn-primary" id="navRegisterBtn">Get Started</a>
+                </div>
+            </div>
         </div>
-      </div>
-      <div id="canvas-container"></div>
-    </main>
+    </header>
 
+    <!-- Main Hero -->
+    <section class="landing-hero">
+        <div class="hero-grid">
+            <div class="hero-content animate-fade-in">
+                <div class="hero-badge">
+                    <i data-lucide="shield-check" style="width: 14px; height: 14px;"></i>
+                    Healthcare Compliance & Monitoring
+                </div>
+                <h1 class="hero-headline">
+                    Intelligent Medicine Management & <span>Family Care</span>
+                </h1>
+                <p class="hero-desc">
+                    MediCare connects patients, caregivers, and medical supervisors through automated dose schedules, one-tap intake tracking, adherence analytics, and instantaneous emergency dispatches.
+                </p>
+                <div class="hero-cta-group">
+                    <a href="register.html" class="btn btn-primary btn-lg" id="heroActionBtn">
+                        <i data-lucide="arrow-right"></i>
+                        <span>Start Free Patient Hub</span>
+                    </a>
+                    <a href="login.html" class="btn btn-outline btn-lg">
+                        <i data-lucide="key"></i>
+                        <span>Portal Sign In</span>
+                    </a>
+                </div>
+
+                <div class="hero-stats-row">
+                    <div class="hero-stat-item">
+                        <strong>100%</strong>
+                        <span>Timely Reminder Accuracy</span>
+                    </div>
+                    <div class="hero-stat-item">
+                        <strong>24/7</strong>
+                        <span>Real-Time SOS Dispatch</span>
+                    </div>
+                    <div class="hero-stat-item">
+                        <strong>RESTful</strong>
+                        <span>ASP.NET Core Architecture</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bento-Style Live Preview Card -->
+            <div class="hero-preview-col animate-fade-in">
+                <div class="interactive-preview-card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                            <div style="width: 36px; height: 36px; border-radius: 50%; background: var(--primary-light); color: var(--primary); display: flex; align-items: center; justify-content: center; font-weight: 700;">
+                                M
+                            </div>
+                            <div>
+                                <h4 style="font-size: 0.95rem; font-weight: 700; color: var(--text-main); margin: 0;">Today's Patient Schedule</h4>
+                                <span style="font-size: 0.75rem; color: var(--text-muted);">Real-time intake tracking</span>
+                            </div>
+                        </div>
+                        <span class="badge badge-success">Live Sync</span>
+                    </div>
+
+                    <!-- Dose Items -->
+                    <div style="display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1.5rem;">
+                        <div style="background: var(--card-bg-subtle); padding: 0.85rem 1rem; border-radius: var(--radius-md); display: flex; justify-content: space-between; align-items: center; border-left: 3px solid var(--success);">
+                            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                <i data-lucide="check-circle" style="color: var(--success); width: 18px; height: 18px;"></i>
+                                <div>
+                                    <div style="font-weight: 600; font-size: 0.875rem; color: var(--text-main);">Metformin 500mg</div>
+                                    <div style="font-size: 0.75rem; color: var(--text-muted);">Morning • 08:00 AM • Taken</div>
+                                </div>
+                            </div>
+                            <span class="badge badge-success">Taken</span>
+                        </div>
+
+                        <div style="background: var(--card-bg-subtle); padding: 0.85rem 1rem; border-radius: var(--radius-md); display: flex; justify-content: space-between; align-items: center; border-left: 3px solid var(--warning);">
+                            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                <i data-lucide="clock" style="color: var(--warning); width: 18px; height: 18px;"></i>
+                                <div>
+                                    <div style="font-weight: 600; font-size: 0.875rem; color: var(--text-main);">Atorvastatin 20mg</div>
+                                    <div style="font-size: 0.75rem; color: var(--text-muted);">Evening • 08:00 PM • Pending</div>
+                                </div>
+                            </div>
+                            <span class="badge badge-warning">Due Next</span>
+                        </div>
+                    </div>
+
+                    <!-- Quick Compliance Summary -->
+                    <div style="background: var(--primary-light); padding: 1rem; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: space-between;">
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                            <i data-lucide="trending-up" style="color: var(--primary);"></i>
+                            <div>
+                                <div style="font-size: 0.75rem; font-weight: 600; color: var(--primary);">Weekly Adherence Score</div>
+                                <div style="font-size: 1.15rem; font-weight: 800; color: var(--primary);">94.5% High Compliance</div>
+                            </div>
+                        </div>
+                        <a href="login.html" class="btn btn-primary" style="padding: 0.4rem 0.85rem; font-size: 0.8rem;">View</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Key Features Bento Section -->
+    <section class="feature-section">
+        <div class="section-header">
+            <h2>Engineered for Clinical Precision</h2>
+            <p>Every feature is crafted to remove friction from medication routines and provide peace of mind to families.</p>
+        </div>
+
+        <div class="bento-features">
+            <div class="bento-card">
+                <div class="bento-icon-wrapper" style="background: rgba(37, 99, 235, 0.1); color: var(--primary);">
+                    <i data-lucide="pill"></i>
+                </div>
+                <h3>Smart Prescriptions & Schedules</h3>
+                <p>Complete medicine registry with dosages, frequency, inventory stock tracking, and automated low-stock warnings.</p>
+            </div>
+
+            <div class="bento-card">
+                <div class="bento-icon-wrapper" style="background: rgba(16, 185, 129, 0.1); color: var(--success);">
+                    <i data-lucide="check-circle-2"></i>
+                </div>
+                <h3>One-Tap Intake Logging</h3>
+                <p>Patients log taken doses with a single touch. The backend automatically records exact timestamps and adjusts remaining inventory.</p>
+            </div>
+
+            <div class="bento-card">
+                <div class="bento-icon-wrapper" style="background: rgba(239, 68, 68, 0.1); color: var(--danger);">
+                    <i data-lucide="alert-octagon"></i>
+                </div>
+                <h3>Instant SOS Emergency Alerts</h3>
+                <p>Critical distress button dispatches instantaneous notifications to connected caregivers and system administrators with one click.</p>
+            </div>
+
+            <div class="bento-card">
+                <div class="bento-icon-wrapper" style="background: rgba(139, 92, 246, 0.1); color: #8b5cf6;">
+                    <i data-lucide="users"></i>
+                </div>
+                <h3>Caregiver-Patient Linking</h3>
+                <p>Family members link directly to loved ones' profiles to monitor missed doses, pending medicine schedules, and health status.</p>
+            </div>
+
+            <div class="bento-card">
+                <div class="bento-icon-wrapper" style="background: rgba(245, 158, 11, 0.1); color: var(--warning);">
+                    <i data-lucide="trending-up"></i>
+                </div>
+                <h3>Adherence Analytics & Reports</h3>
+                <p>Visual adherence trends with daily, weekly, and monthly compliance metrics, plus exportable clinical summary reports.</p>
+            </div>
+
+            <div class="bento-card">
+                <div class="bento-icon-wrapper" style="background: rgba(6, 182, 212, 0.1); color: #06b6d4;">
+                    <i data-lucide="shield-check"></i>
+                </div>
+                <h3>JWT Security & Role Control</h3>
+                <p>Strict role-based access control protecting medical data across Patient, Caregiver, and Admin portals.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Role Portals Section -->
+    <section class="roles-section">
+        <div class="section-header">
+            <h2>Three Tailored Portals</h2>
+            <p>Purpose-built user experiences for every participant in the care circle.</p>
+        </div>
+
+        <div class="roles-grid">
+            <div class="role-portal-card">
+                <div>
+                    <span class="portal-tag" style="color: var(--success);">Patient Portal</span>
+                    <h3 style="font-size: 1.35rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.75rem;">Minimal Bento-Grid Hub</h3>
+                    <p style="color: var(--text-muted); font-size: 0.925rem; line-height: 1.5; margin-bottom: 1.5rem;">
+                        Focused, uncluttered medicine cards, upcoming dose countdowns, circular adherence dials, and direct access to emergency dispatches.
+                    </p>
+                </div>
+                <a href="login.html" class="btn btn-outline" style="width: 100%;">Access Patient Hub</a>
+            </div>
+
+            <div class="role-portal-card">
+                <div>
+                    <span class="portal-tag" style="color: var(--primary);">Caregiver Portal</span>
+                    <h3 style="font-size: 1.35rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.75rem;">Family Monitoring System</h3>
+                    <p style="color: var(--text-muted); font-size: 0.925rem; line-height: 1.5; margin-bottom: 1.5rem;">
+                        Real-time oversight over multiple linked patients, missed dose alerts, emergency banners with resolution controls, and adherence dossier cards.
+                    </p>
+                </div>
+                <a href="login.html" class="btn btn-primary" style="width: 100%;">Access Caregiver Portal</a>
+            </div>
+
+            <div class="role-portal-card">
+                <div>
+                    <span class="portal-tag" style="color: #8b5cf6;">Enterprise Admin</span>
+                    <h3 style="font-size: 1.35rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.75rem;">Clinical Command Center</h3>
+                    <p style="color: var(--text-muted); font-size: 0.925rem; line-height: 1.5; margin-bottom: 1.5rem;">
+                        High-altitude analytics, comprehensive prescription directory, system-wide emergency logs, broadcast notifications, and inventory auditing.
+                    </p>
+                </div>
+                <a href="login.html" class="btn btn-outline" style="width: 100%;">Access Admin Dashboard</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="landing-footer">
+        <div style="display: flex; align-items: center; gap: 0.5rem; font-weight: 700; color: var(--text-main);">
+            <i data-lucide="activity" style="color: var(--primary);"></i>
+            <span>MediCare Systems</span>
+        </div>
+        <div>
+            ASP.NET Core Web API &bull; MySQL &bull; Responsive Vanilla Frontend
+        </div>
+        <div style="display: flex; gap: 1rem;">
+            <a href="login.html" style="color: var(--text-muted); text-decoration: none;">Login</a>
+            <a href="register.html" style="color: var(--text-muted); text-decoration: none;">Register</a>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
     <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="js/common.js"></script>
-    <script src="js/three-scenes.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
     <script>
-      lucide.createIcons();
-      initHero3D("canvas-container");
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+
+            // If user is already authenticated, update buttons to direct dashboard access
+            if (Auth.isAuthenticated()) {
+                const user = Auth.getUser();
+                const role = Auth.getRole();
+                const authNav = document.getElementById('authNavButtons');
+                const heroActionBtn = document.getElementById('heroActionBtn');
+
+                let targetDashboard = 'patient-dashboard.html';
+                if (role === 'ADMIN') targetDashboard = 'admin-dashboard.html';
+                else if (role === 'CAREGIVER') targetDashboard = 'caregiver-dashboard.html';
+
+                if (authNav) {
+                    authNav.innerHTML = `
+                        <a href="${targetDashboard}" class="btn btn-primary">
+                            <i data-lucide="layout-dashboard"></i>
+                            <span>Go to Dashboard</span>
+                        </a>
+                        <button onclick="logout()" class="btn btn-outline" title="Sign Out">
+                            <i data-lucide="log-out"></i>
+                        </button>
+                    `;
+                }
+
+                if (heroActionBtn) {
+                    heroActionBtn.href = targetDashboard;
+                    heroActionBtn.innerHTML = `
+                        <i data-lucide="layout-dashboard"></i>
+                        <span>Continue as ${role}</span>
+                    `;
+                }
+
+                lucide.createIcons();
+            }
+        });
     </script>
-  </body>
+</body>
 </html>

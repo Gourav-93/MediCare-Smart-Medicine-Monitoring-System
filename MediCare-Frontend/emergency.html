@@ -3,69 +3,125 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Emergency Alerts - MediCare</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>Emergency Safety Center — MediCare</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="css/dashboard.css">
-    <link rel="stylesheet" href="css/responsive.css">
     <link rel="stylesheet" href="css/animations.css">
 </head>
 <body>
     <div class="app-container">
-        
-        <!-- Sidebar -->
+        <!-- Sidebar Navigation -->
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
-                <div class="sidebar-brand">
+                <a href="patient-dashboard.html" class="sidebar-brand" id="brandLink">
                     <i data-lucide="activity"></i>
-                    MediCare
-                </div>
+                    <span>MediCare</span>
+                </a>
+                <span class="sidebar-role-pill" id="sidebarRoleLabel" style="color: #f87171; background: rgba(239, 68, 68, 0.15); border-color: rgba(239, 68, 68, 0.3);">Emergency</span>
             </div>
+
             <div class="sidebar-menu" id="sidebarMenu">
-                <!-- Dynamically populated based on role -->
+                <!-- Dynamically populated -->
             </div>
         </aside>
 
-        <!-- Main Content -->
+        <!-- Main Content Area -->
         <main class="main-content">
             <!-- Navbar -->
             <nav class="navbar">
                 <div class="navbar-left">
-                    <i data-lucide="menu" class="nav-icon" id="sidebarToggle"></i>
-                    <h2 class="hide-mobile" style="font-size: 1.1rem;">Emergency System</h2>
+                    <button class="sidebar-toggle-btn" id="sidebarToggle" aria-label="Toggle navigation drawer">
+                        <i data-lucide="menu"></i>
+                    </button>
+                    <h2 class="navbar-title hide-mobile">Emergency Safety Center</h2>
                 </div>
+
                 <div class="navbar-right">
-                    <i data-lucide="moon" class="nav-icon" onclick="toggleTheme()"></i>
+                    <button class="nav-action-btn" onclick="toggleTheme()" title="Toggle Theme">
+                        <i data-lucide="moon"></i>
+                    </button>
+
+                    <a href="notifications.html" class="nav-action-btn" title="Notifications">
+                        <i data-lucide="bell"></i>
+                    </a>
+
                     <div class="user-profile" onclick="window.location.href='profile.html'">
                         <div class="avatar" id="nav-initial">U</div>
+                        <div class="user-info hide-mobile">
+                            <span class="user-name" id="nav-username">User</span>
+                            <span class="user-role" id="nav-role">Role</span>
+                        </div>
                     </div>
-                    <i data-lucide="log-out" class="nav-icon" onclick="logout()" title="Logout"></i>
+
+                    <button class="nav-action-btn" onclick="logout()" title="Logout">
+                        <i data-lucide="log-out"></i>
+                    </button>
                 </div>
             </nav>
 
+            <!-- Page Content -->
             <div class="page-content">
                 <div class="page-header">
-                    <h1 class="page-title">Emergency Alerts</h1>
-                    <button class="btn btn-danger emergency-pulse hide-caregiver" id="btnTriggerEmergency" onclick="triggerEmergency()">
-                        <i data-lucide="alert-triangle"></i> SEND EMERGENCY ALERT
-                    </button>
+                    <div class="page-title-group">
+                        <h1 class="page-title" style="display: flex; align-items: center; gap: 0.65rem;">
+                            <i data-lucide="alert-octagon" style="color: var(--danger);"></i>
+                            Emergency Safety & Alerts
+                        </h1>
+                        <p class="page-subtitle">Real-time distress notifications, caregiver communications, and emergency incident history</p>
+                    </div>
+
+                    <div class="page-actions">
+                        <!-- Patient SOS Button -->
+                        <button class="btn btn-danger emergency-pulse" id="btnTriggerSos" style="display: none;" onclick="openSosModal()">
+                            <i data-lucide="phone-call"></i>
+                            Trigger Emergency Alert
+                        </button>
+                    </div>
                 </div>
 
+                <!-- Emergency Filters Toolbar -->
+                <div class="card" style="margin-bottom: 1.5rem; padding: 1.25rem;">
+                    <div style="display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; justify-content: space-between;">
+                        <div style="flex: 1; min-width: 250px;">
+                            <input 
+                                type="text" 
+                                id="emergencySearchInput" 
+                                class="form-control" 
+                                placeholder="Search alerts by patient name or message..." 
+                                oninput="filterEmergencies()"
+                            >
+                        </div>
+
+                        <div style="display: flex; gap: 0.75rem; align-items: center;">
+                            <label class="form-label" style="margin-bottom: 0; font-size: 0.8rem; color: var(--text-muted); white-space: nowrap;">Status:</label>
+                            <select id="emergencyStatusFilter" class="form-select" style="width: 160px;" onchange="filterEmergencies()">
+                                <option value="All">All Incidents</option>
+                                <option value="ACTIVE" selected>Active Alerts</option>
+                                <option value="RESOLVED">Resolved Alerts</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Emergencies Table -->
                 <div class="card animate-fade-in">
                     <div class="table-container">
                         <table id="emergencyTable">
                             <thead>
                                 <tr>
                                     <th>Patient</th>
-                                    <th>Message</th>
-                                    <th>Status</th>
-                                    <th>Time</th>
-                                    <th class="hide-patient">Action</th>
+                                    <th>Emergency Message</th>
+                                    <th>Incident Status</th>
+                                    <th>Triggered Time</th>
+                                    <th>Resolved Time</th>
+                                    <th>Action</th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody id="emergencyTbody">
                                 <tr>
-                                    <td colspan="5" style="text-align: center;">Loading...</td>
+                                    <td colspan="6" style="text-align: center;">Loading emergency records...</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -75,9 +131,50 @@
         </main>
     </div>
 
+    <!-- Patient Trigger SOS Modal -->
+    <div class="modal-overlay" id="patientSosModal">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title" style="color: var(--danger);">
+                    <i data-lucide="alert-octagon"></i>
+                    Send Emergency Alert
+                </div>
+                <button class="modal-close" onclick="closeModal('patientSosModal')">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+            <form id="sosForm">
+                <p style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 1rem;">
+                    This will immediately broadcast a critical distress notification to all your linked caregivers and notify them via email.
+                </p>
+
+                <div class="form-group">
+                    <label class="form-label" for="sosMessageText">Emergency Details / Symptoms</label>
+                    <textarea 
+                        id="sosMessageText" 
+                        class="form-control" 
+                        rows="3" 
+                        required 
+                        placeholder="e.g. Experiencing severe chest pain, require immediate assistance with medication."
+                    >Need immediate assistance. Please check on me.</textarea>
+                </div>
+
+                <div style="display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1.5rem;">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('patientSosModal')">Cancel</button>
+                    <button type="submit" class="btn btn-danger emergency-pulse" id="btnSubmitSosAlert">
+                        <i data-lucide="send"></i>
+                        Confirm & Send SOS
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Scripts -->
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="js/config.js"></script>
+    <script src="js/utils.js"></script>
     <script src="js/api.js"></script>
-    <script src="js/common.js"></script>
     <script src="js/auth.js"></script>
     <script src="js/emergency.js"></script>
 </body>

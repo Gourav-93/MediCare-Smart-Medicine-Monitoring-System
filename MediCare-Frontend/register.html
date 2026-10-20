@@ -3,154 +3,305 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register - MediCare</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>Create Account — MediCare Smart Health</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/animations.css">
     <style>
-        body {
+        .auth-viewport {
+            min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            min-height: 100vh;
-            background: linear-gradient(135deg, rgba(37, 99, 235, 0.05) 0%, rgba(14, 165, 233, 0.05) 100%);
-            padding: 2rem 0;
+            padding: 2rem 1.5rem;
+            background: radial-gradient(circle at 10% 20%, rgba(29, 78, 216, 0.05) 0%, rgba(2, 132, 199, 0.03) 90%), var(--bg-color);
         }
-        .auth-container {
+        .auth-card {
             width: 100%;
-            max-width: 500px;
-            padding: 2rem;
+            max-width: 480px;
             background: var(--card-bg);
-            border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-lg);
             border: 1px solid var(--border-color);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-xl);
+            padding: 2.5rem 2rem;
+            position: relative;
         }
         .auth-header {
             text-align: center;
-            margin-bottom: 2rem;
+            margin-bottom: 1.75rem;
         }
         .auth-brand {
-            display: flex;
+            display: inline-flex;
             align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            font-size: 1.5rem;
-            font-weight: 700;
+            gap: 0.65rem;
+            font-size: 1.6rem;
+            font-weight: 800;
             color: var(--primary);
+            letter-spacing: -0.02em;
             margin-bottom: 0.5rem;
         }
-        .auth-subtitle {
-            color: var(--text-muted);
-            font-size: 0.875rem;
+        .auth-brand i {
+            width: 28px;
+            height: 28px;
         }
-        .password-container {
+        .auth-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 0.25rem;
+        }
+        .auth-subtitle {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+        .role-cards-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+            margin-bottom: 1.25rem;
+        }
+        .role-radio-label {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            padding: 0.85rem;
+            border-radius: var(--radius-md);
+            border: 2px solid var(--border-color);
+            cursor: pointer;
+            transition: var(--transition-fast);
+        }
+        .role-radio-label input {
+            display: none;
+        }
+        .role-radio-label.selected {
+            border-color: var(--primary);
+            background: var(--primary-glow);
+        }
+        .role-radio-icon {
+            width: 24px;
+            height: 24px;
+            color: var(--primary);
+            margin-bottom: 0.35rem;
+        }
+        .role-radio-title {
+            font-size: 0.875rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+        .role-radio-desc {
+            font-size: 0.725rem;
+            color: var(--text-muted);
+        }
+        .password-field-wrap {
             position: relative;
         }
-        .password-toggle {
+        .password-toggle-btn {
             position: absolute;
-            right: 10px;
+            right: 12px;
             top: 50%;
             transform: translateY(-50%);
-            background: none;
-            border: none;
             color: var(--text-muted);
             cursor: pointer;
+            padding: 4px;
+            display: flex;
+            align-items: center;
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
         }
         .auth-footer {
             margin-top: 1.5rem;
             text-align: center;
             font-size: 0.875rem;
             color: var(--text-muted);
+            border-top: 1px solid var(--border-color);
+            padding-top: 1.25rem;
         }
-        .row {
-            display: flex;
-            gap: 1rem;
+        .auth-footer a {
+            font-weight: 600;
         }
-        .col {
-            flex: 1;
+        .theme-float {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
         }
     </style>
 </head>
 <body>
-    <div class="auth-container animate-fade-in">
-        <div class="auth-header">
-            <div class="auth-brand">
-                <i data-lucide="activity"></i>
-                MediCare
-            </div>
-            <p class="auth-subtitle">Create your account.</p>
-        </div>
-        
-        <form id="registerForm">
-            <div class="form-group">
-                <label class="form-label">Full Name</label>
-                <input type="text" id="name" class="form-control" required placeholder="John Doe">
+    <div class="auth-viewport">
+        <div class="auth-card animate-fade-in">
+            <button class="nav-action-btn theme-float" onclick="toggleTheme()" title="Toggle Theme">
+                <i data-lucide="moon"></i>
+            </button>
+
+            <div class="auth-header">
+                <a href="index.html" class="auth-brand">
+                    <i data-lucide="activity"></i>
+                    MediCare
+                </a>
+                <h1 class="auth-title">Create Account</h1>
+                <p class="auth-subtitle">Join MediCare to monitor medication compliance</p>
             </div>
 
-            <div class="form-group">
-                <label class="form-label">Email</label>
-                <input type="email" id="email" class="form-control" required placeholder="john@example.com">
-            </div>
-            
-            <div class="row">
-                <div class="col form-group">
-                    <label class="form-label">Password</label>
-                    <div class="password-container">
-                        <input type="password" id="password" class="form-control" required placeholder="Password">
-                    </div>
-                </div>
-                <div class="col form-group">
-                    <label class="form-label">Confirm Password</label>
-                    <div class="password-container">
-                        <input type="password" id="confirmPassword" class="form-control" required placeholder="Confirm">
-                    </div>
-                </div>
-            </div>
+            <form id="registerForm" novalidate>
+                <!-- Role Selector (Only Patient and Caregiver permitted) -->
+                <label class="form-label">I want to register as a:</label>
+                <div class="role-cards-grid">
+                    <label class="role-radio-label selected" id="roleLabelPatient">
+                        <input type="radio" name="accountRole" value="PATIENT" checked>
+                        <i data-lucide="user" class="role-radio-icon"></i>
+                        <span class="role-radio-title">Patient</span>
+                        <span class="role-radio-desc">Track own medicines</span>
+                    </label>
 
-            <div class="form-group">
-                <label class="form-label">I am a...</label>
-                <select id="role" class="form-control" required>
-                    <option value="Patient">Patient</option>
-                    <option value="Caregiver">Caregiver</option>
-                </select>
+                    <label class="role-radio-label" id="roleLabelCaregiver">
+                        <input type="radio" name="accountRole" value="CAREGIVER">
+                        <i data-lucide="heart" class="role-radio-icon"></i>
+                        <span class="role-radio-title">Caregiver</span>
+                        <span class="role-radio-desc">Monitor family & patients</span>
+                    </label>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="regName">Full Name</label>
+                    <input 
+                        type="text" 
+                        id="regName" 
+                        class="form-control" 
+                        placeholder="e.g. Alex Johnson" 
+                        required 
+                        autocomplete="name"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="regEmail">Email Address</label>
+                    <input 
+                        type="email" 
+                        id="regEmail" 
+                        class="form-control" 
+                        placeholder="name@example.com" 
+                        required 
+                        autocomplete="email"
+                    >
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label" for="regPassword">Password</label>
+                        <div class="password-field-wrap">
+                            <input 
+                                type="password" 
+                                id="regPassword" 
+                                class="form-control" 
+                                placeholder="Min. 6 chars" 
+                                required 
+                                minlength="6"
+                                autocomplete="new-password"
+                            >
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="regConfirmPassword">Confirm</label>
+                        <div class="password-field-wrap">
+                            <input 
+                                type="password" 
+                                id="regConfirmPassword" 
+                                class="form-control" 
+                                placeholder="Re-enter" 
+                                required 
+                                minlength="6"
+                                autocomplete="new-password"
+                            >
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary" id="regSubmitBtn" style="width: 100%; margin-top: 0.5rem; padding: 0.75rem;">
+                    Create Account
+                </button>
+            </form>
+
+            <div class="auth-footer">
+                Already registered? <a href="login.html">Sign in here</a>
             </div>
-            
-            <button type="submit" class="btn btn-primary" style="width: 100%;">Register</button>
-        </form>
-        
-        <div class="auth-footer">
-            Already have an account? <a href="login.html">Login here</a>
         </div>
     </div>
 
+    <!-- Scripts -->
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="js/config.js"></script>
+    <script src="js/utils.js"></script>
     <script src="js/api.js"></script>
-    <script src="js/common.js"></script>
     <script src="js/auth.js"></script>
     <script>
         lucide.createIcons();
 
-        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+        // Radio button visuals
+        const patientLabel = document.getElementById('roleLabelPatient');
+        const caregiverLabel = document.getElementById('roleLabelCaregiver');
+        const radios = document.querySelectorAll('input[name="accountRole"]');
+
+        radios.forEach(radio => {
+            radio.addEventListener('change', () => {
+                if (radio.value === 'PATIENT') {
+                    patientLabel.classList.add('selected');
+                    caregiverLabel.classList.remove('selected');
+                } else {
+                    caregiverLabel.classList.add('selected');
+                    patientLabel.classList.remove('selected');
+                }
+            });
+        });
+
+        // Form submission
+        const form = document.getElementById('registerForm');
+        const submitBtn = document.getElementById('regSubmitBtn');
+
+        form.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const name = document.getElementById('name').value;
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            const confirmPassword = document.getElementById('confirmPassword').value;
-            const role = document.getElementById('role').value;
+            const name = document.getElementById('regName').value.trim();
+            const email = document.getElementById('regEmail').value.trim();
+            const password = document.getElementById('regPassword').value;
+            const confirmPassword = document.getElementById('regConfirmPassword').value;
+            const role = document.querySelector('input[name="accountRole"]:checked').value;
+
+            if (!name || !email || !password || !role) {
+                Utils.showToast('Please fill in all required fields.', 'warning');
+                return;
+            }
+
+            if (password.length < 6) {
+                Utils.showToast('Password must be at least 6 characters long.', 'warning');
+                return;
+            }
 
             if (password !== confirmPassword) {
-                showToast("Passwords do not match", "error");
+                Utils.showToast('Passwords do not match.', 'error');
                 return;
             }
 
             try {
-                await handleRegister({ name, email, password, role });
-                showToast('Registration successful! Please login.', 'success');
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<span class="spinner" style="width: 18px; height: 18px; border-width: 2px;"></span> Registering...';
+
+                await Auth.handleRegister({ name, email, password, role });
+                Utils.showToast('Account registered successfully! Redirecting to login...', 'success');
+
                 setTimeout(() => {
                     window.location.href = 'login.html';
-                }, 1500);
-            } catch (error) {
-                // Handled in API
+                }, 1400);
+
+            } catch (err) {
+                console.error('Registration error:', err);
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = 'Create Account';
             }
         });
     </script>

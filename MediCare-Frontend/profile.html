@@ -3,74 +3,147 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profile - MediCare</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>User Profile & Security — MediCare</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="css/dashboard.css">
-    <link rel="stylesheet" href="css/responsive.css">
     <link rel="stylesheet" href="css/animations.css">
 </head>
 <body>
     <div class="app-container">
-        
-        <!-- Sidebar -->
+        <!-- Sidebar Navigation -->
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
-                <div class="sidebar-brand">
+                <a href="patient-dashboard.html" class="sidebar-brand" id="brandLink">
                     <i data-lucide="activity"></i>
-                    MediCare
-                </div>
+                    <span>MediCare</span>
+                </a>
+                <span class="sidebar-role-pill" id="sidebarRoleLabel">Profile</span>
             </div>
+
             <div class="sidebar-menu" id="sidebarMenu">
-                <!-- Dynamically populated based on role -->
+                <!-- Dynamically populated -->
             </div>
         </aside>
 
-        <!-- Main Content -->
+        <!-- Main Content Area -->
         <main class="main-content">
+            <!-- Navbar -->
             <nav class="navbar">
                 <div class="navbar-left">
-                    <i data-lucide="menu" class="nav-icon" id="sidebarToggle"></i>
-                    <h2 class="hide-mobile" style="font-size: 1.1rem;">My Profile</h2>
+                    <button class="sidebar-toggle-btn" id="sidebarToggle" aria-label="Toggle navigation drawer">
+                        <i data-lucide="menu"></i>
+                    </button>
+                    <h2 class="navbar-title hide-mobile">Account & Profile Settings</h2>
                 </div>
+
                 <div class="navbar-right">
-                    <i data-lucide="moon" class="nav-icon" onclick="toggleTheme()"></i>
-                    <i data-lucide="log-out" class="nav-icon" onclick="logout()" title="Logout"></i>
+                    <button class="nav-action-btn" onclick="toggleTheme()" title="Toggle Theme">
+                        <i data-lucide="moon"></i>
+                    </button>
+
+                    <a href="notifications.html" class="nav-action-btn" title="Notifications">
+                        <i data-lucide="bell"></i>
+                    </a>
+
+                    <button class="nav-action-btn" onclick="logout()" title="Logout">
+                        <i data-lucide="log-out"></i>
+                    </button>
                 </div>
             </nav>
 
+            <!-- Page Content -->
             <div class="page-content">
                 <div class="page-header">
-                    <h1 class="page-title">Profile Settings</h1>
-                </div>
-
-                <div class="card animate-fade-in" style="max-width: 600px; margin: 0 auto;">
-                    <div style="text-align: center; margin-bottom: 2rem;">
-                        <div class="avatar" style="width: 80px; height: 80px; font-size: 2rem; margin: 0 auto 1rem auto;" id="profileAvatar">U</div>
-                        <h2 id="profileName">Loading...</h2>
-                        <div style="color: var(--text-muted);" id="profileEmail">...</div>
-                        <span class="badge badge-info" id="profileRole" style="margin-top: 0.5rem; display: inline-block;">...</span>
+                    <div class="page-title-group">
+                        <h1 class="page-title">Profile & Security</h1>
+                        <p class="page-subtitle">Personal identity details, authenticated role, and session credentials</p>
                     </div>
 
-                    <div style="border-top: 1px solid var(--border-color); padding-top: 2rem;">
-                        <div class="form-group">
-                            <label class="form-label">Email Address</label>
-                            <input type="text" id="inputEmail" class="form-control" readonly>
+                    <div class="page-actions">
+                        <button class="btn btn-danger" onclick="logout()">
+                            <i data-lucide="log-out"></i>
+                            Sign Out
+                        </button>
+                    </div>
+                </div>
+
+                <div style="max-width: 760px; margin: 0 auto; display: flex; flex-direction: column; gap: 1.5rem;">
+                    <!-- User Identity Card -->
+                    <div class="card animate-fade-in" style="text-align: center; padding: 2.5rem 1.5rem;">
+                        <div class="avatar" id="profileAvatarLarge" style="width: 80px; height: 80px; font-size: 2rem; margin: 0 auto 1.25rem;">U</div>
+                        <h2 style="font-size: 1.5rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.25rem;" id="profileName">User Name</h2>
+                        <div style="font-size: 0.95rem; color: var(--text-muted); margin-bottom: 0.75rem;" id="profileEmail">user@example.com</div>
+                        <div id="profileRoleBadge"><span class="badge badge-info">Role</span></div>
+                    </div>
+
+                    <!-- Account Specifications -->
+                    <div class="card animate-fade-in">
+                        <div class="chart-card-header">
+                            <h3 class="chart-title" style="display: flex; align-items: center; gap: 0.5rem;">
+                                <i data-lucide="shield-check"></i>
+                                Account Specifications
+                            </h3>
                         </div>
-                        <div class="form-group">
-                            <label class="form-label">Role</label>
-                            <input type="text" id="inputRole" class="form-control" readonly>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem;">
+                            <div class="form-group">
+                                <label class="form-label">User ID (Backend Database)</label>
+                                <input type="text" id="profUserId" class="form-control" readonly>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Authenticated Role</label>
+                                <input type="text" id="profRoleText" class="form-control" readonly>
+                            </div>
+
+                            <div class="form-group" style="grid-column: 1 / -1;">
+                                <label class="form-label">Email Address</label>
+                                <input type="text" id="profEmailText" class="form-control" readonly>
+                            </div>
                         </div>
-                        <!-- Note: Since there isn't a specific PUT /api/user/profile endpoint in this snippet, this is read-only for now -->
+
+                        <div id="patientExtraFields" style="display: none; border-top: 1px solid var(--border-color); padding-top: 1.25rem; margin-top: 0.5rem;">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem;">
+                                <div class="form-group">
+                                    <label class="form-label">Date of Birth</label>
+                                    <input type="text" id="profDob" class="form-control" readonly>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Emergency Contact Phone</label>
+                                    <input type="text" id="profEmergency" class="form-control" readonly>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Security & Session Information -->
+                    <div class="card animate-fade-in">
+                        <div class="chart-card-header">
+                            <h3 class="chart-title" style="display: flex; align-items: center; gap: 0.5rem;">
+                                <i data-lucide="key"></i>
+                                Session & Token Security
+                            </h3>
+                        </div>
+                        <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 1rem;">
+                            Authentication is secured using standard JSON Web Tokens (JWT) signed with HMAC-SHA256. Tokens are transmitted over HTTP Bearer authorization headers and cached in session storage.
+                        </p>
+                        <div style="display: flex; justify-content: space-between; align-items: center; background: var(--card-bg-subtle); padding: 0.75rem 1rem; border-radius: var(--radius-md); font-size: 0.85rem;">
+                            <span>Token Status: <strong style="color: var(--success);">Active & Verified</strong></span>
+                            <span style="color: var(--text-muted);">60-Minute Expiry</span>
+                        </div>
                     </div>
                 </div>
             </div>
         </main>
     </div>
 
+    <!-- Scripts -->
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="js/config.js"></script>
+    <script src="js/utils.js"></script>
     <script src="js/api.js"></script>
-    <script src="js/common.js"></script>
     <script src="js/auth.js"></script>
     <script src="js/profile.js"></script>
 </body>

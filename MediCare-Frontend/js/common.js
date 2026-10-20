@@ -1,6 +1,11 @@
-// common.js
+// common.js — Shared Utilities & UI Helpers
 
 function showToast(message, type = 'info') {
+    if (window.Utils && typeof Utils.showToast === 'function') {
+        Utils.showToast(message, type);
+        return;
+    }
+
     let container = document.getElementById('toast-container');
     if (!container) {
         container = document.createElement('div');
@@ -11,9 +16,9 @@ function showToast(message, type = 'info') {
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
     
-    let icon = 'info-circle';
+    let icon = 'info';
     if (type === 'success') icon = 'check-circle';
-    if (type === 'error') icon = 'x-circle';
+    if (type === 'error') icon = 'alert-circle';
     if (type === 'warning') icon = 'alert-triangle';
 
     toast.innerHTML = `
@@ -23,7 +28,6 @@ function showToast(message, type = 'info') {
 
     container.appendChild(toast);
     
-    // If lucide is loaded
     if (window.lucide) {
         lucide.createIcons({ root: toast });
     }
@@ -55,6 +59,10 @@ function hideLoader() {
 
 // Dark Mode Toggle
 function toggleTheme() {
+    if (window.Utils && typeof Utils.toggleTheme === 'function') {
+        Utils.toggleTheme();
+        return;
+    }
     const isDark = document.body.getAttribute('data-theme') === 'dark';
     const newTheme = isDark ? 'light' : 'dark';
     document.body.setAttribute('data-theme', newTheme);
@@ -80,6 +88,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     if (sidebarToggle && sidebar) {
         sidebarToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('active');
             sidebar.classList.toggle('open');
         });
     }
@@ -89,13 +98,17 @@ document.addEventListener('DOMContentLoaded', () => {
     if (userPayload) {
         const usernameEl = document.getElementById('nav-username');
         const roleEl = document.getElementById('nav-role');
-        if(usernameEl) usernameEl.textContent = userPayload.name || userPayload.email || 'User';
-        if(roleEl) roleEl.textContent = userPayload.role || '';
+        const email = userPayload.email || userPayload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'] || '';
+        const name = userPayload.name || userPayload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'] || (email ? email.split('@')[0] : 'User');
+        const role = userPayload.role || userPayload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] || '';
+
+        if(usernameEl) usernameEl.textContent = name;
+        if(roleEl) roleEl.textContent = role;
     }
 });
 
 function getJwtPayload() {
-    const token = localStorage.getItem('token');
+    const token = sessionStorage.getItem('medicare_token') || localStorage.getItem('token') || localStorage.getItem('medicare_token');
     if (!token) return null;
     try {
         const base64Url = token.split('.')[1];

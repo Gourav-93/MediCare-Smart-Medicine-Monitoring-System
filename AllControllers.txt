@@ -1,0 +1,2569 @@
+﻿
+========================================
+FILE: C:\Users\Dell\OneDrive\Desktop\MediCare\Controllers\AdherenceController.cs
+========================================
+using System.Security.Claims;
+using MediCare.Data;
+using MediCare.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+
+namespace MediCare.Controllers;
+
+[ApiController]
+[Route("api/adherence")]
+[Authorize(Roles = "ADMIN,PATIENT,CAREGIVER")]
+public class AdherenceController : ControllerBase
+{
+    private readonly IAdherenceService _service;
+    private readonly AppDbContext _context;
+
+    public AdherenceController(
+        IAdherenceService service,
+        AppDbContext context)
+    {
+        _service = service;
+        _context = context;
+    }
+
+    private int GetCurrentUserId()
+    {
+        return int.Parse(
+            User.FindFirstValue(ClaimTypes.NameIdentifier)!
+        );
+    }
+
+    private string GetCurrentRole()
+    {
+        return User.FindFirstValue(ClaimTypes.Role) ?? "";
+    }
+
+    [HttpGet("patient/{patientId}")]
+    public async Task<IActionResult> GetPatientAdherence(int patientId)
+    {
+        var userId = GetCurrentUserId();
+        var role = GetCurrentRole();
+
+        // ADMIN can access any existing patient
+        if (role == "ADMIN")
+        {
+            var patientExists = await _context.Patients
+                .AnyAsync(p => p.Id == patientId);
+
+            if (!patientExists)
+                return NotFound("Patient not found.");
+
+            var adminResult =
+                await _service.GetPatientAdherenceAsync(patientId);
+
+            return Ok(adminResult);
+        }
+
+        // PATIENT can access only their own adherence
+        if (role == "PATIENT")
+        {
+            var isOwnPatient = await _context.Patients
+                .AnyAsync(p =>
+                    p.Id == patientId &&
+                    p.UserId == userId);
+
+            if (!isOwnPatient)
+                return Forbid();
+
+            var patientResult =
+                await _service.GetPatientAdherenceAsync(patientId);
+
+            return Ok(patientResult);
+        }
+
+        // CAREGIVER can access only linked patient's adherence
+        if (role == "CAREGIVER")
+        {
+            var caregiver = await _context.Caregivers
+                .FirstOrDefaultAsync(c => c.UserId == userId);
+
+            if (caregiver == null)
+                return NotFound("Caregiver profile not found.");
+
+            var isLinked = await _context.CaregiverPatients
+                .AnyAsync(cp =>
+                    cp.CaregiverId == caregiver.Id &&
+                    cp.PatientId == patientId);
+
+            if (!isLinked)
+                return Forbid();
+
+            var caregiverResult =
+                await _service.GetPatientAdherenceAsync(patientId);
+
+            return Ok(caregiverResult);
+        }
+
+        return Forbid();
+    }
+
+    // GET: api/adherence/patient/{patientId}/report?period=Daily
+    [HttpGet("patient/{patientId}/report")]
+    public async Task<IActionResult> GetPeriodicAdherence(int patientId, [FromQuery] string period = "Daily")
+    {
+        var userId = GetCurrentUserId();
+        var role = GetCurrentRole();
+
+        // Security check: Role ke hisab se validation
+        if (role == "PATIENT")
+        {
+            var isOwnPatient = await _context.Patients
+                .AnyAsync(p => p.Id == patientId && p.UserId == userId);
+
+            if (!isOwnPatient) return Forbid();
+        }
+        else if (role == "CAREGIVER")
+        {
+            var caregiver = await _context.Caregivers
+                .FirstOrDefaultAsync(c => c.UserId == userId);
+
+            if (caregiver == null) return NotFound("Caregiver profile not found.");
+
+            var isLinked = await _context.CaregiverPatients
+                .AnyAsync(cp => cp.CaregiverId == caregiver.Id && cp.PatientId == patientId);
+
+            if (!isLinked) return Forbid();
+        }
+
+        var result = await _service.GetPeriodicAdherenceAsync(patientId, period);
+        return Ok(result);
+    }
+}
+
+
+========================================
+FILE: C:\Users\Dell\OneDrive\Desktop\MediCare\Controllers\AdminDashboardController.cs
+========================================
+using MediCare.Data;
+using MediCare.DTOs;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+
+namespace MediCare.Controllers;
+
+[ApiController]
+[Route("api/dashboard/admin")]
+[Authorize(Roles = "ADMIN")]
+public class AdminDashboardController : ControllerBase
+{
+    private readonly AppDbContext _context;
+
+    public AdminDashboardController(AppDbContext context)
+    {
+        _context = context;
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> GetDashboard()
+    {
+        var totalUsers = await _context.Users.CountAsync();
+        var totalPatients = await _context.Patients.CountAsync();
+        var totalCaregivers = await _context.Caregivers.CountAsync();
+        var totalMedicines = await _context.Medicines.CountAsync();
+        var totalMedicineLogs = await _context.MedicineLogs.CountAsync();
+        var totalTakenDoses = await _context.MedicineLogs.CountAsync(log => log.Status == "Taken");
+        var totalMissedDoses = await _context.MedicineLogs.CountAsync(log => log.Status == "Missed");
+        var totalPendingDoses = await _context.MedicineLogs.CountAsync(log => log.Status == "Pending");
+        var completedDoses = totalTakenDoses + totalMissedDoses;
+
+        var overallAdherencePercentage =
+            completedDoses == 0
+                ? 0
+                : Math.Round(
+                    (double)totalTakenDoses /
+                    completedDoses * 100,
+                    2);
+
+        var activeEmergencyAlerts =
+            await _context.EmergencyAlerts
+                .CountAsync(e => e.Status == "ACTIVE");
+
+        var totalEmergencyAlerts =
+            await _context.EmergencyAlerts.CountAsync();
+
+        var unreadNotifications =
+            await _context.Notifications
+                .CountAsync(n => !n.IsRead);
+
+        var caregiverPatientRelationships =
+            await _context.CaregiverPatients.CountAsync();
+
+        var lowStockMedicines =
+            await _context.Medicines
+                .Include(m => m.Patient)
+                .ThenInclude(p => p.User)
+                .Where(m => m.Stock <= 5)
+                .OrderBy(m => m.Stock)
+                .ToListAsync();
+
+        var activeEmergencies =
+            await _context.EmergencyAlerts
+                .Include(e => e.Patient)
+                    .ThenInclude(p => p.User)
+                .Where(e => e.Status == "ACTIVE")
+                .OrderByDescending(e => e.CreatedAt)
+                .ToListAsync();
+
+        var dashboard = new AdminDashboardDto
+        {
+            TotalUsers = totalUsers,
+
+            TotalPatients = totalPatients,
+
+            TotalCaregivers = totalCaregivers,
+
+            TotalMedicines = totalMedicines,
+
+            TotalMedicineLogs = totalMedicineLogs,
+
+            TotalTakenDoses = totalTakenDoses,
+
+            TotalMissedDoses = totalMissedDoses,
+
+            TotalPendingDoses = totalPendingDoses,
+
+            OverallAdherencePercentage =
+                overallAdherencePercentage,
+
+            ActiveEmergencyAlerts =
+                activeEmergencyAlerts,
+
+            TotalEmergencyAlerts =
+                totalEmergencyAlerts,
+
+            UnreadNotifications =
+                unreadNotifications,
+
+            CaregiverPatientRelationships =
+                caregiverPatientRelationships,
+
+            LowStockMedicines =
+                lowStockMedicines,
+
+            ActiveEmergencies =
+                activeEmergencies
+        };
+
+        return Ok(dashboard);
+    }
+}
+
+========================================
+FILE: C:\Users\Dell\OneDrive\Desktop\MediCare\Controllers\AuthController.cs
+========================================
+using MediCare.Data;
+using MediCare.DTOs;
+using MediCare.Models;
+using MediCare.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+
+namespace MediCare.Controllers;
+
+[ApiController]
+[Route("api/AuthController")]
+[AllowAnonymous]
+public class AuthController : ControllerBase
+{
+    private readonly AppDbContext _context;
+    private readonly IJwtService _jwtService;
+    private readonly PasswordHasher<User> _passwordHasher;
+
+    public AuthController(
+        AppDbContext context,
+        IJwtService jwtService)
+    {
+        _context = context;
+        _jwtService = jwtService;
+        _passwordHasher = new PasswordHasher<User>();
+    }
+
+    // POST: api/Auth/register
+    [HttpPost("register")]
+    public async Task<IActionResult> Register(RegisterDto dto)
+    {
+        if (string.IsNullOrWhiteSpace(dto.Name) ||
+            string.IsNullOrWhiteSpace(dto.Email) ||
+            string.IsNullOrWhiteSpace(dto.Password) ||
+            string.IsNullOrWhiteSpace(dto.Role))
+        {
+            return BadRequest(new { message = "Name, Email, Password and Role are required." });
+        }
+
+        if (dto.Password.Length < 6)
+        {
+            return BadRequest(new { message = "Password must be at least 6 characters long." });
+        }
+
+
+        var email = dto.Email.Trim().ToLower();
+
+        var existingUser = await _context.Users
+            .FirstOrDefaultAsync(u =>
+                u.Email.ToLower() == email);
+
+        if (existingUser != null)
+        {
+            return BadRequest(new { message = "Email already exists." });
+        }
+
+        var role = dto.Role.Trim().ToUpper();
+
+        // ADMIN cannot register publicly
+        if (role != "PATIENT" && role != "CAREGIVER")
+        {
+            return BadRequest(new { message = "Only PATIENT or CAREGIVER registration is allowed." });
+        }
+
+        var user = new User
+        {
+            Name = dto.Name.Trim(),
+            Email = email,
+            Role = role
+        };
+
+        user.PasswordHash =
+            _passwordHasher.HashPassword(
+                user,
+                dto.Password
+            );
+
+        _context.Users.Add(user);
+
+        await _context.SaveChangesAsync();
+
+        if (role == "PATIENT")
+        {
+            var patient = new Patient
+            {
+                UserId = user.Id,
+                DateOfBirth = DateTime.Today,
+                EmergencyContact = ""
+            };
+            _context.Patients.Add(patient);
+            await _context.SaveChangesAsync();
+        }
+        else if (role == "CAREGIVER")
+        {
+            var caregiver = new Caregiver
+            {
+                UserId = user.Id,
+                Relationship = ""
+            };
+            _context.Caregivers.Add(caregiver);
+            await _context.SaveChangesAsync();
+        }
+
+        return Ok(new
+        {
+            message = "User registered successfully.",
+            userId = user.Id,
+            role = user.Role
+        });
+    }
+
+    // POST: api/Auth/login
+    [HttpPost("login")]
+    public async Task<IActionResult> Login(LoginDto dto)
+    {
+        if (string.IsNullOrWhiteSpace(dto.Email) ||
+            string.IsNullOrWhiteSpace(dto.Password))
+        {
+            return BadRequest(new { message = "Email and Password are required." });
+        }
+
+        var email = dto.Email.Trim().ToLower();
+
+        var user = await _context.Users
+            .FirstOrDefaultAsync(u =>
+                u.Email.ToLower() == email);
+
+        if (user == null)
+        {
+            return Unauthorized(new { message = "Invalid email or password." });
+        }
+
+        var result = _passwordHasher.VerifyHashedPassword(
+            user,
+            user.PasswordHash,
+            dto.Password
+        );
+
+        if (result == PasswordVerificationResult.Failed)
+        {
+            return Unauthorized(new { message = "Invalid email or password." });
+        }
+
+        var token = _jwtService.GenerateToken(
+            user.Id,
+            user.Email,
+            user.Role
+        );
+
+        return Ok(new
+        {
+            message = "Login successful.",
+            token = token,
+            userId = user.Id,
+            name = user.Name,
+            email = user.Email,
+            role = user.Role
+        });
+    }
+}
+
+========================================
+FILE: C:\Users\Dell\OneDrive\Desktop\MediCare\Controllers\CaregiverDashboardController.cs
+========================================
+using System.Security.Claims;
+using MediCare.Data;
+using MediCare.DTOs;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using MediCare.Models;
+
+namespace MediCare.Controllers;
+
+[ApiController]
+[Route("api/dashboard/caregiver")]
+[Authorize(Roles = "CAREGIVER")]
+public class CaregiverDashboardController : ControllerBase
+{
+    private readonly AppDbContext _context;
+
+    public CaregiverDashboardController(AppDbContext context)
+    {
+        _context = context;
+    }
+
+    private int GetCurrentUserId()
+    {
+        return int.Parse(
+            User.FindFirstValue(ClaimTypes.NameIdentifier)!
+        );
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> GetDashboard()
+    {
+        var userId = GetCurrentUserId();
+
+        // Find caregiver profile
+        var caregiver = await _context.Caregivers
+            .Include(c => c.User)
+            .FirstOrDefaultAsync(c => c.UserId == userId);
+
+        if (caregiver == null)
+            return NotFound("Caregiver profile not found.");
+
+        // Find linked patients
+        var linkedPatients = await _context.CaregiverPatients
+            .Include(cp => cp.Patient)
+                .ThenInclude(p => p.User)
+            .Where(cp => cp.CaregiverId == caregiver.Id)
+            .Select(cp => cp.Patient)
+            .ToListAsync();
+
+        var patientIds = linkedPatients
+            .Select(p => p.Id)
+            .ToList();
+
+        // Caregiver information
+        var caregiverInfo = new CaregiverInfoDto
+        {
+            Id = caregiver.Id,
+            UserId = caregiver.UserId,
+            Name = caregiver.User.Name,
+            Email = caregiver.User.Email,
+            Relationship = caregiver.Relationship
+        };
+
+        // Patient information
+        var patients = linkedPatients
+            .Select(p => new CaregiverDashboardPatientDto
+            {
+                PatientId = p.Id,
+                UserId = p.UserId,
+                Name = p.User.Name,
+                Email = p.User.Email,
+                DateOfBirth = p.DateOfBirth,
+                EmergencyContact = p.EmergencyContact
+            })
+                    .ToList();
+
+        // Active emergency alerts
+        var activeEmergencies = await _context.EmergencyAlerts
+            .Include(e => e.Patient)
+                .ThenInclude(p => p.User)
+            .Where(e =>
+                patientIds.Contains(e.PatientId) &&
+                e.Status == "ACTIVE")
+            .OrderByDescending(e => e.CreatedAt)
+            .ToListAsync();
+
+        // Missed medicines
+        var missedMedicines = await _context.MedicineLogs
+            .Include(log => log.Medicine)
+            .Include(log => log.Patient)
+                .ThenInclude(p => p.User)
+            .Where(log =>
+                patientIds.Contains(log.PatientId) &&
+                log.Status == "Missed")
+            .OrderByDescending(log => log.ScheduledTime)
+            .Take(20)
+            .ToListAsync();
+
+        // Today's medicine schedules
+        var today = DateTime.Today;
+
+        var todaySchedules = await _context.MedicineSchedules
+            .Include(schedule => schedule.Medicine)
+            .Where(schedule =>
+                patientIds.Contains(schedule.Medicine.PatientId) &&
+                schedule.Medicine.StartDate.Date <= today &&
+                schedule.Medicine.EndDate.Date >= today)
+            .OrderBy(schedule => schedule.Time)
+            .ToListAsync();
+
+        // Today's medicine logs for pending calculation
+        var todaysLogs = await _context.MedicineLogs
+            .Include(log => log.Medicine)
+            .Include(log => log.Patient)
+                .ThenInclude(p => p.User)
+            .Where(log =>
+                patientIds.Contains(log.PatientId) &&
+                log.ScheduledTime.Date == today)
+            .ToListAsync();
+
+        var pendingMedicines = new List<MedicineLog>();
+
+        foreach (var schedule in todaySchedules)
+        {
+            var scheduledTime = today.Add(schedule.Time);
+            var log = todaysLogs.FirstOrDefault(l =>
+                l.MedicineId == schedule.MedicineId &&
+                l.ScheduledTime == scheduledTime);
+
+            if (log == null)
+            {
+                pendingMedicines.Add(new MedicineLog
+                {
+                    MedicineId = schedule.MedicineId,
+                    Medicine = schedule.Medicine,
+                    PatientId = schedule.Medicine.PatientId,
+                    ScheduledTime = scheduledTime,
+                    Status = "Pending"
+                });
+            }
+            else if (log.Status == "Pending")
+            {
+                pendingMedicines.Add(log);
+            }
+        }
+
+        pendingMedicines = pendingMedicines.OrderBy(log => log.ScheduledTime).Take(20).ToList();
+
+        // Adherence calculation
+        var logs = await _context.MedicineLogs
+            .Where(log => patientIds.Contains(log.PatientId))
+            .ToListAsync();
+
+        var adherence = linkedPatients
+            .Select(patient =>
+            {
+                var patientLogs = logs
+                    .Where(log => log.PatientId == patient.Id)
+                    .ToList();
+
+                var total = patientLogs.Count;
+
+                var taken = patientLogs.Count(log =>
+                    string.Equals(
+                        log.Status,
+                        "Taken",
+                        StringComparison.OrdinalIgnoreCase));
+
+                var missed = patientLogs.Count(log =>
+                    string.Equals(
+                        log.Status,
+                        "Missed",
+                        StringComparison.OrdinalIgnoreCase));
+
+                var percentage = total == 0
+                    ? 0
+                    : Math.Round(
+                        (double)taken / total * 100,
+                        2);
+
+                return new PatientAdherenceDto
+                {
+                    PatientId = patient.Id,
+                    PatientName = patient.User.Name,
+                    TotalDoses = total,
+                    TakenDoses = taken,
+                    MissedDoses = missed,
+                    AdherencePercentage = percentage
+                };
+            })
+            .ToList();
+
+        // Unread notifications for this caregiver
+        var unreadNotifications = await _context.Notifications
+            .CountAsync(n =>
+                n.UserId == userId &&
+                !n.IsRead);
+
+        // Final dashboard response
+        var dashboard = new CaregiverDashboardDto
+        {
+            Caregiver = caregiverInfo,
+            Patients = patients,
+            ActiveEmergencies = activeEmergencies,
+            MissedMedicines = missedMedicines,
+            TodaySchedules = todaySchedules,
+            PendingMedicines = pendingMedicines,
+            Adherence = adherence,
+            UnreadNotifications = unreadNotifications
+        };
+
+        return Ok(dashboard);
+    }
+}
+
+========================================
+FILE: C:\Users\Dell\OneDrive\Desktop\MediCare\Controllers\CaregiverPatientController.cs
+========================================
+using System.Security.Claims;
+using MediCare.Data;
+using MediCare.DTOs;
+using MediCare.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+
+namespace MediCare.Controllers;
+
+[ApiController]
+[Route("api/Caregiverpatient")]
+[Authorize]
+public class CaregiverPatientController : ControllerBase
+{
+    private readonly ICaregiverPatientService _service;
+    private readonly AppDbContext _context;
+
+    public CaregiverPatientController(
+        ICaregiverPatientService service,
+        AppDbContext context)
+    {
+        _service = service;
+        _context = context;
+    }
+
+    private int GetCurrentUserId()
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (!int.TryParse(userId, out var id))
+        {
+            return 0;
+        }
+
+        return id;
+    }
+
+    private string GetCurrentRole()
+    {
+        return User.FindFirstValue(ClaimTypes.Role) ?? string.Empty;
+    }
+
+    [HttpPost("link")]
+    [Authorize(Roles = "ADMIN,CAREGIVER")]
+    public async Task<IActionResult> LinkPatient(
+        CaregiverPatientDto dto)
+    {
+        if (dto.CaregiverId <= 0)
+        {
+            return BadRequest("Valid caregiverId is required.");
+        }
+
+        if (dto.PatientId <= 0 && string.IsNullOrWhiteSpace(dto.PatientEmail))
+        {
+            return BadRequest("Either PatientId or PatientEmail is required.");
+        }
+
+        var role = GetCurrentRole();
+        var currentUserId = GetCurrentUserId();
+
+        var caregiver = await _context.Caregivers
+            .FirstOrDefaultAsync(c => c.Id == dto.CaregiverId);
+
+        if (caregiver == null)
+        {
+            return NotFound("Caregiver not found.");
+        }
+
+        // Caregiver can only link himself.
+        if (role == "CAREGIVER" &&
+            caregiver.UserId != currentUserId)
+        {
+            return Forbid();
+        }
+
+        if (dto.PatientId <= 0 && !string.IsNullOrWhiteSpace(dto.PatientEmail))
+        {
+            var pUser = await _context.Users.FirstOrDefaultAsync(u => u.Email.ToLower() == dto.PatientEmail.ToLower() && u.Role == "PATIENT");
+            if (pUser == null) 
+            {
+                return NotFound("Patient with that email not found.");
+            }
+            var pat = await _context.Patients.FirstOrDefaultAsync(p => p.UserId == pUser.Id);
+            if (pat == null)
+            {
+                return NotFound("Patient profile not found.");
+            }
+            dto.PatientId = pat.Id;
+        }
+
+        var patientExists = await _context.Patients
+            .AnyAsync(p => p.Id == dto.PatientId);
+
+        if (!patientExists)
+        {
+            return NotFound("Patient not found.");
+        }
+
+        try
+        {
+            var result = await _service.LinkPatientAsync(dto);
+
+            return Ok(result);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+
+    [HttpGet("caregiver/{caregiverId}")]
+    [Authorize(Roles = "ADMIN,CAREGIVER")]
+    public async Task<IActionResult> GetPatients(
+        int caregiverId)
+    {
+        if (caregiverId <= 0)
+        {
+            return BadRequest("Invalid caregiverId.");
+        }
+
+        var role = GetCurrentRole();
+        var currentUserId = GetCurrentUserId();
+
+        var caregiver = await _context.Caregivers
+            .FirstOrDefaultAsync(c => c.Id == caregiverId);
+
+        if (caregiver == null)
+        {
+            return NotFound("Caregiver not found.");
+        }
+
+        // Caregiver can only see his own linked patients.
+        if (role == "CAREGIVER" &&
+            caregiver.UserId != currentUserId)
+        {
+            return Forbid();
+        }
+
+        var patients = await _service
+            .GetPatientsAsync(caregiverId);
+
+        return Ok(patients);
+    }
+
+    // =========================================================
+    // GET CAREGIVERS OF PATIENT
+    // ADMIN -> any patient
+    // PATIENT -> only himself
+    // CAREGIVER -> only patients linked to himself
+    // =========================================================
+
+    [HttpGet("patient/{patientId}")]
+    [Authorize(Roles = "ADMIN,PATIENT,CAREGIVER")]
+    public async Task<IActionResult> GetCaregivers(
+        int patientId)
+    {
+        if (patientId <= 0)
+        {
+            return BadRequest("Invalid patientId.");
+        }
+
+        var role = GetCurrentRole();
+        var currentUserId = GetCurrentUserId();
+
+        var patient = await _context.Patients
+            .FirstOrDefaultAsync(p => p.Id == patientId);
+
+        if (patient == null)
+        {
+            return NotFound("Patient not found.");
+        }
+
+        // Patient can only see caregivers connected to himself.
+        if (role == "PATIENT" &&
+            patient.UserId != currentUserId)
+        {
+            return Forbid();
+        }
+
+        // Caregiver can only see caregivers of a patient
+        // who is linked to that caregiver.
+        if (role == "CAREGIVER")
+        {
+            var caregiver = await _context.Caregivers
+                .FirstOrDefaultAsync(c => c.UserId == currentUserId);
+
+            if (caregiver == null)
+            {
+                return Forbid();
+            }
+
+            var isLinked = await _context.CaregiverPatients
+                .AnyAsync(cp =>
+                    cp.CaregiverId == caregiver.Id &&
+                    cp.PatientId == patientId);
+
+            if (!isLinked)
+            {
+                return Forbid();
+            }
+        }
+
+        var caregivers = await _service
+            .GetCaregiversAsync(patientId);
+
+        return Ok(caregivers);
+    }
+
+    [HttpDelete("unlink")]
+    [Authorize(Roles = "ADMIN,CAREGIVER")]
+    public async Task<IActionResult> UnlinkPatient(
+        int caregiverId,
+        int patientId)
+    {
+        if (caregiverId <= 0 || patientId <= 0)
+        {
+            return BadRequest("Valid caregiverId and patientId are required.");
+        }
+
+        var role = GetCurrentRole();
+        var currentUserId = GetCurrentUserId();
+
+        var caregiver = await _context.Caregivers
+            .FirstOrDefaultAsync(c => c.Id == caregiverId);
+
+        if (caregiver == null)
+        {
+            return NotFound("Caregiver not found.");
+        }
+
+        // Caregiver can only unlink his own relationship.
+        if (role == "CAREGIVER" &&
+            caregiver.UserId != currentUserId)
+        {
+            return Forbid();
+        }
+
+        var relationshipExists = await _context.CaregiverPatients
+            .AnyAsync(cp =>
+                cp.CaregiverId == caregiverId &&
+                cp.PatientId == patientId);
+
+        if (!relationshipExists)
+        {
+            return NotFound("Relationship not found.");
+        }
+
+        var result = await _service
+            .UnlinkPatientAsync(caregiverId, patientId);
+
+        if (!result)
+        {
+            return NotFound("Relationship not found.");
+        }
+
+        return Ok("Patient unlinked successfully.");
+    }
+}
+
+========================================
+FILE: C:\Users\Dell\OneDrive\Desktop\MediCare\Controllers\EmergencyController.cs
+========================================
+using System.Security.Claims;
+using MediCare.Data;
+using MediCare.DTOs;
+using MediCare.Models;
+using MediCare.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+
+namespace MediCare.Controllers;
+
+[ApiController]
+[Route("api/emergency")]
+[Authorize(Roles = "PATIENT,CAREGIVER,ADMIN")]
+public class EmergencyController : ControllerBase
+{
+    private readonly AppDbContext _context;
+    private readonly IEmailService _emailService;
+
+    public EmergencyController(
+        AppDbContext context,
+        IEmailService emailService)
+    {
+        _context = context;
+        _emailService = emailService;
+    }
+
+    private int GetCurrentUserId()
+    {
+        return int.Parse(
+            User.FindFirstValue(ClaimTypes.NameIdentifier)!
+        );
+    }
+
+    private string GetCurrentRole()
+    {
+        return User.FindFirstValue(ClaimTypes.Role) ?? "";
+    }
+
+    // POST: api/emergency
+    [HttpPost]
+    [Authorize(Roles = "PATIENT")]
+    public async Task<IActionResult> CreateEmergency(
+        EmergencyAlertDto dto)
+    {
+        if (string.IsNullOrWhiteSpace(dto.Message))
+            return BadRequest("Emergency message is required.");
+
+        var userId = GetCurrentUserId();
+
+        var patient = await _context.Patients
+            .Include(p => p.User)
+            .FirstOrDefaultAsync(p => p.UserId == userId);
+
+        if (patient == null)
+            return NotFound("Patient profile not found.");
+
+        var emergency = new EmergencyAlert
+        {
+            PatientId = patient.Id,
+            Message = dto.Message.Trim(),
+            Status = "ACTIVE",
+            CreatedAt = DateTime.Now
+        };
+
+        _context.EmergencyAlerts.Add(emergency);
+
+        // Find all linked caregivers
+        var caregivers = await _context.CaregiverPatients
+            .Include(cp => cp.Caregiver)
+                .ThenInclude(c => c.User)
+            .Where(cp => cp.PatientId == patient.Id)
+            .ToListAsync();
+
+        foreach (var caregiverPatient in caregivers)
+        {
+            var caregiver = caregiverPatient.Caregiver;
+
+            // Database notification
+            var notification = new Notification
+            {
+                UserId = caregiver.UserId,
+                Title = "ðŸš¨ Emergency Alert",
+                Message =
+                    $"Emergency alert from patient {patient.User.Name}: " +
+                    $"{dto.Message}",
+                Type = "EmergencyAlert",
+                IsRead = false,
+                CreatedAt = DateTime.Now
+            };
+
+            _context.Notifications.Add(notification);
+
+            // Email notification
+            if (!string.IsNullOrWhiteSpace(
+                    caregiver.User.Email))
+            {
+                try
+                {
+                    await _emailService.SendEmailAsync(
+                        caregiver.User.Email,
+                        "ðŸš¨ Emergency Alert - MediCare",
+                        $"Hello {caregiver.User.Name},\n\n" +
+                        $"An emergency alert has been triggered by " +
+                        $"patient {patient.User.Name}.\n\n" +
+                        $"Message: {dto.Message}\n\n" +
+                        $"Please check on the patient immediately.\n\n" +
+                        $"Regards,\n" +
+                        $"MediCare"
+                    );
+                }
+                catch (Exception ex)
+                {
+                    // Email failure should not stop emergency creation
+                    Console.WriteLine(
+                        $"Emergency email failed: {ex.Message}"
+                    );
+                }
+            }
+        }
+
+        await _context.SaveChangesAsync();
+
+        return Ok(new
+        {
+            message = "Emergency alert created successfully.",
+            emergencyId = emergency.Id,
+            status = emergency.Status,
+            caregiversNotified = caregivers.Count
+        });
+    }
+
+    // GET: api/emergency
+    [HttpGet]
+    public async Task<IActionResult> GetEmergencies()
+    {
+        var userId = GetCurrentUserId();
+        var role = GetCurrentRole();
+
+        if (role == "PATIENT")
+        {
+            var patient = await _context.Patients
+                .FirstOrDefaultAsync(p => p.UserId == userId);
+
+            if (patient == null)
+                return NotFound("Patient profile not found.");
+
+            var emergencies = await _context.EmergencyAlerts
+                .Where(e => e.PatientId == patient.Id)
+                .OrderByDescending(e => e.CreatedAt)
+                .ToListAsync();
+
+            return Ok(emergencies);
+        }
+
+        if (role == "CAREGIVER")
+        {
+            var caregiver = await _context.Caregivers
+                .FirstOrDefaultAsync(c => c.UserId == userId);
+
+            if (caregiver == null)
+                return NotFound("Caregiver profile not found.");
+
+            var emergencies = await _context.EmergencyAlerts
+                .Include(e => e.Patient)
+                    .ThenInclude(p => p.User)
+                .Where(e =>
+                    _context.CaregiverPatients.Any(cp =>
+                        cp.CaregiverId == caregiver.Id &&
+                        cp.PatientId == e.PatientId))
+                .OrderByDescending(e => e.CreatedAt)
+                .ToListAsync();
+
+            return Ok(emergencies);
+        }
+
+        // ADMIN
+        var allEmergencies = await _context.EmergencyAlerts
+            .Include(e => e.Patient)
+                .ThenInclude(p => p.User)
+            .OrderByDescending(e => e.CreatedAt)
+            .ToListAsync();
+
+        return Ok(allEmergencies);
+    }
+
+    // PUT: api/emergency/{id}/resolve
+    [HttpPut("{id}/resolve")]
+    public async Task<IActionResult> ResolveEmergency(int id)
+    {
+        var userId = GetCurrentUserId();
+        var role = GetCurrentRole();
+
+        var emergency = await _context.EmergencyAlerts
+            .Include(e => e.Patient)
+            .FirstOrDefaultAsync(e => e.Id == id);
+
+        if (emergency == null)
+            return NotFound("Emergency alert not found.");
+
+        if (role == "PATIENT")
+        {
+            if (emergency.Patient.UserId != userId)
+                return Forbid();
+        }
+        else if (role == "CAREGIVER")
+        {
+            var caregiver = await _context.Caregivers
+                .FirstOrDefaultAsync(c => c.UserId == userId);
+
+            if (caregiver == null)
+                return Forbid();
+
+            var linked = await _context.CaregiverPatients
+                .AnyAsync(cp =>
+                    cp.CaregiverId == caregiver.Id &&
+                    cp.PatientId == emergency.PatientId);
+
+            if (!linked)
+                return Forbid();
+        }
+
+        if (emergency.Status == "RESOLVED")
+            return BadRequest("Emergency is already resolved.");
+
+        emergency.Status = "RESOLVED";
+        emergency.ResolvedAt = DateTime.Now;
+
+        await _context.SaveChangesAsync();
+
+        return Ok(new
+        {
+            message = "Emergency resolved successfully.",
+            emergencyId = emergency.Id,
+            status = emergency.Status,
+            resolvedAt = emergency.ResolvedAt
+        });
+    }
+}
+
+========================================
+FILE: C:\Users\Dell\OneDrive\Desktop\MediCare\Controllers\MedicineController.cs
+========================================
+using System.Security.Claims;
+using MediCare.Data;
+using MediCare.DTOs;
+using MediCare.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+
+namespace MediCare.Controllers;
+
+[ApiController]
+[Route("api/medicine")]
+[Authorize(Roles = "ADMIN,PATIENT,CAREGIVER")]
+public class MedicineController : ControllerBase
+{
+    private readonly IMedicineService _service;
+    private readonly AppDbContext _context;
+
+    public MedicineController(
+        IMedicineService service,
+        AppDbContext context)
+    {
+        _service = service;
+        _context = context;
+    }
+
+    private int GetCurrentUserId()
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        return int.TryParse(userId, out var id) ? id : 0;
+    }
+
+    private string GetCurrentRole()
+    {
+        return User.FindFirstValue(ClaimTypes.Role) ?? string.Empty;
+    }
+
+    // Check whether the current user is allowed to access a patient.
+    private async Task<bool> CanAccessPatientAsync(int patientId)
+    {
+        var currentUserId = GetCurrentUserId();
+        var role = GetCurrentRole();
+
+        if (currentUserId <= 0)
+        {
+            return false;
+        }
+
+        // ADMIN can access every patient.
+        if (role == "ADMIN")
+        {
+            return await _context.Patients
+                .AnyAsync(p => p.Id == patientId);
+        }
+
+        // PATIENT can access only his own patient record.
+        if (role == "PATIENT")
+        {
+            return await _context.Patients
+                .AnyAsync(p =>
+                    p.Id == patientId &&
+                    p.UserId == currentUserId);
+        }
+
+        // CAREGIVER can access only linked patients.
+        if (role == "CAREGIVER")
+        {
+            var caregiver = await _context.Caregivers
+                .FirstOrDefaultAsync(c => c.UserId == currentUserId);
+
+            if (caregiver == null)
+            {
+                return false;
+            }
+
+            return await _context.CaregiverPatients
+                .AnyAsync(cp =>
+                    cp.CaregiverId == caregiver.Id &&
+                    cp.PatientId == patientId);
+        }
+
+        return false;
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> GetAll()
+    {
+        var currentUserId = GetCurrentUserId();
+        var role = GetCurrentRole();
+
+        if (currentUserId <= 0)
+        {
+            return Unauthorized();
+        }
+
+        if (role == "ADMIN")
+        {
+            var allMedicines = await _service.GetAllAsync();
+            return Ok(allMedicines);
+        }
+
+        if (role == "PATIENT")
+        {
+            var patient = await _context.Patients
+                .FirstOrDefaultAsync(p => p.UserId == currentUserId);
+
+            if (patient == null)
+            {
+                return NotFound("Patient profile not found.");
+            }
+
+            var medicines = await _context.Medicines
+                .Where(m => m.PatientId == patient.Id)
+                .ToListAsync();
+
+            return Ok(medicines);
+        }
+
+        if (role == "CAREGIVER")
+        {
+            var caregiver = await _context.Caregivers
+                .FirstOrDefaultAsync(c => c.UserId == currentUserId);
+
+            if (caregiver == null)
+            {
+                return NotFound("Caregiver profile not found.");
+            }
+
+            var medicines = await _context.Medicines
+                .Where(m => _context.CaregiverPatients
+                    .Any(cp =>
+                        cp.CaregiverId == caregiver.Id &&
+                        cp.PatientId == m.PatientId))
+                .ToListAsync();
+
+            return Ok(medicines);
+        }
+
+        return Forbid();
+    }
+
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetById(int id)
+    {
+        var medicine = await _service.GetByIdAsync(id);
+
+        if (medicine == null)
+        {
+            return NotFound("Medicine not found.");
+        }
+
+        if (!await CanAccessPatientAsync(medicine.PatientId))
+        {
+            return Forbid();
+        }
+
+        return Ok(medicine);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> Add(MedicineDto dto)
+    {
+        var role = GetCurrentRole();
+        if (role == "PATIENT")
+        {
+            var currentUserId = GetCurrentUserId();
+            var patient = await _context.Patients.FirstOrDefaultAsync(p => p.UserId == currentUserId);
+            if (patient != null)
+            {
+                dto.PatientId = patient.Id;
+            }
+        }
+
+        if (dto.PatientId <= 0)
+        {
+            return BadRequest("Valid patientId is required.");
+        }
+
+        if (!await CanAccessPatientAsync(dto.PatientId))
+        {
+            var patientExists = await _context.Patients
+                .AnyAsync(p => p.Id == dto.PatientId);
+
+            if (!patientExists)
+            {
+                return NotFound("Patient not found.");
+            }
+
+            return Forbid();
+        }
+
+        try
+        {
+            var medicine = await _service.AddAsync(dto);
+
+            return Ok(medicine);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+
+    [HttpPut("{id}")]
+    public async Task<IActionResult> Update(
+        int id,
+        MedicineDto dto)
+    {
+        var role = GetCurrentRole();
+        if (role == "PATIENT")
+        {
+            var currentUserId = GetCurrentUserId();
+            var patient = await _context.Patients.FirstOrDefaultAsync(p => p.UserId == currentUserId);
+            if (patient != null)
+            {
+                dto.PatientId = patient.Id;
+            }
+        }
+
+        if (dto.PatientId <= 0)
+        {
+            return BadRequest("Valid patientId is required.");
+        }
+
+        var medicine = await _service.GetByIdAsync(id);
+
+        if (medicine == null)
+        {
+            return NotFound("Medicine not found.");
+        }
+
+        if (!await CanAccessPatientAsync(medicine.PatientId))
+        {
+            return Forbid();
+        }
+        if (!await CanAccessPatientAsync(dto.PatientId))
+        {
+            var patientExists = await _context.Patients
+                .AnyAsync(p => p.Id == dto.PatientId);
+
+            if (!patientExists)
+            {
+                return NotFound("Patient not found.");
+            }
+
+            return Forbid();
+        }
+
+        try
+        {
+            var updatedMedicine =
+                await _service.UpdateAsync(id, dto);
+
+            if (updatedMedicine == null)
+            {
+                return NotFound("Medicine not found.");
+            }
+
+            return Ok(updatedMedicine);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> Delete(int id)
+    {
+        var medicine = await _service.GetByIdAsync(id);
+
+        if (medicine == null)
+        {
+            return NotFound("Medicine not found.");
+        }
+
+        if (!await CanAccessPatientAsync(medicine.PatientId))
+        {
+            return Forbid();
+        }
+
+        var deleted = await _service.DeleteAsync(id);
+
+        if (!deleted)
+        {
+            return NotFound("Medicine not found.");
+        }
+
+        return Ok("Medicine deleted successfully.");
+    }
+
+    // GET: api/medicine/low-stock
+    [HttpGet("low-stock")]
+    public async Task<IActionResult> GetLowStockMedicines([FromQuery] int threshold = 5)
+    {
+        var currentUserId = GetCurrentUserId();
+        var role = GetCurrentRole();
+
+        if (currentUserId <= 0)
+            return Unauthorized();
+
+        if (role == "ADMIN")
+        {
+            var adminLowStock = await _context.Medicines
+                .Include(m => m.Patient)
+                    .ThenInclude(p => p.User)
+                .Where(m => m.Stock <= threshold)
+                .OrderBy(m => m.Stock)
+                .ToListAsync();
+            return Ok(adminLowStock);
+        }
+
+        if (role == "PATIENT")
+        {
+            var patient = await _context.Patients
+                .FirstOrDefaultAsync(p => p.UserId == currentUserId);
+
+            if (patient == null)
+                return NotFound("Patient profile not found.");
+
+            var patientLowStock = await _context.Medicines
+                .Where(m => m.PatientId == patient.Id && m.Stock <= threshold)
+                .OrderBy(m => m.Stock)
+                .ToListAsync();
+
+            return Ok(patientLowStock);
+        }
+
+        if (role == "CAREGIVER")
+        {
+            var caregiver = await _context.Caregivers
+                .FirstOrDefaultAsync(c => c.UserId == currentUserId);
+
+            if (caregiver == null)
+                return NotFound("Caregiver profile not found.");
+
+            var caregiverLowStock = await _context.Medicines
+                .Include(m => m.Patient)
+                    .ThenInclude(p => p.User)
+                .Where(m => _context.CaregiverPatients
+                    .Any(cp => cp.CaregiverId == caregiver.Id && cp.PatientId == m.PatientId) && m.Stock <= threshold)
+                .OrderBy(m => m.Stock)
+                .ToListAsync();
+
+            return Ok(caregiverLowStock);
+        }
+
+        return Forbid();
+    }
+}
+
+========================================
+FILE: C:\Users\Dell\OneDrive\Desktop\MediCare\Controllers\MedicineLogController.cs
+========================================
+using System.Security.Claims;
+using MediCare.Data;
+using MediCare.DTOs;
+using MediCare.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+
+namespace MediCare.Controllers;
+
+[ApiController]
+[Route("api/medicinelog")]
+[Authorize(Roles = "ADMIN,PATIENT,CAREGIVER")]
+public class MedicineLogController : ControllerBase
+{
+    private readonly IMedicineLogService _service;
+    private readonly AppDbContext _context;
+
+    public MedicineLogController(
+        IMedicineLogService service,
+        AppDbContext context)
+    {
+        _service = service;
+        _context = context;
+    }
+
+    private int GetCurrentUserId()
+    {
+        return int.Parse(
+            User.FindFirstValue(ClaimTypes.NameIdentifier)!
+        );
+    }
+
+    private string GetCurrentRole()
+    {
+        return User.FindFirstValue(ClaimTypes.Role) ?? "";
+    }
+
+    private async Task<bool> CanAccessPatientAsync(int patientId)
+    {
+        var userId = GetCurrentUserId();
+        var role = GetCurrentRole();
+
+        if (role == "ADMIN")
+        {
+            return await _context.Patients
+                .AnyAsync(p => p.Id == patientId);
+        }
+
+        if (role == "PATIENT")
+        {
+            return await _context.Patients
+                .AnyAsync(p =>
+                    p.Id == patientId &&
+                    p.UserId == userId);
+        }
+
+        if (role == "CAREGIVER")
+        {
+            var caregiver = await _context.Caregivers
+                .FirstOrDefaultAsync(c => c.UserId == userId);
+
+            if (caregiver == null)
+                return false;
+
+            return await _context.CaregiverPatients
+                .AnyAsync(cp =>
+                    cp.CaregiverId == caregiver.Id &&
+                    cp.PatientId == patientId);
+        }
+
+        return false;
+    }
+
+    // GET: api/medicinelog
+    [HttpGet]
+    public async Task<IActionResult> GetAll()
+    {
+        var role = GetCurrentRole();
+        var userId = GetCurrentUserId();
+
+        if (role == "ADMIN")
+        {
+            var allLogs = await _context.MedicineLogs
+                .Include(l => l.Medicine)
+                .Include(l => l.Patient)
+                    .ThenInclude(p => p.User)
+                .ToListAsync();
+
+            return Ok(allLogs);
+        }
+
+        if (role == "PATIENT")
+        {
+            var patient = await _context.Patients
+                .FirstOrDefaultAsync(p => p.UserId == userId);
+
+            if (patient == null)
+                return NotFound("Patient profile not found.");
+
+            var logs = await _context.MedicineLogs
+                .Include(l => l.Medicine)
+                .Where(l => l.PatientId == patient.Id)
+                .ToListAsync();
+
+            return Ok(logs);
+        }
+
+        if (role == "CAREGIVER")
+        {
+            var caregiver = await _context.Caregivers
+                .FirstOrDefaultAsync(c => c.UserId == userId);
+
+            if (caregiver == null)
+                return NotFound("Caregiver profile not found.");
+
+            var logs = await _context.MedicineLogs
+                .Include(l => l.Medicine)
+                .Where(l =>
+                    _context.CaregiverPatients.Any(cp =>
+                        cp.CaregiverId == caregiver.Id &&
+                        cp.PatientId == l.PatientId))
+                .ToListAsync();
+
+            return Ok(logs);
+        }
+
+        return Forbid();
+    }
+
+    // GET: api/medicinelog/{id}
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetById(int id)
+    {
+        var log = await _context.MedicineLogs
+            .Include(l => l.Medicine)
+            .Include(l => l.Patient)
+                .ThenInclude(p => p.User)
+            .FirstOrDefaultAsync(l => l.Id == id);
+
+        if (log == null)
+            return NotFound("Medicine log not found.");
+
+        if (!await CanAccessPatientAsync(log.PatientId))
+            return Forbid();
+
+        return Ok(log);
+    }
+
+    // POST: api/medicinelog
+    [HttpPost]
+    public async Task<IActionResult> Add(MedicineLogDto dto)
+    {
+        var medicine = await _context.Medicines
+            .FirstOrDefaultAsync(m => m.Id == dto.MedicineId);
+
+        if (medicine == null)
+            return NotFound("Medicine not found.");
+
+        // Medicine must belong to the same patient
+        if (medicine.PatientId != dto.PatientId)
+            return BadRequest(
+                "Medicine does not belong to the specified patient."
+            );
+
+        if (!await CanAccessPatientAsync(dto.PatientId))
+            return Forbid();
+
+        try
+        {
+            var log = await _service.AddAsync(dto);
+            return Ok(log);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+
+    // PUT: api/medicinelog/{id}/taken
+    [HttpPut("{id}/taken")]
+    [Authorize(Roles = "PATIENT")]
+    public async Task<IActionResult> MarkAsTaken(int id)
+    {
+        var userId = GetCurrentUserId();
+
+        var log = await _context.MedicineLogs
+            .Include(l => l.Patient)
+            .FirstOrDefaultAsync(l => l.Id == id);
+
+        if (log == null)
+            return NotFound("Medicine log not found.");
+
+        // Patient can mark only their own medicine as taken
+        if (log.Patient.UserId != userId)
+            return Forbid();
+
+        var result = await _service.MarkAsTakenAsync(id);
+
+        if (result == null)
+            return NotFound("Medicine log not found.");
+
+        return Ok(result);
+    }
+    
+    [HttpGet("patient/{patientId}/history")]
+    public async Task<IActionResult> GetCompleteHistory(int patientId, [FromQuery] MedicineLogFilterDto filter)
+    {
+        if (patientId <= 0)
+            return BadRequest("Valid PatientId is required.");
+
+        if (!await CanAccessPatientAsync(patientId))
+            return Forbid();
+
+        var history = await _service.GetPatientHistoryAsync(patientId, filter);
+        return Ok(history);
+    }
+}
+
+========================================
+FILE: C:\Users\Dell\OneDrive\Desktop\MediCare\Controllers\MedicineScheduleController.cs
+========================================
+using System.Security.Claims;
+using MediCare.Data;
+using MediCare.DTOs;
+using MediCare.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+
+namespace MediCare.Controllers;
+
+[ApiController]
+[Route("api/medicineschedule")]
+[Authorize(Roles = "ADMIN,PATIENT,CAREGIVER")]
+public class MedicineScheduleController : ControllerBase
+{
+    private readonly IMedicineScheduleService _service;
+    private readonly AppDbContext _context;
+
+    public MedicineScheduleController(
+        IMedicineScheduleService service,
+        AppDbContext context)
+    {
+        _service = service;
+        _context = context;
+    }
+
+    private int GetCurrentUserId()
+    {
+        return int.Parse(
+            User.FindFirstValue(ClaimTypes.NameIdentifier)!
+        );
+    }
+
+    private string GetCurrentRole()
+    {
+        return User.FindFirstValue(ClaimTypes.Role) ?? "";
+    }
+
+    private async Task<bool> CanAccessPatientAsync(int patientId)
+    {
+        var userId = GetCurrentUserId();
+        var role = GetCurrentRole();
+
+        // ADMIN can access all patients
+        if (role == "ADMIN")
+        {
+            return await _context.Patients
+                .AnyAsync(p => p.Id == patientId);
+        }
+
+        // PATIENT can access only own data
+        if (role == "PATIENT")
+        {
+            return await _context.Patients
+                .AnyAsync(p =>
+                    p.Id == patientId &&
+                    p.UserId == userId);
+        }
+
+        // CAREGIVER can access only linked patients
+        if (role == "CAREGIVER")
+        {
+            var caregiver = await _context.Caregivers
+                .FirstOrDefaultAsync(c => c.UserId == userId);
+
+            if (caregiver == null)
+                return false;
+
+            return await _context.CaregiverPatients
+                .AnyAsync(cp =>
+                    cp.CaregiverId == caregiver.Id &&
+                    cp.PatientId == patientId);
+        }
+
+        return false;
+    }
+
+    // GET: api/Medicineschedule
+    [HttpGet]
+    public async Task<IActionResult> GetAll()
+    {
+        var role = GetCurrentRole();
+        var userId = GetCurrentUserId();
+
+        if (role == "ADMIN")
+        {
+            var allSchedules = await _context.MedicineSchedules
+                .Include(s => s.Medicine)
+                .ToListAsync();
+
+            return Ok(allSchedules);
+        }
+
+        if (role == "PATIENT")
+        {
+            var patient = await _context.Patients
+                .FirstOrDefaultAsync(p => p.UserId == userId);
+
+            if (patient == null)
+                return NotFound("Patient profile not found.");
+
+            var schedules = await _context.MedicineSchedules
+                .Include(s => s.Medicine)
+                .Where(s => s.Medicine.PatientId == patient.Id)
+                .ToListAsync();
+
+            return Ok(schedules);
+        }
+
+        if (role == "CAREGIVER")
+        {
+            var caregiver = await _context.Caregivers
+                .FirstOrDefaultAsync(c => c.UserId == userId);
+
+            if (caregiver == null)
+                return NotFound("Caregiver profile not found.");
+
+            var schedules = await _context.MedicineSchedules
+                .Include(s => s.Medicine)
+                .Where(s =>
+                    _context.CaregiverPatients.Any(cp =>
+                        cp.CaregiverId == caregiver.Id &&
+                        cp.PatientId == s.Medicine.PatientId))
+                .ToListAsync();
+
+            return Ok(schedules);
+        }
+
+        return Forbid();
+    }
+
+    // GET: api/Medicineschedule/{id}
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetById(int id)
+    {
+        var schedule = await _context.MedicineSchedules
+            .Include(s => s.Medicine)
+            .FirstOrDefaultAsync(s => s.Id == id);
+
+        if (schedule == null)
+            return NotFound("Schedule not found.");
+
+        if (!await CanAccessPatientAsync(schedule.Medicine.PatientId))
+            return Forbid();
+
+        return Ok(schedule);
+    }
+
+    // POST: api/Medicineschedule
+    [HttpPost]
+    public async Task<IActionResult> Add(MedicineScheduleDto dto)
+    {
+        var medicine = await _context.Medicines
+            .FirstOrDefaultAsync(m => m.Id == dto.MedicineId);
+
+        if (medicine == null)
+            return NotFound("Medicine not found.");
+
+        if (!await CanAccessPatientAsync(medicine.PatientId))
+            return Forbid();
+
+        try
+        {
+            var schedule = await _service.AddAsync(dto);
+            return Ok(schedule);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+
+    // PUT: api/Medicineschedule/{id}
+    [HttpPut("{id}")]
+    public async Task<IActionResult> Update(
+        int id,
+        MedicineScheduleDto dto)
+    {
+        var existingSchedule = await _context.MedicineSchedules
+            .Include(s => s.Medicine)
+            .FirstOrDefaultAsync(s => s.Id == id);
+
+        if (existingSchedule == null)
+            return NotFound("Schedule not found.");
+
+        // Check access to existing medicine
+        if (!await CanAccessPatientAsync(existingSchedule.Medicine.PatientId))
+            return Forbid();
+
+        // Check new medicine
+        var newMedicine = await _context.Medicines
+            .FirstOrDefaultAsync(m => m.Id == dto.MedicineId);
+
+        if (newMedicine == null)
+            return NotFound("Medicine not found.");
+
+        // Prevent moving schedule to another unauthorized patient
+        if (!await CanAccessPatientAsync(newMedicine.PatientId))
+            return Forbid();
+
+        try
+        {
+            var schedule = await _service.UpdateAsync(id, dto);
+
+            if (schedule == null)
+                return NotFound("Schedule not found.");
+
+            return Ok(schedule);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+
+    // DELETE: api/Medicineschedule/{id}
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> Delete(int id)
+    {
+        var schedule = await _context.MedicineSchedules
+            .Include(s => s.Medicine)
+            .FirstOrDefaultAsync(s => s.Id == id);
+
+        if (schedule == null)
+            return NotFound("Schedule not found.");
+
+        if (!await CanAccessPatientAsync(schedule.Medicine.PatientId))
+            return Forbid();
+
+        var deleted = await _service.DeleteAsync(id);
+
+        if (!deleted)
+            return NotFound("Schedule not found.");
+
+        return Ok("Schedule deleted successfully.");
+    }
+}
+
+========================================
+FILE: C:\Users\Dell\OneDrive\Desktop\MediCare\Controllers\NotificationController.cs
+========================================
+using System.Security.Claims;
+using MediCare.Data;
+using MediCare.Models;
+using MediCare.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+
+namespace MediCare.Controllers;
+
+[ApiController]
+[Route("api/notification")]
+[Authorize(Roles = "ADMIN,PATIENT,CAREGIVER")]
+public class NotificationController : ControllerBase
+{
+    private readonly INotificationService _service;
+    private readonly AppDbContext _context;
+
+    public NotificationController(
+        INotificationService service,
+        AppDbContext context)
+    {
+        _service = service;
+        _context = context;
+    }
+
+    private int GetCurrentUserId()
+    {
+        return int.Parse(
+            User.FindFirstValue(ClaimTypes.NameIdentifier)!
+        );
+    }
+
+    private string GetCurrentRole()
+    {
+        return User.FindFirstValue(ClaimTypes.Role) ?? "";
+    }
+
+    // GET: api/notification
+    [HttpGet]
+    public async Task<IActionResult> GetAll()
+    {
+        var userId = GetCurrentUserId();
+        var role = GetCurrentRole();
+
+        if (role == "ADMIN")
+        {
+            var allNotifications = await _service.GetAllAsync();
+            return Ok(allNotifications);
+        }
+
+        var notifications = await _context.Notifications
+            .Where(n => n.UserId == userId)
+            .OrderByDescending(n => n.CreatedAt)
+            .ToListAsync();
+
+        return Ok(notifications);
+    }
+
+    // GET: api/notification/{id}
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetById(int id)
+    {
+        var notification = await _context.Notifications
+            .FirstOrDefaultAsync(n => n.Id == id);
+
+        if (notification == null)
+            return NotFound("Notification not found.");
+
+        var userId = GetCurrentUserId();
+        var role = GetCurrentRole();
+
+        if (role != "ADMIN" && notification.UserId != userId)
+            return Forbid();
+
+        return Ok(notification);
+    }
+
+    // POST: api/notification
+    // Only ADMIN can manually create notifications.
+    // System notifications are still created through the service.
+    [HttpPost]
+    [Authorize(Roles = "ADMIN")]
+    public async Task<IActionResult> Create(Notification notification)
+    {
+        var userExists = await _context.Users
+            .AnyAsync(u => u.Id == notification.UserId);
+
+        if (!userExists)
+            return NotFound("User not found.");
+
+        var result = await _service.CreateAsync(notification);
+
+        return Ok(result);
+    }
+
+    // PUT: api/notification/{id}/read
+    [HttpPut("{id}/read")]
+    public async Task<IActionResult> MarkAsRead(int id)
+    {
+        var notification = await _context.Notifications
+            .FirstOrDefaultAsync(n => n.Id == id);
+
+        if (notification == null)
+            return NotFound("Notification not found.");
+
+        var userId = GetCurrentUserId();
+        var role = GetCurrentRole();
+
+        if (role != "ADMIN" && notification.UserId != userId)
+            return Forbid();
+
+        var result = await _service.MarkAsReadAsync(id);
+
+        if (result == null)
+            return NotFound("Notification not found.");
+
+        return Ok(result);
+    }
+
+    // PUT: api/notification/read-all
+    [HttpPut("read-all")]
+    public async Task<IActionResult> MarkAllAsRead()
+    {
+        var userId = GetCurrentUserId();
+
+        await _service.MarkAllAsReadAsync(userId);
+
+        return Ok("All notifications marked as read.");
+    }
+}
+
+========================================
+FILE: C:\Users\Dell\OneDrive\Desktop\MediCare\Controllers\PatientDashboardController.cs
+========================================
+using System.Security.Claims;
+using MediCare.Data;
+using MediCare.DTOs;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using MediCare.Models;
+
+namespace MediCare.Controllers;
+
+[ApiController]
+[Route("api/dashboard/patient")]
+[Authorize(Roles = "PATIENT")]
+public class PatientDashboardController : ControllerBase
+{
+    private readonly AppDbContext _context;
+
+    public PatientDashboardController(AppDbContext context)
+    {
+        _context = context;
+    }
+
+    private int GetCurrentUserId()
+    {
+        return int.Parse(
+            User.FindFirstValue(ClaimTypes.NameIdentifier)!
+        );
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> GetDashboard()
+    {
+        var userId = GetCurrentUserId();
+
+        // Find patient profile
+        var patient = await _context.Patients
+            .Include(p => p.User)
+            .FirstOrDefaultAsync(p => p.UserId == userId);
+
+        if (patient == null)
+            return NotFound("Patient profile not found.");
+
+        // Get all medicines
+        var medicines = await _context.Medicines
+            .Where(m => m.PatientId == patient.Id)
+            .OrderBy(m => m.Name)
+            .ToListAsync();
+
+        // Total medicines
+        var totalMedicines = medicines.Count;
+
+        // Today's date
+        var today = DateTime.Today;
+
+        // Today's schedules
+        var todaySchedules = await _context.MedicineSchedules
+            .Include(s => s.Medicine)
+            .Where(s =>
+                s.Medicine.PatientId == patient.Id &&
+                s.Medicine.StartDate.Date <= today &&
+                s.Medicine.EndDate.Date >= today)
+            .OrderBy(s => s.Time)
+            .ToListAsync();
+
+        // Today's medicine logs for pending calculation
+        var todaysLogs = await _context.MedicineLogs
+            .Include(log => log.Medicine)
+            .Where(log =>
+                log.PatientId == patient.Id &&
+                log.ScheduledTime.Date == today)
+            .ToListAsync();
+
+        var pendingMedicines = new List<MedicineLog>();
+
+        foreach (var schedule in todaySchedules)
+        {
+            var scheduledTime = today.Add(schedule.Time);
+            var log = todaysLogs.FirstOrDefault(l =>
+                l.MedicineId == schedule.MedicineId &&
+                l.ScheduledTime == scheduledTime);
+
+            if (log == null)
+            {
+                pendingMedicines.Add(new MedicineLog
+                {
+                    MedicineId = schedule.MedicineId,
+                    Medicine = schedule.Medicine,
+                    PatientId = patient.Id,
+                    ScheduledTime = scheduledTime,
+                    Status = "Pending"
+                });
+            }
+            else if (log.Status == "Pending")
+            {
+                pendingMedicines.Add(log);
+            }
+        }
+
+        pendingMedicines = pendingMedicines.OrderBy(log => log.ScheduledTime).ToList();
+
+        // Missed medicine logs
+        var missedMedicines = await _context.MedicineLogs
+            .Include(log => log.Medicine)
+            .Where(log =>
+                log.PatientId == patient.Id &&
+                log.Status == "Missed")
+            .OrderByDescending(log => log.ScheduledTime)
+            .Take(20)
+            .ToListAsync();
+
+        // Taken medicine logs
+        var takenMedicines = await _context.MedicineLogs
+            .Include(log => log.Medicine)
+            .Where(log =>
+                log.PatientId == patient.Id &&
+                log.Status == "Taken")
+            .OrderByDescending(log => log.TakenTime)
+            .Take(20)
+            .ToListAsync();
+
+        // All logs for adherence
+        var allLogs = await _context.MedicineLogs
+            .Where(log => log.PatientId == patient.Id)
+            .ToListAsync();
+
+        var totalDoses = allLogs.Count;
+
+        var takenDoses = allLogs.Count(log =>
+            string.Equals(
+                log.Status,
+                "Taken",
+                StringComparison.OrdinalIgnoreCase));
+
+        var missedDoses = allLogs.Count(log =>
+            string.Equals(
+                log.Status,
+                "Missed",
+                StringComparison.OrdinalIgnoreCase));
+
+        var adherencePercentage = totalDoses == 0
+            ? 0
+            : Math.Round(
+                (double)takenDoses / totalDoses * 100,
+                2);
+
+        // Low stock medicines
+        var lowStockMedicines = medicines
+            .Where(m => m.Stock <= 5)
+            .ToList();
+
+        // Active emergency alerts
+        var activeEmergencies = await _context.EmergencyAlerts
+            .Where(e =>
+                e.PatientId == patient.Id &&
+                e.Status == "ACTIVE")
+            .OrderByDescending(e => e.CreatedAt)
+            .ToListAsync();
+
+        // Unread notifications
+        var unreadNotifications = await _context.Notifications
+            .CountAsync(n =>
+                n.UserId == userId &&
+                !n.IsRead);
+
+        // Patient information
+        var patientInfo = new PatientInfoDto
+        {
+            Id = patient.Id,
+            UserId = patient.UserId,
+            Name = patient.User.Name,
+            Email = patient.User.Email,
+            DateOfBirth = patient.DateOfBirth,
+            EmergencyContact = patient.EmergencyContact
+        };
+
+        // Final dashboard
+        var dashboard = new PatientDashboardDto
+        {
+            Patient = patientInfo,
+
+            TotalMedicines = totalMedicines,
+
+            Medicines = medicines,
+
+            TodaySchedules = todaySchedules,
+
+            PendingMedicines = pendingMedicines,
+
+            MissedMedicines = missedMedicines,
+
+            TakenMedicines = takenMedicines,
+
+            TotalDoses = totalDoses,
+
+            TakenDoses = takenDoses,
+
+            MissedDoses = missedDoses,
+
+            AdherencePercentage = adherencePercentage,
+
+            LowStockMedicines = lowStockMedicines,
+
+            ActiveEmergencies = activeEmergencies,
+
+            UnreadNotifications = unreadNotifications
+        };
+
+        return Ok(dashboard);
+    }
+}
+
+========================================
+FILE: C:\Users\Dell\OneDrive\Desktop\MediCare\Controllers\ReportController.cs
+========================================
+using System.Security.Claims;
+using System.Text;
+using mediCare.DTOs;
+using MediCare.Data;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+
+namespace MediCare.Controllers;
+
+[ApiController]
+[Route("api/report")]
+[Authorize(Roles = "ADMIN,PATIENT,CAREGIVER")]
+public class ReportController : ControllerBase
+{
+    private readonly AppDbContext _context;
+
+    public ReportController(AppDbContext context)
+    {
+        _context = context;
+    }
+
+    private int GetCurrentUserId()
+    {
+        return int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+    }
+
+    private string GetCurrentRole()
+    {
+        return User.FindFirstValue(ClaimTypes.Role) ?? string.Empty;
+    }
+
+    private async Task<bool> CanAccessPatientAsync(int patientId)
+    {
+        var userId = GetCurrentUserId();
+        var role = GetCurrentRole();
+
+        if (role == "ADMIN")
+            return await _context.Patients.AnyAsync(p => p.Id == patientId);
+
+        if (role == "PATIENT")
+            return await _context.Patients.AnyAsync(p => p.Id == patientId && p.UserId == userId);
+
+        if (role == "CAREGIVER")
+        {
+            var caregiver = await _context.Caregivers.FirstOrDefaultAsync(c => c.UserId == userId);
+            if (caregiver == null) return false;
+
+            return await _context.CaregiverPatients
+                .AnyAsync(cp => cp.CaregiverId == caregiver.Id && cp.PatientId == patientId);
+        }
+
+        return false;
+    }
+
+    // GET: api/report/patient/{patientId}/data
+    [HttpGet("patient/{patientId}/data")]
+    public async Task<IActionResult> GetReportData(int patientId, [FromQuery] int days = 30)
+    {
+        if (!await CanAccessPatientAsync(patientId))
+            return Forbid();
+
+        var patient = await _context.Patients
+            .Include(p => p.User)
+            .FirstOrDefaultAsync(p => p.Id == patientId);
+
+        if (patient == null)
+            return NotFound("Patient not found.");
+
+        var sinceDate = DateTime.Today.AddDays(-days);
+
+        var medicines = await _context.Medicines
+            .Include(m => m.MedicineSchedules)
+            .Where(m => m.PatientId == patientId)
+            .ToListAsync();
+
+        var logs = await _context.MedicineLogs
+            .Include(l => l.Medicine)
+            .Where(l => l.PatientId == patientId && l.ScheduledTime >= sinceDate)
+            .OrderByDescending(l => l.ScheduledTime)
+            .ToListAsync();
+
+        var totalDoses = logs.Count(l => l.Status == "Taken" || l.Status == "Missed");
+        var taken = logs.Count(l => l.Status == "Taken");
+        var missed = logs.Count(l => l.Status == "Missed");
+        var adherence = totalDoses == 0 ? 0 : Math.Round((double)taken / totalDoses * 100, 2);
+
+        var report = new MedicalReportDto
+        {
+            PatientId = patient.Id,
+            PatientName = patient.User.Name,
+            PatientEmail = patient.User.Email,
+            DateOfBirth = patient.DateOfBirth,
+            EmergencyContact = patient.EmergencyContact,
+            ReportGeneratedAt = DateTime.Now,
+            OverallAdherence = adherence,
+            TotalDosesRecorded = totalDoses,
+            TotalTaken = taken,
+            TotalMissed = missed,
+            ActiveMedicines = medicines.Select(m => new MedicineItemSummaryDto
+            {
+                Name = m.Name,
+                Dosage = m.Dosage,
+                Dose = m.Dose,
+                Stock = m.Stock,
+                ScheduledTimes = m.MedicineSchedules.Select(s => s.Time.ToString(@"hh\:mm")).ToList()
+            }).ToList(),
+            RecentLogs = logs.Select(l => new LogItemSummaryDto
+            {
+                MedicineName = l.Medicine.Name,
+                ScheduledTime = l.ScheduledTime,
+                TakenTime = l.TakenTime,
+                Status = l.Status
+            }).ToList()
+        };
+
+        return Ok(report);
+    }
+
+    // GET: api/report/patient/{patientId}/print
+    // Returns browser printable HTML formatted document (Print to PDF)
+    [HttpGet("patient/{patientId}/print")]
+    [AllowAnonymous] // Frontend window.open ya direct print view ke liye
+    public async Task<IActionResult> GetPrintableReportHtml(int patientId, [FromQuery] int days = 30)
+    {
+        var patient = await _context.Patients
+            .Include(p => p.User)
+            .FirstOrDefaultAsync(p => p.Id == patientId);
+
+        if (patient == null)
+            return NotFound("Patient not found.");
+
+        var sinceDate = DateTime.Today.AddDays(-days);
+
+        var medicines = await _context.Medicines
+            .Include(m => m.MedicineSchedules)
+            .Where(m => m.PatientId == patientId)
+            .ToListAsync();
+
+        var logs = await _context.MedicineLogs
+            .Include(l => l.Medicine)
+            .Where(l => l.PatientId == patientId && l.ScheduledTime >= sinceDate)
+            .OrderByDescending(l => l.ScheduledTime)
+            .ToListAsync();
+
+        var totalDoses = logs.Count(l => l.Status == "Taken" || l.Status == "Missed");
+        var taken = logs.Count(l => l.Status == "Taken");
+        var missed = logs.Count(l => l.Status == "Missed");
+        var adherence = totalDoses == 0 ? 0 : Math.Round((double)taken / totalDoses * 100, 2);
+
+        var sb = new StringBuilder();
+        sb.Append($@"<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8'/>
+    <title>MediCare Compliance Report - {patient.User.Name}</title>
+    <style>
+        body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #1e293b; padding: 24px; background: #fff; line-height: 1.5; }}
+        .header {{ border-bottom: 2px solid #0284c7; padding-bottom: 12px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: flex-end; }}
+        .title {{ font-size: 24px; font-weight: 700; color: #0f172a; margin: 0; }}
+        .meta {{ font-size: 13px; color: #64748b; margin-top: 4px; }}
+        .badge {{ background: #e0f2fe; color: #0369a1; padding: 6px 12px; border-radius: 6px; font-weight: 600; font-size: 14px; display: inline-block; }}
+        .stats-grid {{ display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 20px 0; }}
+        .stat-card {{ border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; background: #f8fafc; text-align: center; }}
+        .stat-val {{ font-size: 22px; font-weight: 700; color: #0284c7; }}
+        .stat-lbl {{ font-size: 12px; color: #64748b; text-transform: uppercase; margin-top: 4px; }}
+        table {{ width: 100%; border-collapse: collapse; margin-top: 14px; font-size: 13px; }}
+        th, td {{ border: 1px solid #cbd5e1; padding: 8px 12px; text-align: left; }}
+        th {{ background: #f1f5f9; font-weight: 600; }}
+        .status-taken {{ color: #16a34a; font-weight: 600; }}
+        .status-missed {{ color: #dc2626; font-weight: 600; }}
+        .status-pending {{ color: #d97706; font-weight: 600; }}
+        .print-btn {{ background: #0284c7; color: #fff; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 14px; margin-bottom: 16px; }}
+        @media print {{
+            .no-print {{ display: none; }}
+            body {{ padding: 0; }}
+        }}
+    </style>
+</head>
+<body>
+    <div class='no-print' style='text-align: right;'>
+        <button class='print-btn' onclick='window.print()'>Print / Download PDF</button>
+    </div>
+    <div class='header'>
+        <div>
+            <h1 class='title'>MediCare Smart Health Report</h1>
+            <div class='meta'>Patient: <strong>{patient.User.Name}</strong> ({patient.User.Email}) | Emergency Contact: {patient.EmergencyContact}</div>
+        </div>
+        <div style='text-align: right;'>
+            <div class='badge'>Period: Last {days} Days</div>
+            <div class='meta'>Generated: {DateTime.Now:dd MMM yyyy, hh:mm tt}</div>
+        </div>
+    </div>
+
+    <div class='stats-grid'>
+        <div class='stat-card'><div class='stat-val'>{adherence}%</div><div class='stat-lbl'>Adherence Rate</div></div>
+        <div class='stat-card'><div class='stat-val'>{totalDoses}</div><div class='stat-lbl'>Total Doses Due</div></div>
+        <div class='stat-card'><div class='stat-val' style='color:#16a34a;'>{taken}</div><div class='stat-lbl'>Doses Taken</div></div>
+        <div class='stat-card'><div class='stat-val' style='color:#dc2626;'>{missed}</div><div class='stat-lbl'>Doses Missed</div></div>
+    </div>
+
+    <h3 style='margin-top: 24px; color: #0f172a;'>Active Prescribed Medications</h3>
+    <table>
+        <thead>
+            <tr><th>Medicine</th><th>Dosage</th><th>Dose Qty</th><th>Remaining Stock</th><th>Daily Scheduled Times</th></tr>
+        </thead>
+        <tbody>");
+
+        foreach (var m in medicines)
+        {
+            var times = string.Join(", ", m.MedicineSchedules.Select(s => s.Time.ToString(@"hh\:mm")));
+            sb.Append($@"<tr>
+                <td><strong>{m.Name}</strong></td>
+                <td>{m.Dosage}</td>
+                <td>{m.Dose}</td>
+                <td>{m.Stock}</td>
+                <td>{(string.IsNullOrEmpty(times) ? "None" : times)}</td>
+            </tr>");
+        }
+
+        sb.Append(@"</tbody></table>
+
+    <h3 style='margin-top: 28px; color: #0f172a;'>Recent Medication Intake Logs</h3>
+    <table>
+        <thead>
+            <tr><th>Scheduled Time</th><th>Medicine</th><th>Recorded Status</th><th>Actual Taken Time</th></tr>
+        </thead>
+        <tbody>");
+
+        foreach (var l in logs.Take(40))
+        {
+            var cls = l.Status == "Taken" ? "status-taken" : (l.Status == "Missed" ? "status-missed" : "status-pending");
+            var takenStr = l.TakenTime.HasValue ? l.TakenTime.Value.ToString("dd MMM yyyy, hh:mm tt") : "-";
+            sb.Append($@"<tr>
+                <td>{l.ScheduledTime:dd MMM yyyy, hh:mm tt}</td>
+                <td><strong>{l.Medicine.Name}</strong></td>
+                <td class='{cls}'>{l.Status}</td>
+                <td>{takenStr}</td>
+            </tr>");
+        }
+
+        sb.Append(@"</tbody></table>
+    <div style='margin-top: 30px; font-size: 11px; color: #94a3b8; text-align: center; border-top: 1px solid #e2e8f0; padding-top: 10px;'>
+        This document is an automated electronic adherence dossier generated by MediCare Smart Health System.
+    </div>
+</body>
+</html>");
+
+        return Content(sb.ToString(), "text/html", Encoding.UTF8);
+    }
+}

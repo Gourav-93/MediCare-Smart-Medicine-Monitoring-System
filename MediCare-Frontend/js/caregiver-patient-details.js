@@ -1,146 +1,177 @@
-// patient-dashboard.js
+// Caregiver / Admin Patient Inspection Controller
+let currentPatientId = null;
+let currentPeriod = 'Daily';
+let allPatientLogs = [];
 
 document.addEventListener('DOMContentLoaded', async () => {
-    // Ensure auth
-    const user = requireAuth(['patient']);
+    const user = Auth.requireAuth(['CAREGIVER', 'ADMIN']);
     if (!user) return;
 
-    await loadDashboard();
-});
+    setupUI();
 
-async function loadDashboard() {
-    try {
-        const data = await api.get('/dashboard/patient');
-        
-        // Update KPIs
-        document.getElementById('kpi-total-meds').textContent = data.totalMedicines;
-        document.getElementById('kpi-today-doses').textContent = data.todaySchedules ? data.todaySchedules.length : 0;
-        document.getElementById('kpi-pending-doses').textContent = data.pendingMedicines ? data.pendingMedicines.length : 0;
-        document.getElementById('kpi-adherence').textContent = `${data.adherencePercentage || 0}%`;
+    // Extract patientId from query string (?patientId=1 or ?id=1)
+    const urlParams = new URLSearchParams(window.location.search);
+    const id = urlParams.get('patientId') || urlParams.get('id');
 
-        // Navbar Notif
-        if (data.unreadNotifications > 0) {
-            const notifBadge = document.getElementById('navUnreadCount');
-            notifBadge.textContent = data.unreadNotifications;
-            notifBadge.style.display = 'block';
-        }
-
-        // Charts
-        const primaryColor = getComputedStyle(document.body).getPropertyValue('--primary').trim();
-        const successColor = getComputedStyle(document.body).getPropertyValue('--success').trim();
-        const warningColor = getComputedStyle(document.body).getPropertyValue('--warning').trim();
-        const dangerColor = getComputedStyle(document.body).getPropertyValue('--danger').trim();
-        const mutedColor = getComputedStyle(document.body).getPropertyValue('--border-color').trim();
-
-        // Adherence Chart
-        const pendingCount = data.totalDoses - data.takenDoses - data.missedDoses;
-        createDoughnutChart(
-            'adherenceChart',
-            [data.takenDoses, data.missedDoses, Math.max(pendingCount, 0)],
-            ['Taken', 'Missed', 'Pending'],
-            [successColor, dangerColor, warningColor]
-        );
-
-        // Status Bar Chart (simulate last 7 days based on current stats for visual)
-        createBarChart(
-            'statusChart',
-            [data.takenDoses, data.missedDoses, Math.max(pendingCount, 0)],
-            ['Taken', 'Missed', 'Pending'],
-            [successColor, dangerColor, warningColor],
-            'Medicine Status'
-        );
-
-        // Today's Schedule Table
-        renderTodaySchedule(data.todaySchedules);
-
-    } catch (error) {
-        console.error("Failed to load dashboard", error);
-    }
-}
-
-function renderTodaySchedule(schedules, pending, taken, missed) {
-    const tbody = document.querySelector('#todayScheduleTable tbody');
-    if (!schedules || schedules.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-muted)">No medicines scheduled for today.</td></tr>';
+    if (!id || isNaN(parseInt(id, 10))) {
+        Utils.showToast('No valid Patient ID specified.', 'warning');
+        setTimeout(() => {
+            window.location.href = 'patients.html';
+        }, 1200);
         return;
     }
 
-    tbody.innerHTML = schedules.map(s => {
-        let status = 'Scheduled';
-        let badgeClass = 'badge-info';
-        
-        // s.time is like "13:00:00". We check if this time exists in taken, missed, or pending arrays.
-        const isTaken = taken && taken.some(t => t.medicineId === s.medicineId && t.scheduledTime.includes(s.time));
-        const isMissed = missed && missed.some(m => m.medicineId === s.medicineId && m.scheduledTime.includes(s.time));
-        const isPending = pending && pending.some(p => p.medicineId === s.medicineId && p.scheduledTime.includes(s.time));
-        
-        let pendingLogId = null;
+    currentPatientId = parseInt(id, 10);
+    await loadPatientDossier();
+});
 
-        if (isTaken) {
-            status = 'Taken';
-            badgeClass = 'badge-success';
-        } else if (isMissed) {
-            status = 'Missed';
-            badgeClass = 'badge-danger';
-        } else if (isPending) {
-            status = 'Pending';
-            badgeClass = 'badge-warning';
-            const pendingLog = pending.find(p => p.medicineId === s.medicineId && p.scheduledTime.includes(s.time));
-            if (pendingLog && pendingLog.id) {
-                pendingLogId = pendingLog.id;
-            }
+function setupUI() {
+    const role = Auth.getRole();
+    const roleLabel = document.getElementById('sidebarRoleLabel');
+    const dashLink = document.getElementById('sidebarDashboardLink');
+
+    if (role === 'ADMIN') {
+        if (roleLabel) roleLabel.textContent = 'Admin';
+        if (dashLink) dashLink.href = 'admin-dashboard.html';
+    } else {
+        if (roleLabel) roleLabel.textContent = 'Caregiver';
+        if (dashLink) dashLink.href = 'caregiver-dashboard.html';
+    }
+
+    const toggleBtn = document.getElementById('sidebarToggle');
+    const sidebar = document.getElementById('sidebar');
+    if (toggleBtn && sidebar) {
+        toggleBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('open');
+        });
+    }
+}
+
+async function loadPatientDossier() {
+    try {
+        // 1. Fetch Clinical Medical Report Data
+        const report = await api.get(`/report/patient/${currentPatientId}/data?days=30`);
+        renderPatientDemographics(report);
+
+        // Set Print Document Direct URL
+        const printBtn = document.getElementById('btnDownloadReport');
+        if (printBtn) {
+            printBtn.href = `${CONFIG.API_BASE}/report/patient/${currentPatientId}/print?days=30`;
         }
 
-        let actionBtn = '-';
-        if (status === 'Pending' && pendingLogId) {
-            actionBtn = `<button class="btn btn-primary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;" onclick="markAsTakenDashboard(${pendingLogId})">Mark Taken</button>`;
-        } else if (status === 'Pending') {
-             // It's pending but no ID yet (future dose not yet in DB)
-             actionBtn = `<span style="font-size:0.8rem; color:var(--text-muted)">Upcoming</span>`;
+        // 2. Fetch Adherence Periodic Timeline
+        await loadPeriodicTimeline(currentPeriod);
+
+        // 3. Fetch Intake History
+        allPatientLogs = await api.get(`/medicinelog/patient/${currentPatientId}/history`);
+        renderHistoryLogs(allPatientLogs);
+
+        if (window.lucide) {
+            lucide.createIcons();
         }
+
+    } catch (err) {
+        console.error('Failed to load patient dossier:', err);
+    }
+}
+
+function renderPatientDemographics(report) {
+    document.getElementById('patientFullName').textContent = report.patientName || 'Patient';
+    document.getElementById('patientEmailText').textContent = report.patientEmail || 'No email provided';
+    document.getElementById('patientDobText').textContent = Utils.formatDate(report.dateOfBirth);
+    document.getElementById('patientEmergencyText').textContent = report.emergencyContact || 'None';
+    document.getElementById('patientAvatarLarge').textContent = Utils.getInitials(report.patientName || 'P');
+
+    // Metrics
+    const adherence = Math.round(Number(report.overallAdherence) || 0);
+    document.getElementById('kpiPatientAdherence').textContent = `${adherence}%`;
+    document.getElementById('kpiPatientTotalDoses').textContent = report.totalDosesRecorded || 0;
+    document.getElementById('kpiPatientTakenDoses').textContent = report.totalTaken || 0;
+    document.getElementById('kpiPatientMissedDoses').textContent = report.totalMissed || 0;
+
+    // Prescriptions Table
+    renderPrescriptions(report.activeMedicines || []);
+}
+
+function renderPrescriptions(medicines = []) {
+    const tbody = document.getElementById('patientMedicinesTbody');
+    if (!medicines || medicines.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-muted);">No active prescriptions recorded for this patient.</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = medicines.map(m => {
+        const scheduledTimes = (m.scheduledTimes && m.scheduledTimes.length > 0)
+            ? m.scheduledTimes.map(t => `<span class="badge badge-neutral">${Utils.formatTime(t)}</span>`).join(' ')
+            : '<span style="color: var(--text-muted); font-size: 0.8rem;">No times scheduled</span>';
 
         return `
             <tr>
-                <td style="font-weight: 500;">${s.medicine?.name || 'Unknown'}</td>
-                <td>${formatTime(s.time)}</td>
-                <td>${s.medicine?.dose || 1} ${s.medicine?.dosage || ''}</td>
-                <td><span class="badge ${badgeClass}">${status}</span></td>
-                <td>${actionBtn}</td>
+                <td style="font-weight: 600;">${Utils.escapeHtml(m.name)}</td>
+                <td>${Utils.escapeHtml(m.dosage)}</td>
+                <td>${m.dose} unit(s)</td>
+                <td>${Utils.getStockBadge(m.stock)}</td>
+                <td>${scheduledTimes}</td>
             </tr>
         `;
     }).join('');
 }
 
-window.markAsTakenDashboard = async function(id) {
+async function loadPeriodicTimeline(period) {
     try {
-        await api.put(`/medicinelog/${id}/taken`, {});
-        showToast("Medicine marked as taken.", "success");
-        await loadDashboard();
-    } catch (e) {
-        // Handled
-    }
-}
+        const timelineReport = await api.get(`/adherence/patient/${currentPatientId}/report`, { period });
+        const timeline = timelineReport?.timeline || [];
 
-function formatTime(timeStr) {
-    if (!timeStr) return '';
-    // timeStr could be "08:00:00"
-    const parts = timeStr.split(':');
-    if (parts.length >= 2) {
-        const d = new Date();
-        d.setHours(parseInt(parts[0], 10));
-        d.setMinutes(parseInt(parts[1], 10));
-        return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    }
-    return timeStr;
-}
+        const labels = timeline.map(t => t.periodLabel);
+        const dataPoints = timeline.map(t => Math.round(t.adherencePercentage));
 
-async function triggerEmergency() {
-    if (confirm("Are you sure you want to send an emergency alert to your caregivers?")) {
-        try {
-            await api.post('/emergency', { message: 'Emergency Alert Triggered by Patient' });
-            showToast('Emergency alert sent successfully.', 'success');
-        } catch (e) {
-            // Error handled by api
+        if (window.createLineChart) {
+            createLineChart(
+                'patientAdherenceTimelineChart',
+                dataPoints,
+                labels,
+                '#1d4ed8',
+                'Adherence %'
+            );
         }
+
+    } catch (err) {
+        console.warn('Periodic timeline fetch failed:', err);
     }
 }
+
+window.changePeriod = async function(period) {
+    currentPeriod = period;
+    document.querySelectorAll('.active-period').forEach(b => b.classList.remove('active-period'));
+    const btn = document.getElementById(`btnPeriod${period}`);
+    if (btn) btn.classList.add('active-period');
+
+    await loadPeriodicTimeline(period);
+};
+
+function renderHistoryLogs(logs = []) {
+    const tbody = document.getElementById('patientLogsTbody');
+    if (!logs || logs.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: var(--text-muted);">No intake records recorded yet.</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = logs.map(l => `
+        <tr>
+            <td style="font-weight: 600;">${Utils.escapeHtml(l.medicine?.name || 'Medicine')}</td>
+            <td>${Utils.formatDateTime(l.scheduledTime)}</td>
+            <td>${Utils.getStatusBadge(l.status)}</td>
+            <td>${l.takenTime ? Utils.formatDateTime(l.takenTime) : '-'}</td>
+        </tr>
+    `).join('');
+}
+
+window.applyLogFilter = function() {
+    const filter = document.getElementById('logStatusFilter').value;
+    if (!filter) {
+        renderHistoryLogs(allPatientLogs);
+    } else {
+        const filtered = allPatientLogs.filter(l => String(l.status).toLowerCase() === filter.toLowerCase());
+        renderHistoryLogs(filtered);
+    }
+};
