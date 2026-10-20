@@ -212,6 +212,7 @@ function showToast(msg, type) { Utils.showToast(msg, type); }
 function showLoader() { Utils.showLoader(); }
 function hideLoader() { Utils.hideLoader(); }
 function toggleTheme() { Utils.toggleTheme(); }
+function openModal(id) { Utils.openModal(id); }
 function closeModal(id) { 
     if (id) {
         Utils.closeModal(id);

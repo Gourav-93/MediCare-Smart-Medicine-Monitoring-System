@@ -8,7 +8,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!user) return;
 
     userRole = Auth.getRole();
-    setupSidebar(userRole);
+    Auth.setupNavbar();
+    Auth.renderSidebar('schedules');
     setupUI();
 
     await loadScheduleData();
@@ -16,6 +17,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const form = document.getElementById('scheduleForm');
     if (form) form.addEventListener('submit', handleScheduleSubmit);
 });
+
 
 function setupSidebar(role) {
     const menu = document.getElementById('sidebarMenu');

@@ -8,11 +8,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!user) return;
 
     userRole = Auth.getRole();
-    setupSidebar(userRole);
+    Auth.setupNavbar();
+    Auth.renderSidebar('logs');
     setupUI();
 
     await loadLogsData();
 });
+
 
 function setupSidebar(role) {
     const menu = document.getElementById('sidebarMenu');

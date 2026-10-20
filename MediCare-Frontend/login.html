@@ -144,6 +144,21 @@
                 </button>
             </form>
 
+            <!-- Quick Demo Helper for Project Viva -->
+            <div style="margin-top: 1.25rem; padding: 0.85rem; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: var(--radius-md); font-size: 0.8rem;">
+                <div style="font-weight: 700; color: #475569; margin-bottom: 0.4rem; display: flex; align-items: center; gap: 0.35rem;">
+                    <i data-lucide="info" style="width: 14px; height: 14px;"></i> Demo Accounts:
+                </div>
+                <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                    <button type="button" class="btn btn-sm btn-outline" onclick="fillLogin('patient.test@gmail.com', 'Password123!')" style="font-size: 0.75rem; padding: 0.25rem 0.5rem;">
+                        Fill Patient
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline" onclick="fillLogin('caregiver.test@gmail.com', 'Password123!')" style="font-size: 0.75rem; padding: 0.25rem 0.5rem;">
+                        Fill Caregiver
+                    </button>
+                </div>
+            </div>
+
             <div class="auth-footer">
                 Don't have an account? <a href="register.html">Create an account</a>
             </div>
@@ -209,6 +224,11 @@
                 submitBtn.innerHTML = 'Sign In';
             }
         });
+
+        window.fillLogin = function(email, password) {
+            document.getElementById('loginEmail').value = email;
+            document.getElementById('loginPassword').value = password;
+        };
     </script>
 </body>
 </html>

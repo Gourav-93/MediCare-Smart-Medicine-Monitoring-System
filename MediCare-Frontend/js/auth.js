@@ -105,15 +105,58 @@ const Auth = {
 
     // Role-based dashboard redirector
     redirectByRole(role) {
-        const normalized = String(role || '').toUpperCase();
-        if (normalized === 'PATIENT') {
-            window.location.href = 'patient-dashboard.html';
-        } else if (normalized === 'CAREGIVER') {
-            window.location.href = 'caregiver-dashboard.html';
-        } else if (normalized === 'ADMIN') {
-            window.location.href = 'admin-dashboard.html';
-        } else {
+        if (!role) {
             window.location.href = 'login.html';
+        } else {
+            window.location.href = 'dashboard.html';
+        }
+    },
+
+    // Render consistent sidebar navigation based on active role
+    renderSidebar(activePage = '') {
+        const sidebarMenu = document.getElementById('sidebarMenu');
+        const roleLabel = document.getElementById('sidebarRoleLabel');
+        const brandLink = document.getElementById('brandLink');
+        const role = this.getRole() || '';
+        
+        if (roleLabel) {
+            roleLabel.textContent = role || 'Portal';
+        }
+
+        if (brandLink) {
+            brandLink.href = 'dashboard.html';
+        }
+
+        if (!sidebarMenu) return;
+
+        const navItems = [
+            { id: 'dashboard', label: 'Dashboard', href: 'dashboard.html', icon: 'layout-dashboard', roles: ['PATIENT', 'CAREGIVER', 'ADMIN'] },
+            { id: 'medicines', label: role === 'PATIENT' ? 'My Medicines' : (role === 'CAREGIVER' ? 'Prescriptions' : 'All Medicines'), href: 'medicines.html', icon: 'pill', roles: ['PATIENT', 'CAREGIVER', 'ADMIN'] },
+            { id: 'schedules', label: 'Schedules', href: 'schedules.html', icon: 'calendar', roles: ['PATIENT', 'CAREGIVER', 'ADMIN'] },
+            { id: 'logs', label: 'Intake Logs', href: 'medicine-logs.html', icon: 'clipboard-list', roles: ['PATIENT', 'CAREGIVER', 'ADMIN'] },
+            { id: 'caregiver-patient', label: role === 'PATIENT' ? 'My Caregivers' : (role === 'CAREGIVER' ? 'Linked Patients' : 'Caregiver & Patient'), href: 'caregiver-patient.html', icon: 'users', roles: ['PATIENT', 'CAREGIVER', 'ADMIN'] },
+            { id: 'emergency', label: 'Emergency Safety', href: 'emergency.html', icon: 'alert-octagon', danger: true, roles: ['PATIENT', 'CAREGIVER', 'ADMIN'] },
+            { id: 'notifications', label: 'Notifications', href: 'notifications.html', icon: 'bell', roles: ['PATIENT', 'CAREGIVER', 'ADMIN'] }
+        ];
+
+        let html = '';
+        navItems.forEach(item => {
+            if (item.roles.includes(role)) {
+                const isActive = activePage === item.id ? 'active' : '';
+                const dangerClass = item.danger ? 'style="color: #ef4444;"' : '';
+                html += `
+                    <a href="${item.href}" class="menu-item ${isActive}" ${dangerClass}>
+                        <i data-lucide="${item.icon}"></i>
+                        <span>${item.label}</span>
+                    </a>
+                `;
+            }
+        });
+
+        sidebarMenu.innerHTML = html;
+
+        if (window.lucide) {
+            lucide.createIcons();
         }
     },
 

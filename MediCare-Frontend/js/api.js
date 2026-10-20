@@ -143,11 +143,22 @@ const api = {
         });
     },
 
-    delete(endpoint, body = null) {
+    delete(endpoint, params = null) {
+        let url = endpoint;
         const options = { method: 'DELETE' };
-        if (body) {
-            options.body = JSON.stringify(body);
+        if (params && typeof params === 'object') {
+            const queryParams = new URLSearchParams();
+            Object.entries(params).forEach(([key, val]) => {
+                if (val !== null && val !== undefined && val !== '') {
+                    queryParams.append(key, val);
+                }
+            });
+            const qs = queryParams.toString();
+            if (qs) {
+                url += (url.includes('?') ? '&' : '?') + qs;
+            }
         }
-        return this.request(endpoint, options);
+        return this.request(url, options);
     }
 };
+

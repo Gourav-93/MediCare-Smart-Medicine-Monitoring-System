@@ -7,7 +7,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!user) return;
 
     userRole = Auth.getRole();
-    setupSidebar(userRole);
+    Auth.setupNavbar();
+    Auth.renderSidebar('emergency');
     setupUI();
 
     await loadEmergencies();
@@ -15,6 +16,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const form = document.getElementById('sosForm');
     if (form) form.addEventListener('submit', handleSosAlertSubmit);
 });
+
 
 function setupSidebar(role) {
     const menu = document.getElementById('sidebarMenu');
