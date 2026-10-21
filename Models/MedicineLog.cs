@@ -14,7 +14,11 @@ public class MedicineLog
 
     public string Status { get; set; } = string.Empty;
 
-    public Medicine Medicine { get; set; } = null!;
+    public int SnoozeCount { get; set; } = 0;
 
+    public DateTime? OriginalScheduledTime { get; set; }
+
+    public Medicine Medicine { get; set; } = null!;
+    
     public Patient Patient { get; set; } = null!;
 }
