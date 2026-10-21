@@ -169,4 +169,25 @@ public class MedicineLogService : IMedicineLogService
             Data = logs
         };
     }
+
+    public async Task<MedicineLog?> SnoozeAsync(int id, int minutes = 15)
+    {
+        var log = await _context.MedicineLogs.Include(l => l.Medicine).FirstOrDefaultAsync(l => l.Id == id);
+        if (log == null)
+            return null;
+        if (log.Status == "Taken")
+            throw new InvalidOperationException("Cannot snooze a log that has already been marked as taken.");
+        if (log.SnoozeCount >= 2)
+            throw new InvalidOperationException("Cannot snooze more than 3 times.");
+        if (log.OriginalScheduledTime.HasValue)
+        {
+            log.OriginalScheduledTime = log.ScheduledTime;
+        }
+        log.ScheduledTime = DateTime.Now.AddMinutes(minutes);
+        log.Status = "Snoozed";
+        log.SnoozeCount++;
+        await _context.SaveChangesAsync();
+        return log;
+    }
+
 }
