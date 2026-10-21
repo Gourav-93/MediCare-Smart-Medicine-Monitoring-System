@@ -10,4 +10,5 @@ public interface IMedicineLogService
     Task<MedicineLog> AddAsync(MedicineLogDto dto);
     Task<MedicineLog?> MarkAsTakenAsync(int id);
     Task<object> GetPatientHistoryAsync(int patientId, MedicineLogFilterDto filter);
+    Task<MedicineLog?> SnoozeAsync(int id, int minutes = 15);
 }

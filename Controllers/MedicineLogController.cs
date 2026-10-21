@@ -202,7 +202,7 @@ public class MedicineLogController : ControllerBase
 
         return Ok(result);
     }
-    
+
     [HttpGet("patient/{patientId}/history")]
     public async Task<IActionResult> GetCompleteHistory(int patientId, [FromQuery] MedicineLogFilterDto filter)
     {
@@ -214,5 +214,38 @@ public class MedicineLogController : ControllerBase
 
         var history = await _service.GetPatientHistoryAsync(patientId, filter);
         return Ok(history);
+    }
+
+    // PUT: api/medicinelog/{id}/snooze
+    [HttpPut("{id}/snooze")]
+    public async Task<IActionResult> SnoozeMedicine(int id, [FromQuery] int minutes = 15)
+    {
+        var userId = GetCurrentUserId();
+
+        var log = await _context.MedicineLogs
+            .Include(l => l.Patient)
+            .FirstOrDefaultAsync(l => l.Id == id);
+
+        if (log == null)
+            return NotFound("Medicine log record not found.");
+
+        if (log.Patient.UserId != userId)
+            return Forbid();
+
+        try
+        {
+            var result = await _service.SnoozeAsync(id, minutes);
+            return Ok(new
+            {
+                message = $"Medicine snoozed by {minutes} minutes.",
+                logId = result?.Id,
+                newScheduledTime = result?.ScheduledTime,
+                snoozeCount = result?.SnoozeCount
+            });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
 }

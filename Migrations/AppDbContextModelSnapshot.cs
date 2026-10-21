@@ -226,11 +226,17 @@ namespace MediCare.Migrations
                     b.Property<int>("MedicineId")
                         .HasColumnType("int");
 
+                    b.Property<DateTime?>("OriginalScheduledTime")
+                        .HasColumnType("datetime(6)");
+
                     b.Property<int>("PatientId")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("ScheduledTime")
                         .HasColumnType("datetime(6)");
+
+                    b.Property<int>("SnoozeCount")
+                        .HasColumnType("int");
 
                     b.Property<string>("Status")
                         .IsRequired()
