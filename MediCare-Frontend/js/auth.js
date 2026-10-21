@@ -114,34 +114,41 @@ const Auth = {
 
     // Render consistent sidebar navigation based on active role
     renderSidebar(activePage = '') {
+        const sidebar = document.getElementById('sidebar');
         const sidebarMenu = document.getElementById('sidebarMenu');
-        const roleLabel = document.getElementById('sidebarRoleLabel');
         const brandLink = document.getElementById('brandLink');
         const role = this.getRole() || '';
-        
-        if (roleLabel) {
-            roleLabel.textContent = role || 'Portal';
-        }
 
         if (brandLink) {
             brandLink.href = 'dashboard.html';
+            brandLink.className = 'sidebar-brand';
+            brandLink.innerHTML = `
+                <div class="sidebar-brand-icon">
+                    <i data-lucide="box"></i>
+                </div>
+                <div class="sidebar-brand-text">
+                    <span class="sidebar-brand-title">MediCare</span>
+                    <span class="sidebar-brand-subtitle">Health Management</span>
+                </div>
+            `;
         }
 
         if (!sidebarMenu) return;
 
         const navItems = [
-            { id: 'dashboard', label: 'Dashboard', href: 'dashboard.html', icon: 'layout-dashboard', roles: ['PATIENT', 'CAREGIVER', 'ADMIN'] },
-            { id: 'medicines', label: role === 'PATIENT' ? 'My Medicines' : (role === 'CAREGIVER' ? 'Prescriptions' : 'All Medicines'), href: 'medicines.html', icon: 'pill', roles: ['PATIENT', 'CAREGIVER', 'ADMIN'] },
-            { id: 'schedules', label: 'Schedules', href: 'schedules.html', icon: 'calendar', roles: ['PATIENT', 'CAREGIVER', 'ADMIN'] },
-            { id: 'logs', label: 'Intake Logs', href: 'medicine-logs.html', icon: 'clipboard-list', roles: ['PATIENT', 'CAREGIVER', 'ADMIN'] },
-            { id: 'caregiver-patient', label: role === 'PATIENT' ? 'My Caregivers' : (role === 'CAREGIVER' ? 'Linked Patients' : 'Caregiver & Patient'), href: 'caregiver-patient.html', icon: 'users', roles: ['PATIENT', 'CAREGIVER', 'ADMIN'] },
-            { id: 'adherence', label: 'Adherence & Reports', href: 'adherence.html', icon: 'trending-up', roles: ['PATIENT', 'CAREGIVER', 'ADMIN'] },
-            { id: 'emergency', label: 'Emergency Safety', href: 'emergency.html', icon: 'alert-octagon', danger: true, roles: ['PATIENT', 'CAREGIVER', 'ADMIN'] },
+            { id: 'dashboard', label: 'Dashboard', href: 'dashboard.html', icon: 'layout-grid', roles: ['PATIENT', 'CAREGIVER', 'ADMIN'] },
+            { id: 'medicines', label: role === 'ADMIN' ? 'Medicines (Products)' : 'My Medicines', href: 'medicines.html', icon: 'package', roles: ['PATIENT', 'CAREGIVER', 'ADMIN'] },
+            { id: 'schedules', label: role === 'ADMIN' ? 'Schedules (Categories)' : 'Dose Schedules', href: 'schedules.html', icon: 'tag', roles: ['PATIENT', 'CAREGIVER', 'ADMIN'] },
+            { id: 'caregiver-patient', label: role === 'PATIENT' ? 'My Caregivers (Suppliers)' : (role === 'CAREGIVER' ? 'My Patients (Customers)' : 'Caregivers & Patients'), href: 'caregiver-patient.html', icon: 'truck', roles: ['PATIENT', 'CAREGIVER', 'ADMIN'] },
+            { id: 'logs', label: 'Intake Logs (Orders)', href: 'medicine-logs.html', icon: 'clipboard-list', roles: ['PATIENT', 'CAREGIVER', 'ADMIN'] },
+            { id: 'adherence', label: 'Adherence & Reports', href: 'adherence.html', icon: 'shopping-cart', roles: ['PATIENT', 'CAREGIVER', 'ADMIN'] },
+            { id: 'stock', label: 'Inventory Stock', href: 'medicines.html#stock', icon: 'archive', roles: ['PATIENT', 'CAREGIVER', 'ADMIN'] },
+            { id: 'emergency', label: 'Emergency Safety', href: 'emergency.html', icon: 'alert-triangle', danger: true, roles: ['PATIENT', 'CAREGIVER', 'ADMIN'] },
             { id: 'notifications', label: 'Notifications', href: 'notifications.html', icon: 'bell', roles: ['PATIENT', 'CAREGIVER', 'ADMIN'] },
-            { id: 'profile', label: 'My Profile', href: 'profile.html', icon: 'user', roles: ['PATIENT', 'CAREGIVER', 'ADMIN'] }
+            { id: 'profile', label: 'Settings', href: 'profile.html', icon: 'settings', roles: ['PATIENT', 'CAREGIVER', 'ADMIN'] }
         ];
 
-        let html = '';
+        let html = '<div class="menu-category">WORKSPACE</div>';
         navItems.forEach(item => {
             if (item.roles.includes(role)) {
                 const isActive = activePage === item.id ? 'active' : '';
@@ -156,6 +163,18 @@ const Auth = {
         });
 
         sidebarMenu.innerHTML = html;
+
+        // Ensure footer exists in sidebar
+        if (sidebar && !document.getElementById('sidebarFooter')) {
+            const footerEl = document.createElement('div');
+            footerEl.id = 'sidebarFooter';
+            footerEl.className = 'sidebar-footer';
+            footerEl.innerHTML = `
+                <div class="sidebar-footer-title">MediCare Frontend</div>
+                <div class="sidebar-footer-sub">Demo environment</div>
+            `;
+            sidebar.appendChild(footerEl);
+        }
 
         if (window.lucide) {
             lucide.createIcons();

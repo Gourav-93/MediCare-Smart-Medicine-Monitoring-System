@@ -127,10 +127,14 @@ function renderLogsTable(logs = []) {
         let actionBtn = '<span style="color: var(--text-muted); font-size: 0.8rem;">—</span>';
         if (userRole === 'PATIENT' && String(l.status).toLowerCase() === 'pending') {
             actionBtn = `
-                <button class="btn btn-sm btn-primary" onclick="markLogAsTaken(${l.id})">
-                    <i data-lucide="check" style="width: 12px; height: 12px;"></i>
-                    Mark Taken
-                </button>
+                <div style="display:flex; gap:0.4rem;">
+                    <button class="btn btn-sm btn-primary" onclick="markLogAsTaken(${l.id})">
+                        <i data-lucide="check" style="width: 12px; height: 12px;"></i> Take
+                    </button>
+                    <button class="btn btn-sm btn-outline" onclick="snoozeLog(${l.id})">
+                        <i data-lucide="clock" style="width: 12px; height: 12px;"></i> Snooze
+                    </button>
+                </div>
             `;
         }
 
@@ -189,7 +193,18 @@ window.markLogAsTaken = async function(id) {
         console.error('Failed to mark log as taken:', err);
         if (btn) {
             btn.disabled = false;
-            btn.innerHTML = 'Mark Taken';
+            btn.innerHTML = 'Take';
         }
+    }
+};
+
+window.snoozeLog = async function(id) {
+    if (!id) return;
+    try {
+        await api.put(`/medicinelog/${id}/snooze?minutes=15`);
+        Utils.showToast('Medication snoozed for 15 minutes.', 'info');
+        await loadLogsData();
+    } catch (err) {
+        console.error('Failed to snooze medication:', err);
     }
 };

@@ -41,14 +41,14 @@
   --border-color: #e2e8f0;
   --border-color-subtle: #f1f5f9;
   
-  --sidebar-bg: #0f172a;
-  --sidebar-text: #e2e8f0;
-  --sidebar-text-muted: #94a3b8;
-  --sidebar-active-bg: rgba(255, 255, 255, 0.1);
-  --sidebar-border: #1e293b;
+  --sidebar-bg: #ffffff;
+  --sidebar-text: #1e293b;
+  --sidebar-text-muted: #64748b;
+  --sidebar-active-bg: #eff6ff;
+  --sidebar-border: #eef2f6;
 
   --navbar-bg: #ffffff;
-  --navbar-border: #e2e8f0;
+  --navbar-border: #eef2f6;
 
   /* Shadows */
   --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
