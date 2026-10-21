@@ -19,6 +19,7 @@ public class Medicine
     public DateTime EndDate { get; set; }
 
     public Patient Patient { get; set; } = null!;
+    public string MealTimeing { get; set; } = "AfterMeal";
 
     public ICollection<MedicineSchedule> MedicineSchedules { get; set; }
     = new List<MedicineSchedule>();
