@@ -39,7 +39,8 @@ public class MedicineService : IMedicineService
             Dose = dto.Dose,
             Stock = dto.Stock,
             StartDate = dto.StartDate,
-            EndDate = dto.EndDate
+            EndDate = dto.EndDate,
+            MealTimeing = string.IsNullOrEmpty(dto.MealTiming) ? "AfterMeal" : dto.MealTiming
         };
         return await _repository.AddAsync(medicine);
     }
@@ -63,6 +64,7 @@ public class MedicineService : IMedicineService
         medicine.Stock = dto.Stock;
         medicine.StartDate = dto.StartDate;
         medicine.EndDate = dto.EndDate;
+        medicine.MealTimeing = string.IsNullOrWhiteSpace(dto.MealTiming) ? medicine.MealTimeing : dto.MealTiming;
 
         return await _repository.UpdateAsync(medicine);
     }
