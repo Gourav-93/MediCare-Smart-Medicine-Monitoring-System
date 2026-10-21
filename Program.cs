@@ -19,6 +19,9 @@ builder.Services.AddControllers().AddJsonOptions(options =>
     options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
 });
 
+// HTTP Client Factory (Used by AiChatService for Gemini API)
+builder.Services.AddHttpClient();
+
 // CORS 
 builder.Services.AddCors(options =>
 {
