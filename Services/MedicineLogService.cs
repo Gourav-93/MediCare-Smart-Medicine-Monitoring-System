@@ -1,11 +1,11 @@
+using mediCare.DTOs;
 using MediCare.Data;
-using MediCare.DTOs;
 using MediCare.Models;
-using MediCare.Repositories.Interfaces; 
+using MediCare.Repositories.Interfaces;
 using MediCare.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
-namespace MediCare.Service;
+namespace MediCare.Services;
 
 public class MedicineLogService : IMedicineLogService
 {
@@ -23,7 +23,7 @@ public class MedicineLogService : IMedicineLogService
         _context = context;
     }
 
-    public async Task<List<MedicineLog>> GetAllAsync()
+    public async Task<IEnumerable<MedicineLog>> GetAllAsync()
     {
         return await _repository.GetAllAsync();
     }
@@ -33,32 +33,19 @@ public class MedicineLogService : IMedicineLogService
         return await _repository.GetByIdAsync(id);
     }
 
-    public async Task<MedicineLog> AddAsync(MedicineLogDto dto)
+    public async Task<MedicineLog> AddAsync(MedicineLog log)
     {
-        if (!await _repository.MedicineExistsAsync(dto.MedicineId))
-        {
-            throw new ArgumentException("Medicine not found.");
-        }
-
-        if (!await _repository.PatientExistsAsync(dto.PatientId))
-        {
-            throw new ArgumentException("Patient not found.");
-        }
-
-        var log = new MedicineLog
-        {
-            MedicineId = dto.MedicineId,
-            PatientId = dto.PatientId,
-            ScheduledTime = dto.ScheduledTime,
-            Status = dto.Status
-        };
-
         return await _repository.AddAsync(log);
     }
 
+    // Feature 3: Low Stock Alert (Patient + Linked Caregivers) & Stock Deduction
     public async Task<MedicineLog?> MarkAsTakenAsync(int id)
     {
-        var log = await _repository.GetByIdAsync(id);
+        var log = await _context.MedicineLogs
+            .Include(l => l.Medicine)
+                .ThenInclude(m => m.Patient)
+                    .ThenInclude(p => p.User)
+            .FirstOrDefaultAsync(l => l.Id == id);
 
         if (log == null)
             return null;
@@ -80,7 +67,7 @@ public class MedicineLogService : IMedicineLogService
             log.Medicine.Stock = 0;
         }
 
-        // Low Stock Alert Trigger (Patient + Linked Caregivers)
+        // Low stock threshold check (Trigger only once when stock falls to or below 5)
         if (previousStock > 5 && log.Medicine.Stock <= 5)
         {
             // 1. Patient Notification
@@ -116,78 +103,57 @@ public class MedicineLogService : IMedicineLogService
             }
         }
 
-        return await _repository.UpdateAsync(log);
-    }
-
-    // Complete Filterable History Logic
-    public async Task<object> GetPatientHistoryAsync(int patientId, MedicineLogFilterDto filter)
-    {
-        var query = _context.MedicineLogs
-            .Include(l => l.Medicine)
-            .Where(l => l.PatientId == patientId)
-            .AsQueryable();
-
-        if (filter.FromDate.HasValue)
-        {
-            query = query.Where(l => l.ScheduledTime.Date >= filter.FromDate.Value.Date);
-        }
-
-        if (filter.ToDate.HasValue)
-        {
-            query = query.Where(l => l.ScheduledTime.Date <= filter.ToDate.Value.Date);
-        }
-
-        if (!string.IsNullOrWhiteSpace(filter.Status) && filter.Status != "All")
-        {
-            query = query.Where(l => l.Status == filter.Status);
-        }
-
-        var totalRecords = await query.CountAsync();
-
-        var logs = await query
-            .OrderByDescending(l => l.ScheduledTime)
-            .Skip((filter.Page - 1) * filter.PageSize)
-            .Take(filter.PageSize)
-            .Select(l => new
-            {
-                l.Id,
-                l.MedicineId,
-                MedicineName = l.Medicine.Name,
-                Dosage = l.Medicine.Dosage,
-                l.ScheduledTime,
-                l.TakenTime,
-                l.Status
-            })
-            .ToListAsync();
-
-        return new
-        {
-            TotalRecords = totalRecords,
-            Page = filter.Page,
-            PageSize = filter.PageSize,
-            TotalPages = (int)Math.Ceiling((double)totalRecords / filter.PageSize),
-            Data = logs
-        };
-    }
-
-    public async Task<MedicineLog?> SnoozeAsync(int id, int minutes = 15)
-    {
-        var log = await _context.MedicineLogs.Include(l => l.Medicine).FirstOrDefaultAsync(l => l.Id == id);
-        if (log == null)
-            return null;
-        if (log.Status == "Taken")
-            throw new InvalidOperationException("Cannot snooze a log that has already been marked as taken.");
-        if (log.SnoozeCount >= 2)
-            throw new InvalidOperationException("Cannot snooze more than 3 times.");
-        if (log.OriginalScheduledTime.HasValue)
-        {
-            log.OriginalScheduledTime = log.ScheduledTime;
-        }
-        log.ScheduledTime = DateTime.Now.AddMinutes(minutes);
-        log.Status = "Snoozed";
-        log.SnoozeCount++;
         await _context.SaveChangesAsync();
         return log;
     }
 
+    // Feature 6: Snooze Medicine for 15 minutes (Max 2 times)
+    public async Task<MedicineLog?> SnoozeAsync(int id, int minutes = 15)
+    {
+        var log = await _context.MedicineLogs
+            .Include(l => l.Medicine)
+            .FirstOrDefaultAsync(l => l.Id == id);
+
+        if (log == null)
+            return null;
+
+        if (log.Status == "Taken")
+            throw new InvalidOperationException("Taken medicine cannot be snoozed.");
+
+        if (log.SnoozeCount >= 2)
+            throw new InvalidOperationException("Maximum snooze limit (2 times) reached for this dose.");
+
+        if (!log.OriginalScheduledTime.HasValue)
+        {
+            log.OriginalScheduledTime = log.ScheduledTime;
+        }
+
+        log.ScheduledTime = DateTime.Now.AddMinutes(minutes);
+        log.Status = "Snoozed";
+        log.SnoozeCount++;
+
+        await _context.SaveChangesAsync();
+        return log;
+    }
+
+    // Feature 1 & 7: History with MealTiming Projection
+    public async Task<IEnumerable<PatientHistoryDto>> GetPatientHistoryAsync(int patientId)
+    {
+        return await _context.MedicineLogs
+            .Include(l => l.Medicine)
+            .Where(l => l.PatientId == patientId)
+            .OrderByDescending(l => l.ScheduledTime)
+            .Select(l => new PatientHistoryDto
+            {
+                Id = l.Id,
+                MedicineName = l.Medicine.Name,
+                Dosage = l.Medicine.Dosage,
+                MealTiming = l.Medicine.MealTiming,
+                ScheduledTime = l.ScheduledTime,
+                TakenTime = l.TakenTime,
+                Status = l.Status,
+                SnoozeCount = l.SnoozeCount
+            })
+            .ToListAsync();
+    }
 }
