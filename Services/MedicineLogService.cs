@@ -1,5 +1,5 @@
-using mediCare.DTOs;
 using MediCare.Data;
+using MediCare.DTOs;
 using MediCare.Models;
 using MediCare.Repositories.Interfaces;
 using MediCare.Services.Interfaces;
@@ -23,7 +23,7 @@ public class MedicineLogService : IMedicineLogService
         _context = context;
     }
 
-    public async Task<IEnumerable<MedicineLog>> GetAllAsync()
+    public async Task<List<MedicineLog>> GetAllAsync()
     {
         return await _repository.GetAllAsync();
     }
@@ -31,6 +31,29 @@ public class MedicineLogService : IMedicineLogService
     public async Task<MedicineLog?> GetByIdAsync(int id)
     {
         return await _repository.GetByIdAsync(id);
+    }
+
+    public async Task<MedicineLog> AddAsync(MedicineLogDto dto)
+    {
+        if (!await _repository.MedicineExistsAsync(dto.MedicineId))
+        {
+            throw new ArgumentException("Medicine not found.");
+        }
+
+        if (!await _repository.PatientExistsAsync(dto.PatientId))
+        {
+            throw new ArgumentException("Patient not found.");
+        }
+
+        var log = new MedicineLog
+        {
+            MedicineId = dto.MedicineId,
+            PatientId = dto.PatientId,
+            ScheduledTime = dto.ScheduledTime,
+            Status = dto.Status
+        };
+
+        return await _repository.AddAsync(log);
     }
 
     public async Task<MedicineLog> AddAsync(MedicineLog log)
@@ -136,6 +159,59 @@ public class MedicineLogService : IMedicineLogService
         return log;
     }
 
+    // Complete Filterable History Logic with MealTiming & SnoozeCount Projection
+    public async Task<object> GetPatientHistoryAsync(int patientId, MedicineLogFilterDto filter)
+    {
+        var query = _context.MedicineLogs
+            .Include(l => l.Medicine)
+            .Where(l => l.PatientId == patientId)
+            .AsQueryable();
+
+        if (filter.FromDate.HasValue)
+        {
+            query = query.Where(l => l.ScheduledTime.Date >= filter.FromDate.Value.Date);
+        }
+
+        if (filter.ToDate.HasValue)
+        {
+            query = query.Where(l => l.ScheduledTime.Date <= filter.ToDate.Value.Date);
+        }
+
+        if (!string.IsNullOrWhiteSpace(filter.Status) && filter.Status != "All")
+        {
+            query = query.Where(l => l.Status == filter.Status);
+        }
+
+        var totalRecords = await query.CountAsync();
+
+        var logs = await query
+            .OrderByDescending(l => l.ScheduledTime)
+            .Skip((filter.Page - 1) * filter.PageSize)
+            .Take(filter.PageSize)
+            .Select(l => new PatientHistoryDto
+            {
+                Id = l.Id,
+                MedicineId = l.MedicineId,
+                MedicineName = l.Medicine.Name,
+                Dosage = l.Medicine.Dosage,
+                MealTiming = l.Medicine.MealTimeing,
+                ScheduledTime = l.ScheduledTime,
+                TakenTime = l.TakenTime,
+                Status = l.Status,
+                SnoozeCount = l.SnoozeCount
+            })
+            .ToListAsync();
+
+        return new
+        {
+            TotalRecords = totalRecords,
+            Page = filter.Page,
+            PageSize = filter.PageSize,
+            TotalPages = (int)Math.Ceiling((double)totalRecords / filter.PageSize),
+            Data = logs
+        };
+    }
+
     // Feature 1 & 7: History with MealTiming Projection
     public async Task<IEnumerable<PatientHistoryDto>> GetPatientHistoryAsync(int patientId)
     {
@@ -146,9 +222,10 @@ public class MedicineLogService : IMedicineLogService
             .Select(l => new PatientHistoryDto
             {
                 Id = l.Id,
+                MedicineId = l.MedicineId,
                 MedicineName = l.Medicine.Name,
                 Dosage = l.Medicine.Dosage,
-                MealTiming = l.Medicine.MealTiming,
+                MealTiming = l.Medicine.MealTimeing,
                 ScheduledTime = l.ScheduledTime,
                 TakenTime = l.TakenTime,
                 Status = l.Status,

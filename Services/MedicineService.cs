@@ -1,24 +1,21 @@
-using mediCare.DTOs;
 using MediCare.Data;
+using MediCare.DTOs;
 using MediCare.Models;
 using MediCare.Repositories.Interfaces;
 using MediCare.Services.Interfaces;
-using Microsoft.EntityFrameworkCore;
 
 namespace MediCare.Services;
 
 public class MedicineService : IMedicineService
 {
     private readonly IMedicineRepository _repository;
-    private readonly AppDbContext _context;
 
-    public MedicineService(IMedicineRepository repository, AppDbContext context)
+    public MedicineService(IMedicineRepository repository)
     {
         _repository = repository;
-        _context = context;
     }
 
-    public async Task<IEnumerable<Medicine>> GetAllAsync()
+    public async Task<List<Medicine>> GetAllAsync()
     {
         return await _repository.GetAllAsync();
     }
@@ -30,14 +27,21 @@ public class MedicineService : IMedicineService
 
     public async Task<Medicine> AddAsync(MedicineDto dto)
     {
+        if (!await _repository.PatientExistsAsync(dto.PatientId))
+        {
+            throw new ArgumentException("Patient not found.");
+        }
+
         var medicine = new Medicine
         {
+            PatientId = dto.PatientId,
             Name = dto.Name,
             Dosage = dto.Dosage,
             Dose = dto.Dose,
             Stock = dto.Stock,
-            PatientId = dto.PatientId,
-            MealTiming = string.IsNullOrWhiteSpace(dto.MealTiming) ? "AfterMeal" : dto.MealTiming
+            StartDate = dto.StartDate,
+            EndDate = dto.EndDate,
+            MealTimeing = string.IsNullOrWhiteSpace(dto.MealTiming) ? "AfterMeal" : dto.MealTiming
         };
 
         return await _repository.AddAsync(medicine);
@@ -45,16 +49,24 @@ public class MedicineService : IMedicineService
 
     public async Task<Medicine?> UpdateAsync(int id, MedicineDto dto)
     {
+        if (!await _repository.PatientExistsAsync(dto.PatientId))
+        {
+            throw new ArgumentException("Patient not found.");
+        }
+
         var existingMedicine = await _repository.GetByIdAsync(id);
         if (existingMedicine == null)
             return null;
 
+        existingMedicine.PatientId = dto.PatientId;
         existingMedicine.Name = dto.Name;
         existingMedicine.Dosage = dto.Dosage;
         existingMedicine.Dose = dto.Dose;
         existingMedicine.Stock = dto.Stock;
-        existingMedicine.MealTiming = string.IsNullOrWhiteSpace(dto.MealTiming) 
-            ? existingMedicine.MealTiming 
+        existingMedicine.StartDate = dto.StartDate;
+        existingMedicine.EndDate = dto.EndDate;
+        existingMedicine.MealTimeing = string.IsNullOrWhiteSpace(dto.MealTiming) 
+            ? existingMedicine.MealTimeing 
             : dto.MealTiming;
 
         return await _repository.UpdateAsync(existingMedicine);
@@ -66,6 +78,7 @@ public class MedicineService : IMedicineService
         if (medicine == null)
             return false;
 
-        return await _repository.DeleteAsync(id);
+        await _repository.DeleteAsync(medicine);
+        return true;
     }
 }

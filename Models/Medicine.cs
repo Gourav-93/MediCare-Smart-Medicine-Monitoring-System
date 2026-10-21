@@ -21,6 +21,13 @@ public class Medicine
     public Patient Patient { get; set; } = null!;
     public string MealTimeing { get; set; } = "AfterMeal";
 
+    [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+    public string MealTiming
+    {
+        get => MealTimeing;
+        set => MealTimeing = value;
+    }
+
     public ICollection<MedicineSchedule> MedicineSchedules { get; set; }
     = new List<MedicineSchedule>();
 
