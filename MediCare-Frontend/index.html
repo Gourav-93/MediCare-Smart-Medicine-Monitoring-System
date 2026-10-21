@@ -3,72 +3,128 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MediCare — Smart Medicine Reminder & Family Monitoring System</title>
-    <meta name="description" content="Intelligent medicine monitoring, real-time caregiver synchronization, compliance analytics, and emergency alerts.">
+    <title>MediCare — Smart Medicine Monitoring & Family Care System</title>
+    <meta name="description" content="Intelligent medicine adherence monitoring, real-time caregiver synchronization, clinical compliance analytics, and instant SOS emergency alerts.">
+    
+    <!-- Modern Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="css/style.css">
+    
     <style>
         :root {
             --landing-bg: #f8fafc;
-            --landing-card: #ffffff;
+            --landing-surface: #ffffff;
+            --landing-surface-hover: #f1f5f9;
+            --landing-surface-card: #ffffff;
             --landing-border: #e2e8f0;
+            --landing-border-subtle: #f1f5f9;
+            --landing-border-glow: rgba(37, 99, 235, 0.25);
+            
             --landing-text-main: #0f172a;
             --landing-text-muted: #64748b;
+            --landing-text-dim: #94a3b8;
+            
             --landing-primary: #2563eb;
             --landing-primary-hover: #1d4ed8;
             --landing-primary-light: #eff6ff;
-            --landing-accent: #4f46e5;
+            --landing-accent: #06b6d4;
+            --landing-violet: #6366f1;
+            
+            --landing-success: #10b981;
+            --landing-success-bg: rgba(16, 185, 129, 0.1);
+            --landing-success-border: rgba(16, 185, 129, 0.25);
+            --landing-success-text: #059669;
+            
+            --landing-warning: #f59e0b;
+            --landing-warning-bg: rgba(245, 158, 11, 0.1);
+            --landing-warning-border: rgba(245, 158, 11, 0.25);
+            --landing-warning-text: #d97706;
+            
+            --hero-glow-1: rgba(37, 99, 235, 0.08);
+            --hero-glow-2: rgba(6, 182, 212, 0.06);
+            --hero-glow-3: rgba(99, 102, 241, 0.06);
+            --grid-line-color: rgba(15, 23, 42, 0.035);
         }
 
         [data-theme="dark"] {
-            --landing-bg: #0b1120;
-            --landing-card: #151f32;
-            --landing-border: #1e293b;
+            --landing-bg: #090e17;
+            --landing-surface: #111a2e;
+            --landing-surface-hover: #18233c;
+            --landing-surface-card: rgba(17, 26, 46, 0.85);
+            --landing-border: rgba(255, 255, 255, 0.08);
+            --landing-border-subtle: rgba(255, 255, 255, 0.04);
+            --landing-border-glow: rgba(59, 130, 246, 0.4);
+            
             --landing-text-main: #f8fafc;
             --landing-text-muted: #94a3b8;
+            --landing-text-dim: #64748b;
+            
             --landing-primary: #3b82f6;
             --landing-primary-hover: #60a5fa;
             --landing-primary-light: rgba(59, 130, 246, 0.15);
-            --landing-accent: #818cf8;
+            --landing-accent: #38bdf8;
+            --landing-violet: #818cf8;
+            
+            --landing-success: #34d399;
+            --landing-success-bg: rgba(16, 185, 129, 0.15);
+            --landing-success-border: rgba(52, 211, 153, 0.3);
+            --landing-success-text: #34d399;
+            
+            --landing-warning: #fbbf24;
+            --landing-warning-bg: rgba(245, 158, 11, 0.15);
+            --landing-warning-border: rgba(251, 191, 36, 0.3);
+            --landing-warning-text: #fbbf24;
+            
+            --hero-glow-1: rgba(59, 130, 246, 0.14);
+            --hero-glow-2: rgba(56, 189, 248, 0.10);
+            --hero-glow-3: rgba(129, 140, 248, 0.12);
+            --grid-line-color: rgba(255, 255, 255, 0.025);
+        }
+
+        * {
+            box-sizing: border-box;
         }
 
         body {
             background-color: var(--landing-bg);
             color: var(--landing-text-main);
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             margin: 0;
             padding: 0;
             overflow-x: hidden;
-            letter-spacing: -0.01em;
+            letter-spacing: -0.012em;
+            transition: background-color 0.25s ease, color 0.25s ease;
         }
 
-        /* Glassmorphic Fixed Header */
+        /* Glassmorphic Top Navigation */
         .landing-header {
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
             z-index: 1000;
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(18px);
-            -webkit-backdrop-filter: blur(18px);
-            border-bottom: 1px solid rgba(226, 232, 240, 0.85);
+            background: rgba(255, 255, 255, 0.82);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--landing-border);
             transition: all 0.25s ease;
         }
 
         [data-theme="dark"] .landing-header {
-            background: rgba(11, 17, 32, 0.85);
-            border-bottom-color: rgba(30, 41, 59, 0.85);
+            background: rgba(9, 14, 23, 0.82);
+            border-bottom-color: rgba(255, 255, 255, 0.07);
         }
 
         .landing-nav-container {
             max-width: 1280px;
             margin: 0 auto;
-            padding: 0.95rem 1.75rem;
+            padding: 0.9rem 1.75rem;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -77,420 +133,836 @@
         .brand-logo {
             display: flex;
             align-items: center;
-            gap: 0.65rem;
+            gap: 0.75rem;
             font-size: 1.35rem;
             font-weight: 800;
-            color: var(--landing-primary);
+            color: var(--landing-text-main);
             text-decoration: none;
-            letter-spacing: -0.02em;
-            transition: opacity 0.15s ease;
-        }
-
-        .brand-logo:hover {
-            opacity: 0.9;
+            letter-spacing: -0.025em;
         }
 
         .brand-logo-icon {
-            width: 38px;
-            height: 38px;
-            border-radius: 10px;
-            background: var(--landing-primary-light);
-            color: var(--landing-primary);
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #2563eb 0%, #06b6d4 100%);
+            color: #ffffff;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 1.25rem;
-            box-shadow: 0 2px 6px rgba(37, 99, 235, 0.12);
+            box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+            transition: transform 0.25s ease;
+        }
+
+        .brand-logo:hover .brand-logo-icon {
+            transform: scale(1.06) rotate(3deg);
+        }
+
+        .brand-logo span {
+            background: linear-gradient(135deg, var(--landing-primary) 0%, var(--landing-accent) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
         .nav-actions {
             display: flex;
             align-items: center;
-            gap: 0.75rem;
+            gap: 0.85rem;
         }
 
         .theme-toggle-btn {
-            background: var(--landing-card);
+            background: var(--landing-surface);
             border: 1px solid var(--landing-border);
             color: var(--landing-text-muted);
-            width: 38px;
-            height: 38px;
-            border-radius: 10px;
+            width: 40px;
+            height: 40px;
+            border-radius: 11px;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: all 0.15s ease;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         .theme-toggle-btn:hover {
-            background: var(--landing-primary-light);
+            background: var(--landing-surface-hover);
             color: var(--landing-primary);
-            border-color: #bfdbfe;
+            border-color: var(--landing-border-glow);
+            transform: translateY(-1px);
         }
 
-        /* Hero Section */
+        .nav-btn-signin {
+            border-radius: 10px;
+            font-weight: 600;
+            padding: 0.55rem 1.25rem;
+            font-size: 0.875rem;
+            color: var(--landing-text-main);
+            background: transparent;
+            border: 1px solid var(--landing-border);
+            text-decoration: none;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .nav-btn-signin:hover {
+            background: var(--landing-surface-hover);
+            color: var(--landing-primary);
+            border-color: var(--landing-border-glow);
+        }
+
+        .nav-btn-getstarted {
+            border-radius: 10px;
+            font-weight: 600;
+            padding: 0.55rem 1.35rem;
+            font-size: 0.875rem;
+            color: #ffffff !important;
+            background: linear-gradient(135deg, var(--landing-primary) 0%, #1d4ed8 100%);
+            border: none;
+            text-decoration: none;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .nav-btn-getstarted:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 20px rgba(37, 99, 235, 0.45);
+            background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+        }
+
+        /* Hero Section with Ambient Space Lights */
         .landing-hero {
-            padding-top: 7.75rem;
-            padding-bottom: 5.5rem;
-            background: 
-                radial-gradient(circle at 18% 22%, rgba(37, 99, 235, 0.08) 0%, transparent 45%),
-                radial-gradient(circle at 82% 18%, rgba(79, 70, 229, 0.06) 0%, transparent 42%),
-                radial-gradient(circle at 50% 90%, rgba(6, 182, 212, 0.05) 0%, transparent 50%),
-                var(--landing-bg);
-            min-height: 90vh;
+            position: relative;
+            padding-top: 8rem;
+            padding-bottom: 6rem;
+            min-height: 92vh;
             display: flex;
             align-items: center;
-            position: relative;
+            overflow: hidden;
         }
 
-        .hero-grid {
+        /* Ambient Background Orbs */
+        .ambient-mesh {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .ambient-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.75;
+            transition: all 1s ease;
+        }
+
+        .orb-1 {
+            top: 5%;
+            left: 10%;
+            width: 480px;
+            height: 480px;
+            background: var(--hero-glow-1);
+        }
+
+        .orb-2 {
+            top: 15%;
+            right: 5%;
+            width: 520px;
+            height: 520px;
+            background: var(--hero-glow-2);
+        }
+
+        .orb-3 {
+            bottom: -5%;
+            left: 35%;
+            width: 450px;
+            height: 450px;
+            background: var(--hero-glow-3);
+        }
+
+        .ambient-grid {
+            position: absolute;
+            inset: 0;
+            background-image: 
+                linear-gradient(to right, var(--grid-line-color) 1px, transparent 1px),
+                linear-gradient(to bottom, var(--grid-line-color) 1px, transparent 1px);
+            background-size: 40px 40px;
+            mask-image: radial-gradient(circle at center, black 40%, transparent 80%);
+            -webkit-mask-image: radial-gradient(circle at center, black 40%, transparent 80%);
+            pointer-events: none;
+        }
+
+        .hero-container {
+            position: relative;
+            z-index: 1;
             max-width: 1280px;
             margin: 0 auto;
             padding: 0 1.75rem;
-            display: grid;
-            grid-template-columns: 1.18fr 0.82fr;
-            gap: 4rem;
-            align-items: center;
             width: 100%;
         }
 
+        .hero-grid {
+            display: grid;
+            grid-template-columns: 1.15fr 0.85fr;
+            gap: 4.5rem;
+            align-items: center;
+        }
+
+        /* Hero Left Content */
         .hero-badge {
             display: inline-flex;
             align-items: center;
-            gap: 0.55rem;
+            gap: 0.6rem;
             background: var(--landing-primary-light);
             color: var(--landing-primary);
             font-size: 0.78rem;
             font-weight: 700;
-            padding: 0.38rem 0.95rem;
+            padding: 0.45rem 1rem;
             border-radius: 9999px;
-            margin-bottom: 1.6rem;
-            letter-spacing: 0.04em;
+            margin-bottom: 1.75rem;
+            letter-spacing: 0.05em;
             text-transform: uppercase;
-            border: 1px solid rgba(191, 219, 254, 0.7);
-            box-shadow: 0 2px 6px rgba(37, 99, 235, 0.06);
+            border: 1px solid var(--landing-border-glow);
+            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.08);
         }
 
-        .pulse-dot {
-            width: 7px;
-            height: 7px;
+        .pulse-beacon {
+            width: 8px;
+            height: 8px;
             border-radius: 50%;
             background: var(--landing-primary);
-            box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.7);
-            animation: pulse-ring 2s infinite;
+            position: relative;
         }
 
-        @keyframes pulse-ring {
-            0% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.6); }
-            70% { box-shadow: 0 0 0 7px rgba(37, 99, 235, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0); }
+        .pulse-beacon::after {
+            content: '';
+            position: absolute;
+            inset: -4px;
+            border-radius: 50%;
+            border: 2px solid var(--landing-primary);
+            animation: pulse-wave 2s infinite ease-out;
+        }
+
+        @keyframes pulse-wave {
+            0% { transform: scale(0.6); opacity: 1; }
+            100% { transform: scale(2.2); opacity: 0; }
         }
 
         .hero-headline {
-            font-size: clamp(2.4rem, 4.8vw, 3.85rem);
-            font-weight: 900;
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            font-weight: 800;
             line-height: 1.12;
             color: var(--landing-text-main);
             margin-bottom: 1.4rem;
             letter-spacing: -0.035em;
         }
 
-        .hero-headline span {
-            background: linear-gradient(135deg, var(--landing-primary) 0%, #06b6d4 50%, #4f46e5 100%);
+        .hero-gradient-text {
+            background: linear-gradient(135deg, #2563eb 0%, #06b6d4 50%, #6366f1 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: inline-block;
+        }
+
+        [data-theme="dark"] .hero-gradient-text {
+            background: linear-gradient(135deg, #60a5fa 0%, #38bdf8 50%, #a5b4fc 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
         .hero-desc {
-            font-size: 1.12rem;
+            font-size: 1.15rem;
             color: var(--landing-text-muted);
-            line-height: 1.65;
-            margin-bottom: 2.25rem;
-            max-width: 550px;
+            line-height: 1.7;
+            margin-bottom: 2.5rem;
+            max-width: 560px;
             font-weight: 400;
         }
 
         .hero-cta-group {
             display: flex;
             align-items: center;
-            gap: 1rem;
+            gap: 1.1rem;
             flex-wrap: wrap;
-            margin-bottom: 2.75rem;
+            margin-bottom: 3rem;
         }
 
-        .hero-cta-group .btn-lg {
-            padding: 0.75rem 1.6rem;
-            font-size: 0.95rem;
+        .btn-hero-primary {
+            background: linear-gradient(135deg, var(--landing-primary) 0%, #1d4ed8 100%);
+            color: #ffffff !important;
+            padding: 0.85rem 1.85rem;
+            font-size: 1rem;
             font-weight: 600;
-            border-radius: 10px;
+            border-radius: 12px;
             display: inline-flex;
             align-items: center;
-            gap: 0.55rem;
-            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        .hero-cta-group .btn-primary {
-            background: linear-gradient(135deg, var(--landing-primary) 0%, #1d4ed8 100%);
+            gap: 0.65rem;
+            text-decoration: none;
+            box-shadow: 0 10px 25px -4px rgba(37, 99, 235, 0.45);
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
             border: none;
-            color: #ffffff;
-            box-shadow: 0 8px 20px -4px rgba(37, 99, 235, 0.4);
         }
 
-        .hero-cta-group .btn-primary:hover {
+        .btn-hero-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 12px 26px -4px rgba(37, 99, 235, 0.5);
+            box-shadow: 0 16px 32px -4px rgba(37, 99, 235, 0.55);
             background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
         }
 
-        .hero-cta-group .btn-outline {
-            background: var(--landing-card);
+        .btn-hero-outline {
+            background: var(--landing-surface);
             border: 1px solid var(--landing-border);
-            color: var(--landing-text-main);
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+            color: var(--landing-text-main) !important;
+            padding: 0.85rem 1.85rem;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 12px;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.65rem;
+            text-decoration: none;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        .hero-cta-group .btn-outline:hover {
-            background: var(--landing-bg);
-            border-color: #cbd5e1;
+        .btn-hero-outline:hover {
             transform: translateY(-2px);
-            color: var(--landing-primary);
+            background: var(--landing-surface-hover);
+            border-color: var(--landing-border-glow);
+            color: var(--landing-primary) !important;
         }
 
-        .hero-stats-row {
-            display: flex;
-            gap: 2.25rem;
+        /* Metric Trust Bar */
+        .hero-metrics-bar {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
             border-top: 1px solid var(--landing-border);
-            padding-top: 1.85rem;
+            padding-top: 2rem;
+            max-width: 560px;
         }
 
-        .hero-stat-item strong {
+        .metric-item strong {
             display: block;
-            font-size: 1.65rem;
+            font-size: 1.75rem;
             font-weight: 800;
             color: var(--landing-text-main);
-            letter-spacing: -0.02em;
-            line-height: 1.2;
+            letter-spacing: -0.025em;
+            line-height: 1.15;
+            margin-bottom: 0.2rem;
         }
 
-        .hero-stat-item span {
+        .metric-item span {
             font-size: 0.8rem;
             color: var(--landing-text-muted);
             font-weight: 500;
+            display: block;
         }
 
-        /* Interactive Live Preview Card */
-        .hero-preview-col {
+        /* Hero Right: Modern Interactive Glassmorphic Preview Card */
+        .hero-preview-wrapper {
             position: relative;
+            padding: 1.5rem 0;
         }
 
-        .interactive-preview-card {
-            background: var(--landing-card);
+        /* Floating Accent Badges for Depth */
+        .floating-badge {
+            position: absolute;
+            z-index: 3;
+            background: var(--landing-surface);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
             border: 1px solid var(--landing-border);
-            border-radius: 20px;
-            box-shadow: 
-                0 20px 40px -15px rgba(15, 23, 42, 0.08),
-                0 0 0 1px rgba(226, 232, 240, 0.85);
-            padding: 1.85rem;
-            position: relative;
-            transition: all 0.3s ease;
-        }
-
-        .interactive-preview-card:hover {
-            box-shadow: 
-                0 28px 50px -15px rgba(37, 99, 235, 0.12),
-                0 0 0 1px rgba(147, 197, 253, 0.6);
-            transform: translateY(-4px);
-        }
-
-        .card-top-bar {
+            padding: 0.5rem 0.95rem;
+            border-radius: 9999px;
+            box-shadow: 0 10px 25px -4px rgba(0, 0, 0, 0.12);
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            margin-bottom: 1.5rem;
-            padding-bottom: 1rem;
+            gap: 0.55rem;
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--landing-text-main);
+            animation: float-gentle 4s ease-in-out infinite alternate;
+            white-space: nowrap;
+        }
+
+        .floating-badge-top {
+            top: 0px;
+            right: 24px;
+            border-color: rgba(16, 185, 129, 0.35);
+        }
+
+        .floating-badge-bottom {
+            bottom: 0px;
+            left: 24px;
+            border-color: rgba(239, 68, 68, 0.35);
+            animation-delay: -2s;
+        }
+
+        @keyframes float-gentle {
+            0% { transform: translateY(0px); }
+            100% { transform: translateY(-8px); }
+        }
+
+        .hero-preview-card {
+            background: var(--landing-surface-card);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid var(--landing-border);
+            border-radius: 24px;
+            box-shadow: 
+                0 25px 60px -15px rgba(15, 23, 42, 0.15),
+                0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+            padding: 2rem;
+            position: relative;
+            z-index: 2;
+            transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        [data-theme="dark"] .hero-preview-card {
+            box-shadow: 
+                0 30px 70px -15px rgba(0, 0, 0, 0.5),
+                0 0 0 1px rgba(255, 255, 255, 0.08) inset;
+        }
+
+        .hero-preview-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--landing-border-glow);
+            box-shadow: 
+                0 35px 80px -15px rgba(37, 99, 235, 0.2),
+                0 0 0 1px rgba(59, 130, 246, 0.3) inset;
+        }
+
+        /* Card Top Navigation Bar */
+        .preview-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-bottom: 1.25rem;
+            margin-bottom: 1.25rem;
             border-bottom: 1px solid var(--landing-border);
         }
 
-        .patient-avatar-circle {
-            width: 38px;
-            height: 38px;
-            border-radius: 50%;
-            background: #eff6ff;
-            color: #2563eb;
+        .patient-profile-pill {
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+        }
+
+        .patient-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%);
+            color: #ffffff;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 700;
-            font-size: 0.9rem;
-            border: 1px solid #dbeafe;
+            font-size: 1.05rem;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+            position: relative;
         }
 
-        .live-sync-pill {
+        .patient-avatar::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            right: -2px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #10b981;
+            border: 2px solid var(--landing-surface);
+        }
+
+        .patient-meta h4 {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--landing-text-main);
+            margin: 0 0 0.15rem 0;
+            letter-spacing: -0.015em;
+        }
+
+        .patient-meta span {
+            font-size: 0.76rem;
+            color: var(--landing-text-muted);
+            display: block;
+        }
+
+        .live-status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            background: var(--landing-success-bg);
+            color: var(--landing-success-text);
+            border: 1px solid var(--landing-success-border);
+            font-size: 0.72rem;
+            font-weight: 700;
+            padding: 0.35rem 0.75rem;
+            border-radius: 9999px;
+            letter-spacing: 0.02em;
+        }
+
+        .live-dot-glow {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--landing-success);
+            box-shadow: 0 0 8px var(--landing-success);
+        }
+
+        /* Clean Schedule Items (No ugly full borders) */
+        .preview-doses-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.9rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .med-item-card {
+            background: var(--landing-surface);
+            border: 1px solid var(--landing-border);
+            border-radius: 14px;
+            padding: 0.85rem 1.15rem;
+            min-height: 72px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.85rem;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .med-item-card::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3.5px;
+            border-radius: 3px;
+        }
+
+        .med-item-card.status-taken::before {
+            background: var(--landing-success);
+        }
+
+        .med-item-card.status-pending::before {
+            background: var(--landing-warning);
+        }
+
+        .med-item-card:hover {
+            background: var(--landing-surface-hover);
+            border-color: var(--landing-border-glow);
+            transform: translateX(3px);
+        }
+
+        .med-info-group {
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+            min-width: 0;
+        }
+
+        .med-icon-box {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        .med-icon-box.icon-taken {
+            background: var(--landing-success-bg);
+            color: var(--landing-success-text);
+            border: 1px solid var(--landing-success-border);
+        }
+
+        .med-icon-box.icon-pending {
+            background: var(--landing-warning-bg);
+            color: var(--landing-warning-text);
+            border: 1px solid var(--landing-warning-border);
+        }
+
+        .med-title {
+            font-size: 0.88rem;
+            font-weight: 700;
+            color: var(--landing-text-main);
+            margin: 0 0 0.15rem 0;
+            letter-spacing: -0.01em;
+            white-space: nowrap;
+        }
+
+        .med-subtitle {
+            font-size: 0.74rem;
+            color: var(--landing-text-muted);
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+            white-space: nowrap;
+        }
+
+        .med-badge {
+            font-size: 0.72rem;
+            font-weight: 700;
+            padding: 0.35rem 0.75rem;
+            border-radius: 8px;
             display: inline-flex;
             align-items: center;
             gap: 0.35rem;
-            background: #ecfdf5;
-            color: #059669;
-            border: 1px solid #a7f3d0;
-            font-size: 0.72rem;
-            font-weight: 700;
-            padding: 0.25rem 0.65rem;
-            border-radius: 9999px;
+            white-space: nowrap;
+            flex-shrink: 0;
         }
 
-        .dose-item-card {
-            background: #f8fafc;
-            padding: 0.95rem 1.15rem;
-            border-radius: 12px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border: 1px solid #eef2f6;
-            margin-bottom: 0.85rem;
-            transition: all 0.2s ease;
+        .med-badge.badge-taken {
+            background: var(--landing-success-bg);
+            color: var(--landing-success-text);
+            border: 1px solid var(--landing-success-border);
         }
 
-        [data-theme="dark"] .dose-item-card {
-            background: rgba(30, 41, 59, 0.5);
-            border-color: #1e293b;
+        .med-badge.badge-pending {
+            background: var(--landing-warning-bg);
+            color: var(--landing-warning-text);
+            border: 1px solid var(--landing-warning-border);
         }
 
-        .dose-item-card:hover {
-            background: #ffffff;
-            border-color: #cbd5e1;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+        .pulse-amber {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--landing-warning);
+            box-shadow: 0 0 6px var(--landing-warning);
         }
 
-        .dose-item-card.border-success {
-            border-left: 3.5px solid #10b981 !important;
-        }
-
-        .dose-item-card.border-warning {
-            border-left: 3.5px solid #f59e0b !important;
-        }
-
-        .adherence-score-banner {
-            background: linear-gradient(135deg, #eff6ff 0%, #f0fdf4 100%);
-            border: 1px solid #bfdbfe;
-            padding: 1.1rem 1.25rem;
-            border-radius: 14px;
+        /* Adherence Score Glass Banner (Fully legible in light & dark mode) */
+        .adherence-glass-banner {
+            background: linear-gradient(135deg, rgba(37, 99, 235, 0.08) 0%, rgba(16, 185, 129, 0.08) 100%);
+            border: 1px solid var(--landing-border-glow);
+            border-radius: 16px;
+            padding: 0.85rem 1.15rem;
+            min-height: 72px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 1rem;
-            margin-top: 1.25rem;
+            gap: 0.85rem;
         }
 
-        [data-theme="dark"] .adherence-score-banner {
-            background: rgba(37, 99, 235, 0.12);
+        [data-theme="dark"] .adherence-glass-banner {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.14) 0%, rgba(16, 185, 129, 0.1) 100%);
             border-color: rgba(59, 130, 246, 0.3);
         }
 
-        /* Bento Features Section */
+        .adherence-content {
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+            min-width: 0;
+        }
+
+        .adherence-icon-circle {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            background: var(--landing-surface);
+            color: var(--landing-primary);
+            border: 1px solid var(--landing-border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+            flex-shrink: 0;
+        }
+
+        .adherence-label {
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: var(--landing-primary);
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            margin-bottom: 0.15rem;
+            white-space: nowrap;
+        }
+
+        .adherence-value-row {
+            display: flex;
+            align-items: baseline;
+            gap: 0.5rem;
+        }
+
+        .adherence-value {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: var(--landing-text-main);
+            letter-spacing: -0.02em;
+        }
+
+        .adherence-growth-tag {
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: var(--landing-success-text);
+            background: var(--landing-success-bg);
+            padding: 0.15rem 0.45rem;
+            border-radius: 4px;
+        }
+
+        .btn-inspect-adherence {
+            padding: 0.5rem 1.15rem;
+            font-size: 0.825rem;
+            font-weight: 700;
+            border-radius: 9px;
+            background: var(--landing-primary);
+            color: #ffffff !important;
+            text-decoration: none;
+            border: none;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+            white-space: nowrap;
+        }
+
+        .btn-inspect-adherence:hover {
+            background: var(--landing-primary-hover);
+            transform: translateY(-1px);
+        }
+
+        /* Bento Features Grid Section */
         .feature-section {
-            padding: 6rem 1.75rem;
+            position: relative;
+            z-index: 1;
+            padding: 7rem 1.75rem;
             max-width: 1280px;
             margin: 0 auto;
         }
 
         .section-header {
             text-align: center;
-            max-width: 680px;
-            margin: 0 auto 3.75rem;
+            max-width: 700px;
+            margin: 0 auto 4rem;
         }
 
         .section-tag {
             display: inline-block;
             font-size: 0.75rem;
-            font-weight: 700;
+            font-weight: 800;
             color: var(--landing-primary);
             text-transform: uppercase;
-            letter-spacing: 0.08em;
-            margin-bottom: 0.65rem;
+            letter-spacing: 0.1em;
+            margin-bottom: 0.75rem;
+            background: var(--landing-primary-light);
+            padding: 0.35rem 0.9rem;
+            border-radius: 9999px;
+            border: 1px solid var(--landing-border-glow);
         }
 
         .section-header h2 {
-            font-size: clamp(2rem, 3.5vw, 2.75rem);
+            font-size: clamp(2.1rem, 3.8vw, 3rem);
             font-weight: 800;
             color: var(--landing-text-main);
             letter-spacing: -0.03em;
-            margin-bottom: 0.85rem;
+            margin-bottom: 1rem;
             line-height: 1.2;
         }
 
         .section-header p {
             color: var(--landing-text-muted);
-            font-size: 1.05rem;
-            line-height: 1.6;
+            font-size: 1.1rem;
+            line-height: 1.7;
             margin: 0;
         }
 
         .bento-features {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 1.75rem;
+            gap: 1.85rem;
         }
 
         .bento-card {
-            background: var(--landing-card);
+            background: var(--landing-surface-card);
             border: 1px solid var(--landing-border);
-            border-radius: 16px;
-            padding: 2.25rem 2rem;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
-            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            border-radius: 20px;
+            padding: 2.35rem 2rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
             display: flex;
             flex-direction: column;
             position: relative;
+            overflow: hidden;
+        }
+
+        .bento-card::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 20px;
+            padding: 1px;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.12), transparent);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            pointer-events: none;
         }
 
         .bento-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 16px 32px -8px rgba(15, 23, 42, 0.08);
-            border-color: #cbd5e1;
+            box-shadow: 0 20px 40px -10px rgba(15, 23, 42, 0.12);
+            border-color: var(--landing-border-glow);
         }
 
         .bento-icon-wrapper {
-            width: 50px;
-            height: 50px;
-            border-radius: 12px;
+            width: 52px;
+            height: 52px;
+            border-radius: 14px;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-bottom: 1.4rem;
+            margin-bottom: 1.5rem;
             font-size: 1.35rem;
-            transition: transform 0.2s ease;
+            transition: transform 0.25s ease;
         }
 
         .bento-card:hover .bento-icon-wrapper {
-            transform: scale(1.08);
+            transform: scale(1.1) rotate(4deg);
         }
 
         .bento-card h3 {
-            font-size: 1.2rem;
+            font-size: 1.25rem;
             font-weight: 700;
             color: var(--landing-text-main);
-            margin-bottom: 0.65rem;
-            letter-spacing: -0.01em;
+            margin-bottom: 0.75rem;
+            letter-spacing: -0.015em;
         }
 
         .bento-card p {
-            font-size: 0.925rem;
+            font-size: 0.935rem;
             color: var(--landing-text-muted);
-            line-height: 1.6;
+            line-height: 1.65;
             margin: 0;
         }
 
-        /* Roles Section */
+        /* Tailored Roles Section */
         .roles-section {
-            background: #ffffff;
-            padding: 6rem 1.75rem;
+            position: relative;
+            z-index: 1;
+            padding: 7rem 1.75rem;
+            background: var(--landing-surface);
             border-top: 1px solid var(--landing-border);
             border-bottom: 1px solid var(--landing-border);
-        }
-
-        [data-theme="dark"] .roles-section {
-            background: #0f172a;
         }
 
         .roles-grid {
@@ -502,36 +974,37 @@
         }
 
         .role-portal-card {
-            background: var(--landing-card);
+            background: var(--landing-surface-card);
             border: 1px solid var(--landing-border);
-            border-radius: 20px;
+            border-radius: 22px;
             padding: 2.5rem 2.25rem;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
-            transition: all 0.25s ease;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
         }
 
         .role-portal-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 20px 40px -12px rgba(15, 23, 42, 0.08);
-            border-color: #cbd5e1;
+            transform: translateY(-5px);
+            box-shadow: 0 25px 50px -15px rgba(0, 0, 0, 0.1);
+            border-color: var(--landing-border-glow);
         }
 
         .portal-tag {
-            font-size: 0.72rem;
-            font-weight: 700;
+            font-size: 0.74rem;
+            font-weight: 800;
             text-transform: uppercase;
             letter-spacing: 0.08em;
-            margin-bottom: 0.85rem;
+            margin-bottom: 1.1rem;
             display: inline-block;
-            padding: 0.25rem 0.7rem;
-            border-radius: 6px;
+            padding: 0.3rem 0.85rem;
+            border-radius: 8px;
         }
 
         .role-portal-card h3 {
-            font-size: 1.35rem;
+            font-size: 1.4rem;
             font-weight: 800;
             color: var(--landing-text-main);
             margin-bottom: 0.85rem;
@@ -540,65 +1013,174 @@
 
         .role-portal-card p {
             color: var(--landing-text-muted);
-            font-size: 0.925rem;
-            line-height: 1.6;
+            font-size: 0.95rem;
+            line-height: 1.65;
             margin-bottom: 2rem;
         }
 
-        .role-portal-card .btn {
-            border-radius: 10px;
-            padding: 0.7rem 1.25rem;
-            font-weight: 600;
+        .portal-feature-list {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 2rem 0;
+            display: flex;
+            flex-direction: column;
+            gap: 0.65rem;
+        }
+
+        .portal-feature-list li {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
             font-size: 0.875rem;
-            transition: all 0.15s ease;
+            color: var(--landing-text-muted);
+            font-weight: 500;
+        }
+
+        .portal-feature-list li i {
+            color: var(--landing-success-text);
+            width: 16px;
+            height: 16px;
+            flex-shrink: 0;
+        }
+
+        .btn-portal {
+            width: 100%;
+            border-radius: 12px;
+            padding: 0.8rem 1.4rem;
+            font-weight: 700;
+            font-size: 0.92rem;
+            text-align: center;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            border: 1px solid var(--landing-border);
+            background: var(--landing-surface);
+            color: var(--landing-text-main);
+        }
+
+        .btn-portal:hover {
+            background: var(--landing-primary);
+            color: #ffffff;
+            border-color: var(--landing-primary);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(37, 99, 235, 0.3);
         }
 
         /* Footer */
         .landing-footer {
             max-width: 1280px;
             margin: 0 auto;
-            padding: 3.5rem 1.75rem;
+            padding: 4rem 1.75rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
-            gap: 1.5rem;
+            gap: 2rem;
             color: var(--landing-text-muted);
-            font-size: 0.875rem;
+            font-size: 0.9rem;
         }
 
         .landing-footer a {
             color: var(--landing-text-muted);
             text-decoration: none;
-            transition: color 0.15s ease;
-            font-weight: 500;
+            transition: color 0.2s ease;
+            font-weight: 600;
         }
 
         .landing-footer a:hover {
             color: var(--landing-primary);
         }
 
-        /* Responsive */
-        @media (max-width: 1024px) {
+        /* Responsive Breakpoints */
+        @media (max-width: 1180px) and (min-width: 821px) {
+            .hero-grid { grid-template-columns: 1.08fr 0.92fr; gap: 2.25rem; }
+            .hero-headline { font-size: 2.85rem; }
+            .hero-desc { font-size: 1.05rem; }
+        }
+
+        @media (max-width: 820px) {
             .hero-grid { grid-template-columns: 1fr; gap: 3rem; }
             .hero-desc { max-width: 100%; }
+            .hero-preview-wrapper { max-width: 480px; margin: 0 auto; width: 100%; }
             .bento-features { grid-template-columns: repeat(2, 1fr); }
             .roles-grid { grid-template-columns: 1fr; }
         }
 
         @media (max-width: 640px) {
-            .landing-nav-container { padding: 0.85rem 1.25rem; }
-            .landing-hero { padding-top: 6.5rem; padding-bottom: 4rem; }
-            .hero-headline { font-size: 2.25rem; }
+            .landing-nav-container { padding: 0.65rem 1rem; }
+            .brand-logo { gap: 0.5rem; font-size: 1.15rem; }
+            .brand-logo-icon { width: 32px; height: 32px; font-size: 0.95rem; border-radius: 9px; }
+            .nav-actions { gap: 0.4rem; }
+            #authNavButtons { gap: 0.4rem !important; }
+            .theme-toggle-btn { width: 34px; height: 34px; border-radius: 8px; flex-shrink: 0; }
+            .nav-btn-signin { 
+                padding: 0.42rem 0.65rem; 
+                font-size: 0.78rem; 
+                border-radius: 8px;
+                white-space: nowrap;
+                gap: 0.25rem;
+            }
+            .nav-btn-signin i { display: none; }
+            .nav-btn-getstarted { 
+                padding: 0.42rem 0.75rem; 
+                font-size: 0.78rem; 
+                border-radius: 8px;
+                white-space: nowrap;
+                gap: 0.3rem;
+            }
+            .nav-btn-getstarted i { width: 14px; height: 14px; }
+
+            .landing-hero { padding-top: 5.75rem; padding-bottom: 3.5rem; }
+            .hero-container { padding: 0 1.15rem; overflow: hidden; width: 100%; }
+            .hero-badge { 
+                font-size: 0.7rem; 
+                padding: 0.35rem 0.75rem; 
+                max-width: 100%;
+                white-space: normal;
+                word-break: normal;
+                line-height: 1.35;
+                margin-bottom: 1.25rem;
+            }
+            .hero-headline { 
+                font-size: clamp(1.85rem, 6.8vw, 2.35rem) !important; 
+                line-height: 1.16 !important;
+                letter-spacing: -0.025em !important;
+                margin-bottom: 1rem !important;
+                word-break: normal;
+                overflow-wrap: break-word;
+            }
+            .hero-desc { 
+                font-size: 0.925rem !important; 
+                line-height: 1.6 !important; 
+                margin-bottom: 1.85rem !important;
+                word-break: normal;
+                overflow-wrap: break-word;
+            }
+            .hero-cta-group { flex-direction: column; align-items: stretch; gap: 0.75rem; }
+            .btn-hero-primary, .btn-hero-outline { width: 100%; justify-content: center; }
+            .hero-preview-card { padding: 1.35rem 1rem; border-radius: 20px; }
+            .med-item-card { padding: 0.75rem 0.85rem; }
+            .adherence-glass-banner { padding: 0.75rem 0.85rem; }
             .bento-features { grid-template-columns: 1fr; }
-            .hero-stats-row { flex-direction: column; gap: 1.25rem; }
-            .hero-cta-group { flex-direction: column; align-items: stretch; }
             .landing-footer { flex-direction: column; text-align: center; }
+            .floating-badge { display: none; }
+        }
+
+        @media (max-width: 380px) {
+            .landing-nav-container { padding: 0.55rem 0.75rem; }
+            .brand-logo span { font-size: 1.05rem; }
+            .brand-logo-icon { width: 30px; height: 30px; font-size: 0.85rem; }
+            .nav-btn-signin { padding: 0.38rem 0.55rem; font-size: 0.74rem; }
+            .nav-btn-getstarted { padding: 0.38rem 0.65rem; font-size: 0.74rem; }
+            .hero-headline { font-size: 1.7rem !important; }
         }
     </style>
 </head>
 <body>
-    <!-- Top Nav -->
+    <!-- Top Glassmorphic Navigation -->
     <header class="landing-header">
         <div class="landing-nav-container">
             <a href="index.html" class="brand-logo">
@@ -609,237 +1191,321 @@
             </a>
 
             <div class="nav-actions">
-                <button class="theme-toggle-btn" onclick="toggleTheme()" title="Toggle Theme">
-                    <i data-lucide="moon"></i>
+                <button class="theme-toggle-btn" onclick="toggleTheme()" title="Toggle Theme (Dark / Light)">
+                    <i data-lucide="moon" id="themeIcon"></i>
                 </button>
                 <div id="authNavButtons" style="display: flex; gap: 0.75rem; align-items: center;">
-                    <a href="login.html" class="btn btn-outline" id="navLoginBtn" style="border-radius: 8px; font-weight: 600; padding: 0.5rem 1.15rem; font-size: 0.875rem;">Sign In</a>
-                    <a href="register.html" class="btn btn-primary" id="navRegisterBtn" style="border-radius: 8px; font-weight: 600; padding: 0.5rem 1.25rem; font-size: 0.875rem; background: var(--landing-primary); border: none;">Get Started</a>
+                    <a href="login.html" class="nav-btn-signin" id="navLoginBtn">
+                        <i data-lucide="log-in" style="width: 16px; height: 16px;"></i>
+                        <span>Sign In</span>
+                    </a>
+                    <a href="register.html" class="nav-btn-getstarted" id="navRegisterBtn">
+                        <span>Get Started</span>
+                        <i data-lucide="arrow-right" style="width: 16px; height: 16px;"></i>
+                    </a>
                 </div>
             </div>
         </div>
     </header>
 
-    <!-- Main Hero -->
+    <!-- Main Hero Section -->
     <section class="landing-hero">
-        <div class="hero-grid">
-            <div class="hero-content animate-fade-in">
-                <div class="hero-badge">
-                    <span class="pulse-dot"></span>
-                    <i data-lucide="shield-check" style="width: 14px; height: 14px;"></i>
-                    Healthcare Compliance & Monitoring
-                </div>
-                <h1 class="hero-headline">
-                    Intelligent Medicine Management & <span>Family Care</span>
-                </h1>
-                <p class="hero-desc">
-                    MediCare connects patients, caregivers, and medical supervisors through automated dose schedules, one-tap intake tracking, adherence analytics, and instantaneous emergency dispatches.
-                </p>
-                <div class="hero-cta-group">
-                    <a href="register.html" class="btn btn-primary btn-lg" id="heroActionBtn">
-                        <i data-lucide="arrow-right"></i>
-                        <span>Start Free Patient Hub</span>
-                    </a>
-                    <a href="login.html" class="btn btn-outline btn-lg">
-                        <i data-lucide="key"></i>
-                        <span>Portal Sign In</span>
-                    </a>
+        <!-- Ambient Mesh Lighting -->
+        <div class="ambient-mesh">
+            <div class="ambient-orb orb-1"></div>
+            <div class="ambient-orb orb-2"></div>
+            <div class="ambient-orb orb-3"></div>
+            <div class="ambient-grid"></div>
+        </div>
+
+        <div class="hero-container">
+            <div class="hero-grid">
+                <!-- Left: Headline & Actions -->
+                <div class="hero-content">
+                    <div class="hero-badge">
+                        <span class="pulse-beacon"></span>
+                        <i data-lucide="shield-check" style="width: 15px; height: 15px;"></i>
+                        Healthcare Compliance & Real-Time Monitoring
+                    </div>
+                    
+                    <h1 class="hero-headline">
+                        Intelligent Medicine Management & <span class="hero-gradient-text">Connected Family Care</span>
+                    </h1>
+                    
+                    <p class="hero-desc">
+                        MediCare unifies patients, caregivers, and medical supervisors through automated dose schedules, one-tap intake tracking, adherence analytics, and instantaneous emergency dispatches.
+                    </p>
+                    
+                    <div class="hero-cta-group">
+                        <a href="register.html" class="btn-hero-primary" id="heroActionBtn">
+                            <span>Start Free Patient Hub</span>
+                            <i data-lucide="arrow-right" style="width: 18px; height: 18px;"></i>
+                        </a>
+                        <a href="login.html" class="btn-hero-outline">
+                            <i data-lucide="key" style="width: 18px; height: 18px;"></i>
+                            <span>Portal Sign In</span>
+                        </a>
+                    </div>
                 </div>
 
-                <div class="hero-stats-row">
-                    <div class="hero-stat-item">
-                        <strong>100%</strong>
-                        <span>Timely Reminder Accuracy</span>
+                <!-- Right: Sleek Interactive Glassmorphic Preview Card -->
+                <div class="hero-preview-wrapper">
+                    <!-- Floating Accent Badges -->
+                    <div class="floating-badge floating-badge-top">
+                        <i data-lucide="users" style="color: #10b981; width: 15px; height: 15px;"></i>
+                        <span>Caregiver Synced: Dr. Sarah</span>
                     </div>
-                    <div class="hero-stat-item">
-                        <strong>24/7</strong>
-                        <span>Real-Time SOS Dispatch</span>
-                    </div>
-                    <div class="hero-stat-item">
-                        <strong>RESTful</strong>
-                        <span>ASP.NET Core Architecture</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Bento-Style Live Preview Card -->
-            <div class="hero-preview-col animate-fade-in">
-                <div class="interactive-preview-card">
-                    <div class="card-top-bar">
-                        <div style="display: flex; align-items: center; gap: 0.75rem;">
-                            <div class="patient-avatar-circle">
-                                M
-                            </div>
-                            <div>
-                                <h4 style="font-size: 0.95rem; font-weight: 700; color: var(--landing-text-main); margin: 0;">Today's Patient Schedule</h4>
-                                <span style="font-size: 0.75rem; color: var(--landing-text-muted);">Real-time intake tracking</span>
-                            </div>
-                        </div>
-                        <span class="live-sync-pill">
-                            <span class="pulse-dot" style="background: #10b981; animation: none;"></span> Live Sync
-                        </span>
+                    
+                    <div class="floating-badge floating-badge-bottom">
+                        <span class="pulse-beacon" style="background: #ef4444;"></span>
+                        <span>SOS Distress Protocol: Armed</span>
                     </div>
 
-                    <!-- Dose Items -->
-                    <div style="display: flex; flex-direction: column; gap: 0.75rem;">
-                        <div class="dose-item-card border-success">
-                            <div style="display: flex; align-items: center; gap: 0.75rem;">
-                                <i data-lucide="check-circle" style="color: #10b981; width: 18px; height: 18px;"></i>
-                                <div>
-                                    <div style="font-weight: 600; font-size: 0.875rem; color: var(--landing-text-main);">Metformin 500mg</div>
-                                    <div style="font-size: 0.75rem; color: var(--landing-text-muted);">Morning • 08:00 AM • Taken</div>
+                    <!-- Main Preview Container -->
+                    <div class="hero-preview-card">
+                        <!-- Card Header -->
+                        <div class="preview-header">
+                            <div class="patient-profile-pill">
+                                <div class="patient-avatar">
+                                    EV
+                                </div>
+                                <div class="patient-meta">
+                                    <h4>Eleanor Vance</h4>
+                                    <span>Patient #MC-8492 &bull; Active Schedule</span>
                                 </div>
                             </div>
-                            <span class="badge" style="background: #ecfdf5; color: #059669; border: 1px solid #a7f3d0; border-radius: 6px; font-weight: 600; padding: 0.3rem 0.6rem;">Taken</span>
+                            <span class="live-status-pill">
+                                <span class="live-dot-glow"></span>
+                                <span>Live Sync</span>
+                            </span>
                         </div>
 
-                        <div class="dose-item-card border-warning">
-                            <div style="display: flex; align-items: center; gap: 0.75rem;">
-                                <i data-lucide="clock" style="color: #f59e0b; width: 18px; height: 18px;"></i>
+                        <!-- Dose Items List -->
+                        <div class="preview-doses-container">
+                            <!-- Dose 1: Taken -->
+                            <div class="med-item-card status-taken">
+                                <div class="med-info-group">
+                                    <div class="med-icon-box icon-taken">
+                                        <i data-lucide="check" style="width: 18px; height: 18px;"></i>
+                                    </div>
+                                    <div>
+                                        <h5 class="med-title">Metformin HCl &bull; 500mg</h5>
+                                        <p class="med-subtitle">
+                                            <i data-lucide="sun" style="width: 13px; height: 13px;"></i>
+                                            <span>Morning &bull; 08:00 AM &bull; Taken</span>
+                                        </p>
+                                    </div>
+                                </div>
+                                <span class="med-badge badge-taken">
+                                    <i data-lucide="check-circle" style="width: 13px; height: 13px;"></i>
+                                    <span>Taken</span>
+                                </span>
+                            </div>
+
+                            <!-- Dose 2: Due Next -->
+                            <div class="med-item-card status-pending">
+                                <div class="med-info-group">
+                                    <div class="med-icon-box icon-pending">
+                                        <i data-lucide="clock" style="width: 18px; height: 18px;"></i>
+                                    </div>
+                                    <div>
+                                        <h5 class="med-title">Atorvastatin &bull; 20mg</h5>
+                                        <p class="med-subtitle">
+                                            <i data-lucide="sunset" style="width: 13px; height: 13px;"></i>
+                                            <span>Evening &bull; 08:00 PM &bull; Due Soon</span>
+                                        </p>
+                                    </div>
+                                </div>
+                                <span class="med-badge badge-pending">
+                                    <span class="pulse-amber"></span>
+                                    <span>Due Next</span>
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Adherence Score Glass Banner (100% Theme Aware & Legible) -->
+                        <div class="adherence-glass-banner">
+                            <div class="adherence-content">
+                                <div class="adherence-icon-circle">
+                                    <i data-lucide="trending-up" style="width: 20px; height: 20px;"></i>
+                                </div>
                                 <div>
-                                    <div style="font-weight: 600; font-size: 0.875rem; color: var(--landing-text-main);">Atorvastatin 20mg</div>
-                                    <div style="font-size: 0.75rem; color: var(--landing-text-muted);">Evening • 08:00 PM • Pending</div>
+                                    <div class="adherence-label">Weekly Adherence Score</div>
+                                    <div class="adherence-value-row">
+                                        <span class="adherence-value">94.5%</span>
+                                        <span class="adherence-growth-tag">+4.2%</span>
+                                    </div>
                                 </div>
                             </div>
-                            <span class="badge" style="background: #fffbeb; color: #d97706; border: 1px solid #fde68a; border-radius: 6px; font-weight: 600; padding: 0.3rem 0.6rem;">Due Next</span>
+                            <a href="login.html" class="btn-inspect-adherence">
+                                <span>Inspect Hub</span>
+                            </a>
                         </div>
-                    </div>
-
-                    <!-- Quick Compliance Summary -->
-                    <div class="adherence-score-banner">
-                        <div style="display: flex; align-items: center; gap: 0.75rem;">
-                            <div style="width: 36px; height: 36px; border-radius: 8px; background: #ffffff; color: var(--landing-primary); display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.04);">
-                                <i data-lucide="trending-up"></i>
-                            </div>
-                            <div>
-                                <div style="font-size: 0.75rem; font-weight: 600; color: var(--landing-primary);">Weekly Adherence Score</div>
-                                <div style="font-size: 1.15rem; font-weight: 800; color: #0f172a;">94.5% High Compliance</div>
-                            </div>
-                        </div>
-                        <a href="login.html" class="btn btn-primary" style="padding: 0.45rem 0.95rem; font-size: 0.8rem; border-radius: 8px; font-weight: 600; background: var(--landing-primary); border: none;">View</a>
                     </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Key Features Bento Section -->
+    <!-- Key Capabilities Bento Grid Section -->
     <section class="feature-section">
         <div class="section-header">
-            <span class="section-tag">Powerful Capabilities</span>
-            <h2>Engineered for Clinical Precision</h2>
-            <p>Every feature is crafted to remove friction from medication routines and provide peace of mind to families.</p>
+            <span class="section-tag">Clinical Architecture</span>
+            <h2>Engineered for Flawless Medication Adherence</h2>
+            <p>Every interface and background routine is crafted to eliminate missed doses, streamline caregiver supervision, and ensure rapid emergency escalation.</p>
         </div>
 
         <div class="bento-features">
+            <!-- Feature 1 -->
             <div class="bento-card">
-                <div class="bento-icon-wrapper" style="background: #eff6ff; color: #2563eb;">
+                <div class="bento-icon-wrapper" style="background: rgba(37, 99, 235, 0.12); color: #3b82f6;">
                     <i data-lucide="pill"></i>
                 </div>
-                <h3>Smart Prescriptions & Schedules</h3>
-                <p>Complete medicine registry with dosages, frequency, inventory stock tracking, and automated low-stock warnings.</p>
+                <h3>Intelligent Dose Scheduling</h3>
+                <p>Complete medicine registry with granular dosage frequencies, meal timings, inventory counts, and auto-restock reminders.</p>
             </div>
 
+            <!-- Feature 2 -->
             <div class="bento-card">
-                <div class="bento-icon-wrapper" style="background: #ecfdf5; color: #10b981;">
-                    <i data-lucide="check-circle-2"></i>
+                <div class="bento-icon-wrapper" style="background: rgba(16, 185, 129, 0.12); color: #10b981;">
+                    <i data-lucide="check-check"></i>
                 </div>
                 <h3>One-Tap Intake Logging</h3>
-                <p>Patients log taken doses with a single touch. The backend automatically records exact timestamps and adjusts remaining inventory.</p>
+                <p>Patients log consumed doses in a single click. Timestamps, remaining quantities, and compliance logs update in real-time across the network.</p>
             </div>
 
+            <!-- Feature 3 -->
             <div class="bento-card">
-                <div class="bento-icon-wrapper" style="background: #fef2f2; color: #ef4444;">
+                <div class="bento-icon-wrapper" style="background: rgba(239, 68, 68, 0.12); color: #ef4444;">
                     <i data-lucide="alert-octagon"></i>
                 </div>
                 <h3>Instant SOS Emergency Alerts</h3>
-                <p>Critical distress button dispatches instantaneous notifications to connected caregivers and system administrators with one click.</p>
+                <p>Distress beacon alerts connected caregivers and system administrators within seconds, providing instant patient coordinates and medical history.</p>
             </div>
 
+            <!-- Feature 4 -->
             <div class="bento-card">
-                <div class="bento-icon-wrapper" style="background: #f5f3ff; color: #8b5cf6;">
+                <div class="bento-icon-wrapper" style="background: rgba(139, 92, 246, 0.12); color: #8b5cf6;">
                     <i data-lucide="users"></i>
                 </div>
                 <h3>Caregiver-Patient Linking</h3>
-                <p>Family members link directly to loved ones' profiles to monitor missed doses, pending medicine schedules, and health status.</p>
+                <p>Empowers family members and nurses to oversee multiple linked loved ones, track overdue medicines, and coordinate timely interventions.</p>
             </div>
 
+            <!-- Feature 5 -->
             <div class="bento-card">
-                <div class="bento-icon-wrapper" style="background: #fffbeb; color: #f59e0b;">
-                    <i data-lucide="trending-up"></i>
+                <div class="bento-icon-wrapper" style="background: rgba(245, 158, 11, 0.12); color: #f59e0b;">
+                    <i data-lucide="line-chart"></i>
                 </div>
-                <h3>Adherence Analytics & Reports</h3>
-                <p>Visual adherence trends with daily, weekly, and monthly compliance metrics, plus exportable clinical summary reports.</p>
+                <h3>Adherence Trend Analytics</h3>
+                <p>Visual adherence scorecards, daily compliance percentages, missed dosage ratios, and exportable medical history for physician consultations.</p>
             </div>
 
+            <!-- Feature 6 -->
             <div class="bento-card">
-                <div class="bento-icon-wrapper" style="background: #ecfeff; color: #06b6d4;">
+                <div class="bento-icon-wrapper" style="background: rgba(6, 182, 212, 0.12); color: #06b6d4;">
                     <i data-lucide="shield-check"></i>
                 </div>
-                <h3>JWT Security & Role Control</h3>
-                <p>Strict role-based access control protecting medical data across Patient, Caregiver, and Admin portals.</p>
+                <h3>Role-Based JWT Security</h3>
+                <p>Enterprise-grade authentication with strict role segregation separating Patient, Caregiver, and Healthcare Administrator portals.</p>
             </div>
         </div>
     </section>
 
-    <!-- Role Portals Section -->
+    <!-- Tailored Portals Section -->
     <section class="roles-section">
         <div class="section-header">
-            <span class="section-tag">Targeted Experience</span>
-            <h2>Three Tailored Portals</h2>
-            <p>Purpose-built user experiences for every participant in the care circle.</p>
+            <span class="section-tag">Role-Optimized Experience</span>
+            <h2>Three Dedicated Medical Portals</h2>
+            <p>Thoughtfully sculpted workflows tailored to every member of the care circle.</p>
         </div>
 
         <div class="roles-grid">
+            <!-- Patient Portal -->
             <div class="role-portal-card">
                 <div>
-                    <span class="portal-tag" style="background: #ecfdf5; color: #059669; border: 1px solid #a7f3d0;">Patient Portal</span>
-                    <h3>Minimal Bento-Grid Hub</h3>
-                    <p>
-                        Focused, uncluttered medicine cards, upcoming dose countdowns, circular adherence dials, and direct access to emergency dispatches.
-                    </p>
+                    <span class="portal-tag" style="background: var(--landing-success-bg); color: var(--landing-success-text); border: 1px solid var(--landing-success-border);">
+                        Patient Portal
+                    </span>
+                    <h3>Focused Personal Hub</h3>
+                    <p>Simplified, large-touch interfaces engineered for stress-free daily interactions, dose countdowns, and quick emergency access.</p>
+                    
+                    <ul class="portal-feature-list">
+                        <li><i data-lucide="check"></i> One-tap intake tracking</li>
+                        <li><i data-lucide="check"></i> Morning, noon & night dose lists</li>
+                        <li><i data-lucide="check"></i> Direct distress SOS emergency trigger</li>
+                        <li><i data-lucide="check"></i> Low-stock pill inventory alerts</li>
+                    </ul>
                 </div>
-                <a href="login.html" class="btn btn-outline" style="width: 100%; border: 1px solid #e2e8f0; color: #1e293b; background: #ffffff;">Access Patient Hub</a>
+                <a href="login.html" class="btn-portal">
+                    <span>Access Patient Hub</span>
+                    <i data-lucide="arrow-right" style="width: 16px; height: 16px;"></i>
+                </a>
             </div>
 
-            <div class="role-portal-card" style="border-color: #bfdbfe; box-shadow: 0 8px 24px -4px rgba(37, 99, 235, 0.08);">
-                <div>
-                    <span class="portal-tag" style="background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe;">Caregiver Portal</span>
-                    <h3>Family Monitoring System</h3>
-                    <p>
-                        Real-time oversight over multiple linked patients, missed dose alerts, emergency banners with resolution controls, and adherence dossier cards.
-                    </p>
-                </div>
-                <a href="login.html" class="btn btn-primary" style="width: 100%; background: var(--landing-primary); border: none;">Access Caregiver Portal</a>
-            </div>
-
+            <!-- Caregiver Portal -->
             <div class="role-portal-card">
                 <div>
-                    <span class="portal-tag" style="background: #f5f3ff; color: #7c3aed; border: 1px solid #ddd6fe;">Enterprise Admin</span>
+                    <span class="portal-tag" style="background: var(--landing-primary-light); color: var(--landing-primary); border: 1px solid var(--landing-border-glow);">
+                        Caregiver Portal
+                    </span>
+                    <h3>Family Oversight System</h3>
+                    <p>Real-time telemetry across linked family members, missed dose notifications, and clinical compliance records.</p>
+                    
+                    <ul class="portal-feature-list">
+                        <li><i data-lucide="check"></i> Multi-patient status monitoring</li>
+                        <li><i data-lucide="check"></i> Urgent missed dosage alerts</li>
+                        <li><i data-lucide="check"></i> Emergency alarm review & resolution</li>
+                        <li><i data-lucide="check"></i> Adherence logs & trends dossier</li>
+                    </ul>
+                </div>
+                <a href="login.html" class="btn-portal">
+                    <span>Access Caregiver Portal</span>
+                    <i data-lucide="arrow-right" style="width: 16px; height: 16px;"></i>
+                </a>
+            </div>
+
+            <!-- Admin Portal -->
+            <div class="role-portal-card">
+                <div>
+                    <span class="portal-tag" style="background: rgba(139, 92, 246, 0.12); color: #8b5cf6; border: 1px solid rgba(139, 92, 246, 0.3);">
+                        Administrator
+                    </span>
                     <h3>Clinical Command Center</h3>
-                    <p>
-                        High-altitude analytics, comprehensive prescription directory, system-wide emergency logs, broadcast notifications, and inventory auditing.
-                    </p>
+                    <p>High-altitude supervision across all medical registries, emergency dispatches, system accounts, and audit journals.</p>
+                    
+                    <ul class="portal-feature-list">
+                        <li><i data-lucide="check"></i> System-wide prescription database</li>
+                        <li><i data-lucide="check"></i> Emergency response incident registry</li>
+                        <li><i data-lucide="check"></i> Patient-caregiver linkage controls</li>
+                        <li><i data-lucide="check"></i> Inventory auditing & compliance export</li>
+                    </ul>
                 </div>
-                <a href="login.html" class="btn btn-outline" style="width: 100%; border: 1px solid #e2e8f0; color: #1e293b; background: #ffffff;">Access Admin Dashboard</a>
+                <a href="login.html" class="btn-portal">
+                    <span>Access Admin Center</span>
+                    <i data-lucide="arrow-right" style="width: 16px; height: 16px;"></i>
+                </a>
             </div>
         </div>
     </section>
 
     <!-- Footer -->
     <footer class="landing-footer">
-        <div style="display: flex; align-items: center; gap: 0.6rem; font-weight: 800; color: var(--landing-text-main);">
-            <div style="width: 28px; height: 28px; border-radius: 8px; background: #eff6ff; color: #2563eb; display: flex; align-items: center; justify-content: center; font-size: 0.9rem;">
+        <div style="display: flex; align-items: center; gap: 0.75rem; font-weight: 800; color: var(--landing-text-main);">
+            <div class="brand-logo-icon" style="width: 32px; height: 32px; font-size: 1rem; border-radius: 9px;">
                 <i data-lucide="activity"></i>
             </div>
-            <span>MediCare Systems</span>
+            <span style="font-size: 1.15rem; letter-spacing: -0.02em;">MediCare Systems</span>
         </div>
-        <div>
-            ASP.NET Core Web API &bull; MySQL &bull; Responsive Vanilla Frontend
+        
+        <div style="font-size: 0.85rem; color: var(--landing-text-muted);">
+            ASP.NET Core 8 Web API &bull; MySQL &bull; Healthcare Compliance Architecture
         </div>
-        <div style="display: flex; gap: 1.25rem;">
-            <a href="login.html">Login</a>
+        
+        <div style="display: flex; gap: 1.5rem; align-items: center;">
+            <a href="login.html">Sign In</a>
             <a href="register.html">Register</a>
+            <a href="dashboard.html">Direct Portal</a>
         </div>
     </footer>
 
@@ -851,16 +1517,39 @@
     <script src="js/utils.js"></script>
     <script src="js/api.js"></script>
     <script src="js/auth.js"></script>
+    
     <script>
+        function updateThemeIcon() {
+            const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+            const iconEl = document.getElementById('themeIcon');
+            if (iconEl) {
+                iconEl.setAttribute('data-lucide', currentTheme === 'dark' ? 'sun' : 'moon');
+                if (window.lucide) {
+                    lucide.createIcons();
+                }
+            }
+        }
+
+        // Hook theme toggling to also update the Lucide icon
+        const originalToggleTheme = window.toggleTheme;
+        window.toggleTheme = function() {
+            if (typeof originalToggleTheme === 'function') {
+                originalToggleTheme();
+            }
+            updateThemeIcon();
+        };
+
         document.addEventListener('DOMContentLoaded', () => {
+            updateThemeIcon();
+            
             if (window.lucide) {
                 lucide.createIcons();
             }
 
-            // If user is already authenticated, update buttons to direct dashboard access
-            if (Auth.isAuthenticated()) {
+            // Check if user is already authenticated
+            if (typeof Auth !== 'undefined' && Auth.isAuthenticated()) {
                 const user = Auth.getUser();
-                const role = Auth.getRole();
+                const role = Auth.getRole() || 'Dashboard';
                 const authNav = document.getElementById('authNavButtons');
                 const heroActionBtn = document.getElementById('heroActionBtn');
 
@@ -868,7 +1557,7 @@
 
                 if (authNav) {
                     authNav.innerHTML = `
-                        <a href="${targetDashboard}" class="btn btn-primary" style="border-radius: 8px; font-weight: 600; padding: 0.5rem 1.15rem; font-size: 0.875rem; background: var(--landing-primary); border: none; display: flex; align-items: center; gap: 0.4rem;">
+                        <a href="${targetDashboard}" class="nav-btn-getstarted">
                             <i data-lucide="layout-dashboard" style="width: 16px; height: 16px;"></i>
                             <span>Go to Dashboard</span>
                         </a>
@@ -881,8 +1570,8 @@
                 if (heroActionBtn) {
                     heroActionBtn.href = targetDashboard;
                     heroActionBtn.innerHTML = `
-                        <i data-lucide="layout-dashboard"></i>
-                        <span>Continue as ${role}</span>
+                        <span>Continue to ${role} Hub</span>
+                        <i data-lucide="arrow-right" style="width: 18px; height: 18px;"></i>
                     `;
                 }
 

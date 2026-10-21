@@ -103,4 +103,10 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-app.Run();
+app.Run();
+
+
+/*
+
+   bhai phle mere backend ko aache se scan sare endpoints nikal uske according frontend bana jo mene img di hai tujhe mujhe kuch aasa frontend banana hai same HTML CSS JS ka use krke mere exiting frontend ke folder me to bana de phle backend ko aache de scan krna kyuki new endpoints add kiye hai mene 
+*/

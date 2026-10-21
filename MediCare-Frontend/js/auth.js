@@ -133,6 +133,18 @@ const Auth = {
             `;
         }
 
+        const sidebarHeader = sidebar ? sidebar.querySelector('.sidebar-header') : null;
+        if (sidebarHeader && !sidebarHeader.querySelector('.sidebar-close-btn')) {
+            const closeBtn = document.createElement('button');
+            closeBtn.className = 'sidebar-close-btn';
+            closeBtn.setAttribute('aria-label', 'Close sidebar navigation');
+            closeBtn.onclick = () => {
+                if (typeof toggleSidebar === 'function') toggleSidebar();
+            };
+            closeBtn.innerHTML = '<i data-lucide="x"></i>';
+            sidebarHeader.appendChild(closeBtn);
+        }
+
         if (!sidebarMenu) return;
 
         const navItems = [
