@@ -73,6 +73,7 @@ builder.Services.AddScoped<IMedicineScheduleRepository, MedicineScheduleReposito
 builder.Services.AddScoped<IMedicineLogRepository, MedicineLogRepository>();
 builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
 builder.Services.AddScoped<ICaregiverPatientRepository, CaregiverPatientRepository>();
+builder.Services.AddScoped<ICaregiverService, CaregiverService>();
     
 // Service
 builder.Services.AddScoped<IMedicineService, MedicineService>();
@@ -84,6 +85,7 @@ builder.Services.AddScoped<IAdherenceService, AdherenceService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IAiChatService, AiChatService>();
+
 
 // Background Service
 builder.Services.AddHostedService<MedicineReminderBackgroundService>();
