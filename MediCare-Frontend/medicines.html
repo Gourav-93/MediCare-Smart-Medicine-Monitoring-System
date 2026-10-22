@@ -1,241 +1,1010 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Prescriptions & Medications — MediCare</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <link rel="stylesheet" href="css/style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MediCare - Medicine & Schedule Management</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --primary: #0284c7;
+      --primary-dark: #0369a1;
+      --primary-light: #e0f2fe;
+      --danger: #dc2626;
+      --danger-light: #fee2e2;
+      --success: #16a34a;
+      --success-light: #dcfce7;
+      --warning: #d97706;
+      --warning-light: #fef3c7;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --border: #e2e8f0;
+      --radius: 12px;
+      --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+      --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+      --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text-main);
+      min-height: 100vh;
+      overflow-x: hidden;
+      line-height: 1.5;
+    }
+
+    /* =========================================================
+       HEADER / NAVBAR
+       ========================================================= */
+    .site-header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+      height: 70px;
+      display: flex;
+      align-items: center;
+      padding: 0 clamp(16px, 4vw, 40px);
+    }
+
+    .nav-container {
+      width: 100%;
+      max-width: 1380px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+    }
+
+    .logo-icon {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, #0284c7, #0ea5e9);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      font-weight: 800;
+      font-size: 20px;
+      box-shadow: 0 4px 10px rgba(2, 132, 199, 0.3);
+    }
+
+    .brand-text h1 {
+      font-size: 19px;
+      font-weight: 800;
+      color: var(--text-main);
+      line-height: 1.1;
+    }
+
+    .brand-text span {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--primary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .desktop-nav-links {
+      display: flex;
+      align-items: center;
+      gap: 28px;
+      list-style: none;
+    }
+
+    .desktop-nav-links a {
+      text-decoration: none;
+      color: var(--text-muted);
+      font-size: 14px;
+      font-weight: 600;
+      transition: color 0.2s;
+    }
+
+    .desktop-nav-links a.active,
+    .desktop-nav-links a:hover {
+      color: var(--primary);
+    }
+
+    .desktop-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .btn {
+      padding: 9px 16px;
+      border-radius: 8px;
+      font-size: 13.5px;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      text-decoration: none;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #ffffff;
+    }
+    .btn-primary:hover {
+      background: var(--primary-dark);
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--text-main);
+      border-color: var(--border);
+    }
+    .btn-ghost:hover {
+      background: #f1f5f9;
+    }
+
+    /* .btn-sos {
+      background: var(--danger);
+      color: #fff;
+      padding: 8px 14px;
+      font-size: 13px;
+      border-radius: 8px;
+      animation: pulse-sos 2s infinite;
+    } */
+    /* @keyframes pulse-sos {
+      0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.4); }
+      70% { box-shadow: 0 0 0 8px rgba(220, 38, 38, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
+    } */
+
+    /* Mobile Controls */
+    .mobile-actions {
+      display: none;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .hamburger-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: #ffffff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      cursor: pointer;
+    }
+
+    .hamburger-btn span {
+      width: 18px;
+      height: 2px;
+      background: var(--text-main);
+      border-radius: 2px;
+    }
+
+    /* Mobile Drawer */
+    .mobile-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.45);
+      backdrop-filter: blur(4px);
+      z-index: 200;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s;
+    }
+    .mobile-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .mobile-drawer {
+      position: fixed;
+      top: 0;
+      right: -100%;
+      width: min(320px, 85vw);
+      height: 100%;
+      background: var(--surface);
+      z-index: 201;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      transition: right 0.3s ease;
+    }
+    .mobile-drawer.active { right: 0; }
+
+    .drawer-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border);
+    }
+    .close-btn {
+      background: #f1f5f9;
+      border: none;
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      font-size: 18px;
+      cursor: pointer;
+    }
+
+    .drawer-links {
+      list-style: none;
+      padding: 16px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .drawer-links a {
+      text-decoration: none;
+      color: var(--text-main);
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    /* =========================================================
+       PAGE CONTENT CONTAINER
+       ========================================================= */
+    .page-wrapper {
+      max-width: 1380px;
+      margin: 0 auto;
+      padding: clamp(16px, 3vw, 32px) clamp(16px, 4vw, 40px);
+    }
+
+    /* Header Bar */
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .section-title h2 {
+      font-size: clamp(22px, 3.5vw, 28px);
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+    .section-title p {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    /* Controls: Search & Filter Tabs */
+    .filter-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .search-box {
+      flex: 1;
+      min-width: 240px;
+      max-width: 400px;
+      position: relative;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 10px 14px 10px 38px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: #fff;
+      font-size: 13.5px;
+      outline: none;
+    }
+    .search-input:focus {
+      border-color: var(--primary);
+    }
+    .search-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      font-size: 14px;
+    }
+
+    .tab-pills {
+      display: flex;
+      background: #e2e8f0;
+      border-radius: 8px;
+      padding: 3px;
+      gap: 2px;
+    }
+
+    .tab-btn {
+      padding: 6px 14px;
+      border-radius: 6px;
+      border: none;
+      font-size: 12.5px;
+      font-weight: 600;
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+    }
+    .tab-btn.active {
+      background: #fff;
+      color: var(--text-main);
+      box-shadow: var(--shadow-sm);
+    }
+
+    /* =========================================================
+       MEDICINES CARD GRID
+       ========================================================= */
+    .med-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 40px;
+    }
+
+    .med-card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: all 0.2s;
+    }
+    .med-card:hover {
+      box-shadow: var(--shadow-md);
+      border-color: #cbd5e1;
+    }
+
+    .med-card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 12px;
+    }
+
+    .med-name {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .med-dosage {
+      font-size: 12.5px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .stock-badge {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 20px;
+      white-space: nowrap;
+    }
+    .stock-good { background: var(--success-light); color: var(--success); }
+    .stock-low { background: var(--warning-light); color: var(--warning); border: 1px solid #fde68a; }
+    .stock-empty { background: var(--danger-light); color: var(--danger); }
+
+    .schedule-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin: 14px 0;
+    }
+    .time-chip {
+      background: #f1f5f9;
+      color: #334155;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .med-dates {
+      font-size: 11.5px;
+      color: var(--text-muted);
+      border-top: 1px dashed var(--border);
+      padding-top: 10px;
+      margin-bottom: 14px;
+    }
+
+    .med-actions {
+      display: flex;
+      gap: 8px;
+    }
+    .med-actions .btn {
+      flex: 1;
+      font-size: 12.5px;
+      padding: 7px 10px;
+    }
+
+    /* =========================================================
+       ADD / EDIT MODAL
+       ========================================================= */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.5);
+      backdrop-filter: blur(4px);
+      z-index: 300;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .modal-backdrop.active { display: flex; }
+
+    .modal-box {
+      background: #fff;
+      width: 100%;
+      max-width: 500px;
+      border-radius: 16px;
+      padding: 24px;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-lg);
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 18px;
+    }
+    .modal-header h3 {
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .form-group {
+      margin-bottom: 14px;
+    }
+    .form-group label {
+      display: block;
+      font-size: 12.5px;
+      font-weight: 600;
+      margin-bottom: 5px;
+    }
+    .form-control {
+      width: 100%;
+      padding: 9px 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 13.5px;
+      outline: none;
+    }
+    .form-control:focus {
+      border-color: var(--primary);
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    /* Dynamic Time Schedule Tags */
+    .time-slot-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+    }
+    .time-tag {
+      background: var(--primary-light);
+      color: var(--primary-dark);
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .time-tag-remove {
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    /* =========================================================
+       RESPONSIVE BREAKPOINTS (320px - 1366px+)
+       ========================================================= */
+    /* Small Laptops (1024px to 1365px) */
+    @media (max-width: 1365px) {
+      .med-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    /* Tablets (768px to 1023px) */
+    @media (max-width: 1023px) {
+      .desktop-nav-links, .desktop-actions .btn-ghost {
+        display: none;
+      }
+      .mobile-actions {
+        display: flex;
+      }
+      .med-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 14px;
+      }
+    }
+
+    /* Mobiles (320px to 767px) */
+    @media (max-width: 767px) {
+      .section-header {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .section-header .btn {
+        width: 100%;
+      }
+      .filter-bar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .search-box {
+        max-width: 100%;
+      }
+      .tab-pills {
+        width: 100%;
+      }
+      .tab-btn {
+        flex: 1;
+        text-align: center;
+      }
+      .med-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+      .form-row {
+        grid-template-columns: 1fr;
+        gap: 8px;
+      }
+    }
+
+    @media (max-width: 374px) {
+      .brand-text h1 { font-size: 16px; }
+      .brand-text span { display: none; }
+      .med-actions {
+        flex-direction: column;
+      }
+      .med-actions .btn {
+        width: 100%;
+      }
+    }
+  </style>
 </head>
 <body>
-    <div class="app-container">
-        <!-- Sidebar Navigation -->
-        <aside class="sidebar" id="sidebar">
-            <div class="sidebar-header">
-                <a href="dashboard.html" class="sidebar-brand" id="brandLink">
-                    <i data-lucide="activity"></i>
-                    <span>MediCare</span>
-                </a>
-                <span class="sidebar-role-pill" id="sidebarRoleLabel">Medications</span>
-            </div>
 
-            <div class="sidebar-menu" id="sidebarMenu">
-                <!-- Dynamically populated per user role -->
-            </div>
-        </aside>
-
-        <!-- Main Content Area -->
-        <main class="main-content">
-            <!-- Navbar -->
-            <nav class="navbar">
-                <div class="navbar-left">
-                    <button class="sidebar-toggle-btn" id="sidebarToggle" aria-label="Toggle navigation drawer">
-                        <i data-lucide="menu"></i>
-                    </button>
-                    <h2 class="navbar-title hide-mobile">Medication Management</h2>
-                </div>
-
-                <div class="navbar-right">
-                    <button class="nav-action-btn" onclick="toggleTheme()" title="Toggle Theme">
-                        <i data-lucide="moon"></i>
-                    </button>
-
-                    <a href="notifications.html" class="nav-action-btn" title="Notifications">
-                        <i data-lucide="bell"></i>
-                    </a>
-
-                    <div class="user-profile" onclick="window.location.href='profile.html'">
-                        <div class="avatar" id="nav-initial">U</div>
-                        <div class="user-info hide-mobile">
-                            <span class="user-name" id="nav-username">User</span>
-                            <span class="user-role" id="nav-role">Role</span>
-                        </div>
-                    </div>
-
-                    <button class="nav-action-btn" onclick="logout()" title="Logout">
-                        <i data-lucide="log-out"></i>
-                    </button>
-                </div>
-            </nav>
-
-            <!-- Page Content -->
-            <div class="page-content">
-                <div class="page-header">
-                    <div class="page-title-group">
-                        <h1 class="page-title">Prescriptions & Inventory</h1>
-                        <p class="page-subtitle">Track dosage, stock reserves, treatment durations, and daily intake schedules</p>
-                    </div>
-
-                    <div class="page-actions">
-                        <button class="btn btn-outline" id="btnFilterLowStock" onclick="toggleLowStockFilter()">
-                            <i data-lucide="package-minus"></i>
-                            <span id="lowStockBtnText">Low Stock Only</span>
-                        </button>
-
-                        <button class="btn btn-primary" onclick="openAddMedicineModal()">
-                            <i data-lucide="plus"></i>
-                            Add Medication
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Search Bar -->
-                <div class="card" style="margin-bottom: 1.5rem; padding: 1rem 1.25rem;">
-                    <div style="display: flex; gap: 1rem; align-items: center;">
-                        <div style="position: relative; flex: 1;">
-                            <input 
-                                type="text" 
-                                id="medicineSearchInput" 
-                                class="form-control" 
-                                placeholder="Search prescriptions by medication name or dosage..." 
-                                oninput="filterMedicines()"
-                            >
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Medicines Table -->
-                <div class="card animate-fade-in">
-                    <div class="table-container">
-                        <table id="medicinesTable">
-                            <thead>
-                                <tr>
-                                    <th>Medication</th>
-                                    <th>Dosage</th>
-                                    <th>Dose Qty</th>
-                                    <th>Stock Level</th>
-                                    <th>Treatment Duration</th>
-                                    <th>Stock Status</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="medicinesTbody">
-                                <tr>
-                                    <td colspan="7" style="text-align: center;">Loading medications...</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </main>
-    </div>
-
-    <!-- Add/Edit Medicine Modal -->
-    <div class="modal-overlay" id="medicineModal">
-        <div class="modal">
-            <div class="modal-header">
-                <div class="modal-title" id="modalTitle">
-                    <i data-lucide="pill"></i>
-                    Add Medication
-                </div>
-                <button class="modal-close" onclick="closeModal('medicineModal')">
-                    <i data-lucide="x"></i>
-                </button>
-            </div>
-            <form id="medicineForm">
-                <input type="hidden" id="medId">
-
-                <!-- Patient Selector (Shown only for Admin or Caregiver) -->
-                <div class="form-group" id="patientSelectGroup" style="display: none;">
-                    <label class="form-label" for="medPatientId">Select Patient</label>
-                    <select id="medPatientId" class="form-select"></select>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label" for="medName">Medicine Name</label>
-                    <input 
-                        type="text" 
-                        id="medName" 
-                        class="form-control" 
-                        required 
-                        placeholder="e.g. Atorvastatin, Metformin, Amoxicillin"
-                    >
-                </div>
-
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                    <div class="form-group">
-                        <label class="form-label" for="medDosage">Dosage Strength</label>
-                        <input 
-                            type="text" 
-                            id="medDosage" 
-                            class="form-control" 
-                            required 
-                            placeholder="e.g. 500mg, 10ml, 1 tablet"
-                        >
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label" for="medDose">Dose (Quantity)</label>
-                        <input 
-                            type="number" 
-                            id="medDose" 
-                            class="form-control" 
-                            required 
-                            min="1" 
-                            value="1"
-                        >
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label" for="medStock">Current Stock Count</label>
-                    <input 
-                        type="number" 
-                        id="medStock" 
-                        class="form-control" 
-                        required 
-                        min="0" 
-                        placeholder="e.g. 30"
-                    >
-                    <div class="form-text">System alerts caregivers when stock falls to 5 or fewer units.</div>
-                </div>
-
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                    <div class="form-group">
-                        <label class="form-label" for="medStart">Start Date</label>
-                        <input 
-                            type="date" 
-                            id="medStart" 
-                            class="form-control" 
-                            required
-                        >
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label" for="medEnd">End Date</label>
-                        <input 
-                            type="date" 
-                            id="medEnd" 
-                            class="form-control" 
-                            required
-                        >
-                    </div>
-                </div>
-
-                <div style="display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1.5rem;">
-                    <button type="button" class="btn btn-outline" onclick="closeModal('medicineModal')">Cancel</button>
-                    <button type="submit" class="btn btn-primary" id="btnSaveMedicine">
-                        <i data-lucide="save"></i>
-                        Save Medication
-                    </button>
-                </div>
-            </form>
+  <!-- ================= TOP HEADER NAVBAR ================= -->
+  <header class="site-header">
+    <div class="nav-container">
+      
+      <a href="index.html" class="brand-logo">
+        <div class="logo-icon">+</div>
+        <div class="brand-text">
+          <h1>MediCare</h1>
+          <span>Inventory & Routine</span>
         </div>
+      </a>
+
+      <!-- Desktop Links -->
+      <ul class="desktop-nav-links">
+        <li><a href="index.html">Overview</a></li>
+        <li><a href="medicines.html" class="active">Medicines</a></li>
+        <li><a href="#">Routines</a></li>
+        <li><a href="#">Caregivers</a></li>
+      </ul>
+
+      <!-- Desktop Actions -->
+      <div class="desktop-actions">
+        <button class="btn btn-sos" onclick="alert('🚨 SOS Alert Sent to Linked Caregivers!')">🚨 SOS</button>
+        <button class="btn btn-ghost" onclick="window.location.href='index.html'">Dashboard</button>
+      </div>
+
+      <!-- Mobile Hamburger & SOS -->
+      <div class="mobile-actions">
+        <button class="btn btn-sos" onclick="alert('🚨 SOS Alert Triggered!')">🚨 SOS</button>
+        <button class="hamburger-btn" id="menuToggle" aria-label="Toggle Menu">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- Mobile Drawer -->
+  <div class="mobile-overlay" id="mobileOverlay"></div>
+  <aside class="mobile-drawer" id="mobileDrawer">
+    <div class="drawer-header">
+      <div class="brand-logo">
+        <div class="logo-icon">+</div>
+        <div class="brand-text"><h1>MediCare</h1></div>
+      </div>
+      <button class="close-btn" id="closeDrawer">&times;</button>
+    </div>
+    <ul class="drawer-links">
+      <li><a href="index.html">🏠 Home & Dashboard</a></li>
+      <li><a href="medicines.html" style="color: var(--primary);">💊 Medicine Inventory</a></li>
+      <li><a href="#">⏰ Daily Schedules</a></li>
+      <li><a href="#">🛡️ Caregiver Support</a></li>
+    </ul>
+  </aside>
+
+  <!-- ================= PAGE CONTENT ================= -->
+  <div class="page-wrapper">
+    
+    <!-- Title & Add Button -->
+    <div class="section-header">
+      <div class="section-title">
+        <h2>Active Prescriptions & Stock</h2>
+        <p>Manage prescription doses, schedule times, and inventory refill triggers.</p>
+      </div>
+      <button class="btn btn-primary" onclick="openMedicineModal()">+ Add New Medicine</button>
     </div>
 
-    <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="js/config.js"></script>
-    <script src="js/utils.js"></script>
-    <script src="js/api.js"></script>
-    <script src="js/auth.js"></script>
-    <script src="js/medicines.js"></script>
+    <!-- Search & Filter Tab Controls -->
+    <div class="filter-bar">
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="searchInput" class="search-input" placeholder="Search medicine name..." onkeyup="filterMedicines()">
+      </div>
+
+      <div class="tab-pills">
+        <button class="tab-btn active" id="tabAll" onclick="setFilter('all')">All Meds (6)</button>
+        <button class="tab-btn" id="tabLow" onclick="setFilter('low')">Low Stock (2) ⚠️</button>
+      </div>
+    </div>
+
+    <!-- Medicines Grid (Simulated from /api/medicine) -->
+    <div class="med-grid" id="medGrid">
+      
+      <!-- Card 1 -->
+      <div class="med-card" data-name="Metformin 500mg" data-stock="24">
+        <div>
+          <div class="med-card-top">
+            <div>
+              <div class="med-name">Metformin 500mg</div>
+              <div class="med-dosage">Dose: 1 Tablet • Oral (After Meal)</div>
+            </div>
+            <span class="stock-badge stock-good">24 Pills</span>
+          </div>
+
+          <div class="schedule-chips">
+            <span class="time-chip">⏰ 08:00 AM</span>
+            <span class="time-chip">⏰ 08:30 PM</span>
+          </div>
+
+          <div class="med-dates">
+            Regimen: 01 Oct 2026 – 31 Dec 2026
+          </div>
+        </div>
+
+        <div class="med-actions">
+          <button class="btn btn-ghost" onclick="editMed('Metformin 500mg', '1 Tablet', 24, '08:00, 20:30')">Edit</button>
+          <button class="btn btn-ghost" style="color: var(--primary);" onclick="quickRefill(this)">+ Refill</button>
+        </div>
+      </div>
+
+      <!-- Card 2: Low Stock -->
+      <div class="med-card" data-name="Pan-D 40mg" data-stock="3">
+        <div>
+          <div class="med-card-top">
+            <div>
+              <div class="med-name">Pan-D 40mg</div>
+              <div class="med-dosage">Dose: 1 Capsule • Before Breakfast</div>
+            </div>
+            <span class="stock-badge stock-low">⚠️ 3 Left (Refill)</span>
+          </div>
+
+          <div class="schedule-chips">
+            <span class="time-chip">⏰ 07:30 AM</span>
+          </div>
+
+          <div class="med-dates">
+            Regimen: 10 Oct 2026 – 10 Nov 2026
+          </div>
+        </div>
+
+        <div class="med-actions">
+          <button class="btn btn-ghost" onclick="editMed('Pan-D 40mg', '1 Capsule', 3, '07:30')">Edit</button>
+          <button class="btn btn-primary" onclick="quickRefill(this)">+ Add Stock</button>
+        </div>
+      </div>
+
+      <!-- Card 3 -->
+      <div class="med-card" data-name="Atorvastatin 10mg" data-stock="18">
+        <div>
+          <div class="med-card-top">
+            <div>
+              <div class="med-name">Atorvastatin 10mg</div>
+              <div class="med-dosage">Dose: 1 Tablet • After Dinner</div>
+            </div>
+            <span class="stock-badge stock-good">18 Pills</span>
+          </div>
+
+          <div class="schedule-chips">
+            <span class="time-chip">⏰ 09:00 PM</span>
+          </div>
+
+          <div class="med-dates">
+            Regimen: Continuous / Daily
+          </div>
+        </div>
+
+        <div class="med-actions">
+          <button class="btn btn-ghost" onclick="editMed('Atorvastatin 10mg', '1 Tablet', 18, '21:00')">Edit</button>
+          <button class="btn btn-ghost" style="color: var(--primary);" onclick="quickRefill(this)">+ Refill</button>
+        </div>
+      </div>
+
+      <!-- Card 4: Low Stock -->
+      <div class="med-card" data-name="Calpol 650mg" data-stock="2">
+        <div>
+          <div class="med-card-top">
+            <div>
+              <div class="med-name">Calpol 650mg</div>
+              <div class="med-dosage">Dose: 1 Tablet • SOS / Fever</div>
+            </div>
+            <span class="stock-badge stock-low">⚠️ 2 Left</span>
+          </div>
+
+          <div class="schedule-chips">
+            <span class="time-chip">⏰ 02:00 PM</span>
+          </div>
+
+          <div class="med-dates">
+            Regimen: As required for pain/fever
+          </div>
+        </div>
+
+        <div class="med-actions">
+          <button class="btn btn-ghost" onclick="editMed('Calpol 650mg', '1 Tablet', 2, '14:00')">Edit</button>
+          <button class="btn btn-primary" onclick="quickRefill(this)">+ Add Stock</button>
+        </div>
+      </div>
+
+      <!-- Card 5 -->
+      <div class="med-card" data-name="Amlodipine 5mg" data-stock="30">
+        <div>
+          <div class="med-card-top">
+            <div>
+              <div class="med-name">Amlodipine 5mg</div>
+              <div class="med-dosage">Dose: 1 Tablet • Blood Pressure</div>
+            </div>
+            <span class="stock-badge stock-good">30 Pills</span>
+          </div>
+
+          <div class="schedule-chips">
+            <span class="time-chip">⏰ 09:00 AM</span>
+          </div>
+
+          <div class="med-dates">
+            Regimen: Continuous / Morning
+          </div>
+        </div>
+
+        <div class="med-actions">
+          <button class="btn btn-ghost" onclick="editMed('Amlodipine 5mg', '1 Tablet', 30, '09:00')">Edit</button>
+          <button class="btn btn-ghost" style="color: var(--primary);" onclick="quickRefill(this)">+ Refill</button>
+        </div>
+      </div>
+
+      <!-- Card 6 -->
+      <div class="med-card" data-name="Vitamin D3 60K" data-stock="8">
+        <div>
+          <div class="med-card-top">
+            <div>
+              <div class="med-name">Vitamin D3 60K</div>
+              <div class="med-dosage">Dose: 1 Capsule • Weekly</div>
+            </div>
+            <span class="stock-badge stock-good">8 Capsules</span>
+          </div>
+
+          <div class="schedule-chips">
+            <span class="time-chip">⏰ Sun 10:00 AM</span>
+          </div>
+
+          <div class="med-dates">
+            Regimen: Once weekly with milk
+          </div>
+        </div>
+
+        <div class="med-actions">
+          <button class="btn btn-ghost" onclick="editMed('Vitamin D3 60K', '1 Capsule', 8, '10:00')">Edit</button>
+          <button class="btn btn-ghost" style="color: var(--primary);" onclick="quickRefill(this)">+ Refill</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ================= ADD / EDIT MEDICINE MODAL ================= -->
+  <div class="modal-backdrop" id="medModal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 id="modalTitle">Add New Prescription</h3>
+        <button class="close-btn" onclick="closeMedicineModal()">&times;</button>
+      </div>
+
+      <form id="medForm" onsubmit="handleMedSubmit(event)">
+        <div class="form-group">
+          <label>Medicine Name & Strength</label>
+          <input type="text" class="form-control" id="medName" placeholder="e.g., Metformin 500mg" required>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Dose Quantity / Type</label>
+            <input type="text" class="form-control" id="medDose" placeholder="e.g., 1 Tablet" required>
+          </div>
+          <div class="form-group">
+            <label>Current Stock (Pills)</label>
+            <input type="number" class="form-control" id="medStock" placeholder="30" min="1" required>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Start Date</label>
+            <input type="date" class="form-control" id="startDate" required>
+          </div>
+          <div class="form-group">
+            <label>End Date</label>
+            <input type="date" class="form-control" id="endDate" required>
+          </div>
+        </div>
+
+        <!-- Dynamic Timings Section -->
+        <div class="form-group">
+          <label>Daily Scheduled Timings</label>
+          <div style="display: flex; gap: 8px;">
+            <input type="time" class="form-control" id="timeInput" style="max-width: 160px;">
+            <button type="button" class="btn btn-ghost" onclick="addTimeSlot()">+ Add Slot</button>
+          </div>
+          <div class="time-slot-list" id="timeSlotList">
+            <span class="time-tag">08:00 AM <span class="time-tag-remove" onclick="this.parentElement.remove()">&times;</span></span>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 10px; margin-top: 20px;">
+          <button type="button" class="btn btn-ghost" style="flex: 1;" onclick="closeMedicineModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary" style="flex: 2;">Save Prescription</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= JAVASCRIPT ================= -->
+  <script>
+    // 1. Mobile Drawer Toggle
+    const menuToggle = document.getElementById('menuToggle');
+    const closeDrawer = document.getElementById('closeDrawer');
+    const mobileDrawer = document.getElementById('mobileDrawer');
+    const mobileOverlay = document.getElementById('mobileOverlay');
+
+    function toggleMenu() {
+      mobileDrawer.classList.toggle('active');
+      mobileOverlay.classList.toggle('active');
+      document.body.style.overflow = mobileDrawer.classList.contains('active') ? 'hidden' : '';
+    }
+
+    menuToggle.addEventListener('click', toggleMenu);
+    closeDrawer.addEventListener('click', toggleMenu);
+    mobileOverlay.addEventListener('click', toggleMenu);
+
+    // 2. Search & Stock Filter
+    let currentFilter = 'all';
+
+    function setFilter(type) {
+      currentFilter = type;
+      document.getElementById('tabAll').classList.toggle('active', type === 'all');
+      document.getElementById('tabLow').classList.toggle('active', type === 'low');
+      filterMedicines();
+    }
+
+    function filterMedicines() {
+      const query = document.getElementById('searchInput').value.toLowerCase();
+      const cards = document.querySelectorAll('.med-card');
+
+      cards.forEach(card => {
+        const name = card.getAttribute('data-name').toLowerCase();
+        const stock = parseInt(card.getAttribute('data-stock'), 10);
+
+        const matchesSearch = name.includes(query);
+        const matchesTab = currentFilter === 'all' || (currentFilter === 'low' && stock <= 5);
+
+        card.style.display = (matchesSearch && matchesTab) ? 'flex' : 'none';
+      });
+    }
+
+    // 3. Modal Handlers
+    const medModal = document.getElementById('medModal');
+
+    function openMedicineModal() {
+      document.getElementById('modalTitle').innerText = 'Add New Prescription';
+      document.getElementById('medForm').reset();
+      medModal.classList.add('active');
+    }
+
+    function closeMedicineModal() {
+      medModal.classList.remove('active');
+    }
+
+    function addTimeSlot() {
+      const timeVal = document.getElementById('timeInput').value;
+      if (!timeVal) return;
+
+      const tag = document.createElement('span');
+      tag.className = 'time-tag';
+      tag.innerHTML = `${timeVal} <span class="time-tag-remove" onclick="this.parentElement.remove()">&times;</span>`;
+      document.getElementById('timeSlotList').appendChild(tag);
+      document.getElementById('timeInput').value = '';
+    }
+
+    function editMed(name, dose, stock, times) {
+      document.getElementById('modalTitle').innerText = 'Edit ' + name;
+      document.getElementById('medName').value = name;
+      document.getElementById('medDose').value = dose;
+      document.getElementById('medStock').value = stock;
+      medModal.classList.add('active');
+    }
+
+    function quickRefill(btn) {
+      const card = btn.closest('.med-card');
+      let stock = parseInt(card.getAttribute('data-stock'), 10);
+      stock += 10;
+      card.setAttribute('data-stock', stock);
+      
+      const badge = card.querySelector('.stock-badge');
+      badge.className = 'stock-badge stock-good';
+      badge.innerText = stock + ' Pills';
+      alert('Stock updated successfully! New count: ' + stock);
+    }
+
+    function handleMedSubmit(e) {
+      e.preventDefault();
+      alert('Prescription saved! Ready to send payload to POST /api/medicine & POST /api/medicineschedule');
+      closeMedicineModal();
+    }
+  </script>
+
 </body>
 </html>

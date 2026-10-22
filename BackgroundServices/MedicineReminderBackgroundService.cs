@@ -4,7 +4,7 @@ using MediCare.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace MediCare.BackgroundServices;
-
+    
 public class MedicineReminderBackgroundService : BackgroundService
 {
     private readonly IServiceScopeFactory _scopeFactory;
