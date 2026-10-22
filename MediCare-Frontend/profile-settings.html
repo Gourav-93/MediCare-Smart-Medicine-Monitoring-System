@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MediCare - Profile & Account Settings</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --primary: #0284c7;
+      --primary-dark: #0369a1;
+      --primary-light: #e0f2fe;
+      --danger: #dc2626;
+      --danger-light: #fee2e2;
+      --success: #16a34a;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --border: #e2e8f0;
+      --radius: 12px;
+      --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+      --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text-main);
+      min-height: 100vh;
+      overflow-x: hidden;
+      line-height: 1.5;
+    }
+
+    /* Header */
+    .site-header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+      height: 70px;
+      display: flex;
+      align-items: center;
+      padding: 0 clamp(16px, 4vw, 40px);
+    }
+
+    .nav-container {
+      width: 100%;
+      max-width: 1380px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+    }
+
+    .logo-icon {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, #0284c7, #0ea5e9);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      font-weight: 800;
+      font-size: 20px;
+    }
+
+    .brand-text h1 {
+      font-size: 19px;
+      font-weight: 800;
+      color: var(--text-main);
+      line-height: 1.1;
+    }
+
+    .brand-text span {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--primary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .desktop-nav-links {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      list-style: none;
+    }
+
+    .desktop-nav-links a {
+      text-decoration: none;
+      color: var(--text-muted);
+      font-size: 14px;
+      font-weight: 600;
+    }
+    .desktop-nav-links a.active { color: var(--primary); }
+
+    .btn {
+      padding: 9px 16px;
+      border-radius: 8px;
+      font-size: 13.5px;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid transparent;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { background: var(--primary-dark); }
+    .btn-ghost { background: transparent; color: var(--text-main); border-color: var(--border); }
+    .btn-ghost:hover { background: #f1f5f9; }
+
+    /* Mobile Controls */
+    .mobile-actions { display: none; }
+    .hamburger-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: #ffffff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      cursor: pointer;
+    }
+    .hamburger-btn span {
+      width: 18px;
+      height: 2px;
+      background: var(--text-main);
+    }
+
+    /* Mobile Drawer */
+    .mobile-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.45);
+      backdrop-filter: blur(4px);
+      z-index: 200;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s;
+    }
+    .mobile-overlay.active { opacity: 1; visibility: visible; }
+
+    .mobile-drawer {
+      position: fixed;
+      top: 0;
+      right: -100%;
+      width: min(320px, 85vw);
+      height: 100%;
+      background: var(--surface);
+      z-index: 201;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      transition: right 0.3s;
+    }
+    .mobile-drawer.active { right: 0; }
+
+    /* Page Container */
+    .page-wrapper {
+      max-width: 1140px;
+      margin: 0 auto;
+      padding: clamp(16px, 3vw, 32px) clamp(16px, 4vw, 30px);
+    }
+
+    .section-header {
+      margin-bottom: 24px;
+    }
+    .section-header h2 {
+      font-size: clamp(22px, 3.5vw, 28px);
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+    .section-header p {
+      font-size: 13.5px;
+      color: var(--text-muted);
+    }
+
+    /* Settings Split Layout */
+    .settings-layout {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 24px;
+      align-items: start;
+    }
+
+    /* Profile Sidebar Card */
+    .profile-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      box-shadow: var(--shadow-sm);
+      text-align: center;
+    }
+    .profile-avatar-large {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: var(--primary-light);
+      color: var(--primary-dark);
+      font-size: 28px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 14px;
+    }
+    .profile-name { font-size: 18px; font-weight: 700; }
+    .profile-role-tag {
+      display: inline-block;
+      font-size: 11.5px;
+      font-weight: 700;
+      color: var(--primary);
+      background: #f0f9ff;
+      border: 1px solid #bae6fd;
+      padding: 3px 10px;
+      border-radius: 12px;
+      margin-top: 4px;
+    }
+
+    .profile-nav-menu {
+      list-style: none;
+      margin-top: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      text-align: left;
+    }
+    .profile-nav-menu a {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 13.5px;
+      font-weight: 600;
+      text-decoration: none;
+      color: var(--text-muted);
+      transition: all 0.2s;
+    }
+    .profile-nav-menu a.active,
+    .profile-nav-menu a:hover {
+      background: #f1f5f9;
+      color: var(--primary);
+    }
+
+    /* Settings Main Form Cards */
+    .settings-content {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .form-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      box-shadow: var(--shadow-sm);
+    }
+    .form-card h3 {
+      font-size: 17px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .form-card p {
+      font-size: 12.5px;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    .form-group {
+      margin-bottom: 16px;
+    }
+    .form-group label {
+      display: block;
+      font-size: 12.5px;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+    .form-control {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 13.5px;
+      outline: none;
+    }
+    .form-control:focus {
+      border-color: var(--primary);
+    }
+
+    /* Switch Toggle Rows */
+    .toggle-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .toggle-row:last-child { border-bottom: none; }
+    .toggle-info h4 { font-size: 13.5px; font-weight: 600; }
+    .toggle-info p { font-size: 12px; color: var(--text-muted); margin: 0; }
+
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 44px;
+      height: 24px;
+    }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      inset: 0;
+      background-color: #cbd5e1;
+      transition: .3s;
+      border-radius: 24px;
+    }
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: .3s;
+      border-radius: 50%;
+    }
+    input:checked + .slider { background-color: var(--primary); }
+    input:checked + .slider:before { transform: translateX(20px); }
+
+    /* =========================================================
+       RESPONSIVE BREAKPOINTS (320px - 1024px)
+       ========================================================= */
+    @media (max-width: 1023px) {
+      .desktop-nav-links { display: none; }
+      .mobile-actions { display: flex; }
+      .settings-layout { grid-template-columns: 1fr; }
+      .profile-card { text-align: left; display: flex; align-items: center; gap: 16px; padding: 18px; }
+      .profile-avatar-large { margin: 0; width: 64px; height: 64px; font-size: 22px; }
+      .profile-nav-menu { display: none; }
+    }
+
+    @media (max-width: 767px) {
+      .form-row { grid-template-columns: 1fr; gap: 0; }
+      .profile-card { flex-direction: column; align-items: flex-start; }
+      .form-card { padding: 16px; }
+      .btn { width: 100%; justify-content: center; }
+    }
+
+    @media (max-width: 374px) {
+      .brand-text h1 { font-size: 16px; }
+      .brand-text span { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ================= TOP HEADER ================= -->
+  <header class="site-header">
+    <div class="nav-container">
+      
+      <a href="index.html" class="brand-logo">
+        <div class="logo-icon">+</div>
+        <div class="brand-text">
+          <h1>MediCare</h1>
+          <span>Account & Security</span>
+        </div>
+      </a>
+
+      <!-- Desktop Links -->
+      <ul class="desktop-nav-links">
+        <li><a href="index.html">Overview</a></li>
+        <li><a href="patient-dashboard.html">Daily Routine</a></li>
+        <li><a href="medicines.html">Medicines</a></li>
+        <li><a href="caregiver-dashboard.html">Caregivers</a></li>
+        <li><a href="profile-settings.html" class="active">Settings</a></li>
+      </ul>
+
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <!-- <button class="btn btn-ghost" onclick="window.location.href='patient-dashboard.html'">Back to Dashboard</button> -->
+      </div>
+
+      <!-- Mobile Hamburger -->
+      <div class="mobile-actions">
+        <button class="hamburger-btn" id="menuToggle" aria-label="Toggle Menu">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- Mobile Drawer -->
+  <div class="mobile-overlay" id="mobileOverlay"></div>
+  <aside class="mobile-drawer" id="mobileDrawer">
+    <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 14px; border-bottom: 1px solid var(--border);">
+      <div class="brand-logo">
+        <div class="logo-icon">+</div>
+        <div class="brand-text"><h1>MediCare</h1></div>
+      </div>
+      <button style="background:#f1f5f9; border:none; width:34px; height:34px; border-radius:8px; font-size:18px;" id="closeDrawer">&times;</button>
+    </div>
+    <ul style="list-style:none; padding:16px 0; display:flex; flex-direction:column; gap:14px;">
+      <li><a href="index.html" style="text-decoration:none; color:var(--text-main); font-weight:600;">🏠 Overview</a></li>
+      <li><a href="patient-dashboard.html" style="text-decoration:none; color:var(--text-main); font-weight:600;">🕒 Daily Routine</a></li>
+      <li><a href="medicines.html" style="text-decoration:none; color:var(--text-main); font-weight:600;">💊 Prescriptions</a></li>
+      <li><a href="caregiver-dashboard.html" style="text-decoration:none; color:var(--text-main); font-weight:600;">🛡️ Caregiver Hub</a></li>
+      <li><a href="profile-settings.html" style="text-decoration:none; color:var(--primary); font-weight:600;">⚙️ Account Settings</a></li>
+    </ul>
+  </aside>
+
+  <!-- ================= MAIN CONTENT ================= -->
+  <div class="page-wrapper">
+    
+    <div class="section-header">
+      <h2>Account & Health Settings</h2>
+      <p>Manage your profile identity, emergency distress contacts, and notification channels.</p>
+    </div>
+
+    <div class="settings-layout">
+      
+      <!-- Left Sidebar Profile Card -->
+      <aside class="profile-card">
+        <div class="profile-avatar-large">RK</div>
+        <div>
+          <h3 class="profile-name">Ramesh Kumar</h3>
+          <span class="profile-role-tag">Role: PATIENT</span>
+        </div>
+
+        <ul class="profile-nav-menu">
+          <li><a href="#personal" class="active">👤 Personal Details</a></li>
+          <li><a href="#emergency">🚨 Emergency Contacts</a></li>
+          <li><a href="#security">🔐 Password & Security</a></li>
+          <li><a href="#preferences">🔔 Alert Preferences</a></li>
+        </ul>
+      </aside>
+
+      <!-- Right Side Form Cards -->
+      <div class="settings-content">
+        
+        <!-- Form 1: Personal Profile (Matches User / Patient Entity) -->
+        <div class="form-card" id="personal">
+          <h3>Personal Health Profile</h3>
+          <p>Your demographic and medical record information.</p>
+          
+          <form onsubmit="saveProfile(event)">
+            <div class="form-row">
+              <div class="form-group">
+                <label>Full Name</label>
+                <input type="text" class="form-control" value="Ramesh Kumar" required>
+              </div>
+              <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" class="form-control" value="ramesh.kumar@example.com" disabled style="background:#f8fafc; color:var(--text-muted);">
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label>Phone Number</label>
+                <input type="tel" class="form-control" value="+91 98765-43210" required>
+              </div>
+              <div class="form-group">
+                <label>Blood Group</label>
+                <select class="form-control">
+                  <option value="B+">B Positive (B+)</option>
+                  <option value="O+">O Positive (O+)</option>
+                  <option value="A+">A Positive (A+)</option>
+                  <option value="AB+">AB Positive (AB+)</option>
+                </select>
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Save Profile Changes</button>
+          </form>
+        </div>
+
+        <!-- Form 2: Emergency SOS Routing -->
+        <div class="form-card" id="emergency">
+          <h3>Emergency Distress Routing</h3>
+          <p>Contacts alerted automatically when you press the emergency SOS beacon.</p>
+          
+          <form onsubmit="saveEmergency(event)">
+            <div class="form-row">
+              <div class="form-group">
+                <label>Primary Caregiver Emergency Phone</label>
+                <input type="tel" class="form-control" value="+91 98765-43210" placeholder="+91..." required>
+              </div>
+              <div class="form-group">
+                <label>Attending Doctor / Clinic Phone</label>
+                <input type="tel" class="form-control" value="+91 91234-56789" placeholder="+91...">
+              </div>
+            </div>
+
+            <div class="toggle-row">
+              <div class="toggle-info">
+                <h4>Automated Distress Broadcast</h4>
+                <p>Send instant SMS and push alert to connected caregivers on SOS trigger.</p>
+              </div>
+              <label class="switch">
+                <input type="checkbox" checked>
+                <span class="slider"></span>
+              </label>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="margin-top: 14px;">Update Emergency Setup</button>
+          </form>
+        </div>
+
+        <!-- Form 3: Password & Security -->
+        <div class="form-card" id="security">
+          <h3>Password & Authentication</h3>
+          <p>Update your password secured with BCrypt encryption.</p>
+          
+          <form onsubmit="updatePassword(event)">
+            <div class="form-group">
+              <label>Current Password</label>
+              <input type="password" class="form-control" placeholder="••••••••" required>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label>New Password</label>
+                <input type="password" class="form-control" placeholder="Min 6 characters" required>
+              </div>
+              <div class="form-group">
+                <label>Confirm New Password</label>
+                <input type="password" class="form-control" placeholder="Confirm password" required>
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-ghost" style="border: 1px solid var(--border);">Update Password</button>
+          </form>
+        </div>
+
+        <!-- Form 4: Notification Preferences -->
+        <div class="form-card" id="preferences">
+          <h3>Adherence Reminders & Nudges</h3>
+          <p>Configure how and when MediCare reminds you to take doses.</p>
+          
+          <div class="toggle-row">
+            <div class="toggle-info">
+              <h4>WhatsApp Intake Reminders</h4>
+              <p>Receive WhatsApp reminder notifications 10 minutes before dose time.</p>
+            </div>
+            <label class="switch">
+              <input type="checkbox" checked>
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <div class="toggle-row">
+            <div class="toggle-info">
+              <h4>Caregiver Missed-Dose Alerts</h4>
+              <p>Notify your linked caregiver if a dose is delayed by more than 30 minutes.</p>
+            </div>
+            <label class="switch">
+              <input type="checkbox" checked>
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <div class="toggle-row">
+            <div class="toggle-info">
+              <h4>Low-Stock Pharmacy Alerts</h4>
+              <p>Trigger alerts when prescription pills remaining fall below 5 units.</p>
+            </div>
+            <label class="switch">
+              <input type="checkbox" checked>
+              <span class="slider"></span>
+            </label>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- JAVASCRIPT -->
+  <script>
+    // Mobile Drawer
+    const menuToggle = document.getElementById('menuToggle');
+    const closeDrawer = document.getElementById('closeDrawer');
+    const mobileDrawer = document.getElementById('mobileDrawer');
+    const mobileOverlay = document.getElementById('mobileOverlay');
+
+    function toggleMenu() {
+      mobileDrawer.classList.toggle('active');
+      mobileOverlay.classList.toggle('active');
+      document.body.style.overflow = mobileDrawer.classList.contains('active') ? 'hidden' : '';
+    }
+
+    menuToggle.addEventListener('click', toggleMenu);
+    closeDrawer.addEventListener('click', toggleMenu);
+    mobileOverlay.addEventListener('click', toggleMenu);
+
+    // Form Submissions
+    function saveProfile(e) {
+      e.preventDefault();
+      alert("[API: PUT /api/patient/profile]\nProfile updated successfully!");
+    }
+
+    function saveEmergency(e) {
+      e.preventDefault();
+      alert("[API: PUT /api/patient/emergency-contacts]\nEmergency routing details saved!");
+    }
+
+    function updatePassword(e) {
+      e.preventDefault();
+      alert("[API: POST /api/AuthController/change-password]\nPassword updated successfully!");
+    }
+  </script>
+
+</body>
+</html>
