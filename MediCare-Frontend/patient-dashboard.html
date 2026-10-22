@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MediCare - Patient Daily Routine</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --primary: #0284c7;
+      --primary-dark: #0369a1;
+      --primary-light: #e0f2fe;
+      --danger: #dc2626;
+      --danger-light: #fee2e2;
+      --success: #16a34a;
+      --success-light: #dcfce7;
+      --warning: #d97706;
+      --warning-light: #fef3c7;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --border: #e2e8f0;
+      --radius: 12px;
+      --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+      --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+      --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text-main);
+      min-height: 100vh;
+      overflow-x: hidden;
+      line-height: 1.5;
+    }
+
+    /* =========================================================
+       HEADER / NAVBAR
+       ========================================================= */
+    .site-header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+      height: 70px;
+      display: flex;
+      align-items: center;
+      padding: 0 clamp(16px, 4vw, 40px);
+    }
+
+    .nav-container {
+      width: 100%;
+      max-width: 1380px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+    }
+
+    .logo-icon {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, #0284c7, #0ea5e9);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      font-weight: 800;
+      font-size: 20px;
+      box-shadow: 0 4px 10px rgba(2, 132, 199, 0.3);
+    }
+
+    .brand-text h1 {
+      font-size: 19px;
+      font-weight: 800;
+      color: var(--text-main);
+      line-height: 1.1;
+    }
+
+    .brand-text span {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--primary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .desktop-nav-links {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      list-style: none;
+    }
+
+    .desktop-nav-links a {
+      text-decoration: none;
+      color: var(--text-muted);
+      font-size: 14px;
+      font-weight: 600;
+      transition: color 0.2s;
+    }
+    .desktop-nav-links a.active,
+    .desktop-nav-links a:hover {
+      color: var(--primary);
+    }
+
+    .btn {
+      padding: 9px 16px;
+      border-radius: 8px;
+      font-size: 13.5px;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      text-decoration: none;
+    }
+
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { background: var(--primary-dark); }
+    .btn-ghost { background: transparent; color: var(--text-main); border-color: var(--border); }
+    .btn-ghost:hover { background: #f1f5f9; }
+    .btn-success { background: var(--success); color: #fff; }
+    .btn-success:hover { background: #15803d; }
+    .btn-snooze { background: #fff; border-color: #cbd5e1; color: var(--text-main); }
+    .btn-snooze:hover { background: #f1f5f9; }
+
+    .btn-sos {
+      background: var(--danger);
+      color: #fff;
+      padding: 9px 16px;
+      font-size: 13.5px;
+      font-weight: 700;
+      border-radius: 8px;
+      animation: pulse-sos 2s infinite;
+      box-shadow: 0 2px 10px rgba(220, 38, 38, 0.35);
+    }
+    @keyframes pulse-sos {
+      0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.4); }
+      70% { box-shadow: 0 0 0 8px rgba(220, 38, 38, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
+    }
+
+    .mobile-actions {
+      display: none;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .hamburger-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: #ffffff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      cursor: pointer;
+    }
+    .hamburger-btn span {
+      width: 18px;
+      height: 2px;
+      background: var(--text-main);
+      border-radius: 2px;
+    }
+
+    /* Mobile Drawer */
+    .mobile-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.45);
+      backdrop-filter: blur(4px);
+      z-index: 200;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s;
+    }
+    .mobile-overlay.active { opacity: 1; visibility: visible; }
+
+    .mobile-drawer {
+      position: fixed;
+      top: 0;
+      right: -100%;
+      width: min(320px, 85vw);
+      height: 100%;
+      background: var(--surface);
+      z-index: 201;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      transition: right 0.3s ease;
+    }
+    .mobile-drawer.active { right: 0; }
+
+    .drawer-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border);
+    }
+    .close-btn {
+      background: #f1f5f9;
+      border: none;
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      font-size: 18px;
+      cursor: pointer;
+    }
+    .drawer-links {
+      list-style: none;
+      padding: 16px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .drawer-links a {
+      text-decoration: none;
+      color: var(--text-main);
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    /* =========================================================
+       PAGE WRAPPER & GRID
+       ========================================================= */
+    .page-wrapper {
+      max-width: 1380px;
+      margin: 0 auto;
+      padding: clamp(16px, 3vw, 32px) clamp(16px, 4vw, 40px);
+    }
+
+    .welcome-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .welcome-text h2 {
+      font-size: clamp(22px, 3.5vw, 28px);
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+    .welcome-text p {
+      font-size: 13.5px;
+      color: var(--text-muted);
+    }
+
+    /* Summary Stats Grid (2x2 or 4x1) */
+    .patient-stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+    .p-stat-card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px;
+      box-shadow: var(--shadow-sm);
+    }
+    .p-stat-card .lbl {
+      font-size: 12.5px;
+      color: var(--text-muted);
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    .p-stat-card .val {
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--text-main);
+    }
+    .p-stat-card .sub {
+      font-size: 12px;
+      margin-top: 4px;
+    }
+
+    /* Main Dashboard Layout (2 Columns: Routine List + Side Panel) */
+    .dashboard-layout {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 20px;
+      align-items: start;
+    }
+
+    /* Routine Cards List */
+    .routine-container {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .routine-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+    }
+    .routine-header h3 {
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .dose-card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      transition: all 0.2s;
+    }
+    .dose-card.taken {
+      background: #f0fdf4;
+      border-color: #bbf7d0;
+    }
+    .dose-card.due {
+      border-left: 4px solid var(--primary);
+    }
+
+    .dose-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .time-badge {
+      min-width: 72px;
+      text-align: center;
+      padding: 8px;
+      border-radius: 8px;
+      background: #f1f5f9;
+      font-size: 13px;
+      font-weight: 700;
+      color: #334155;
+    }
+    .dose-card.taken .time-badge {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .dose-info h4 {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 2px;
+    }
+    .dose-info p {
+      font-size: 12.5px;
+      color: var(--text-muted);
+    }
+
+    .dose-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    /* Side Panel: Low Stock & Caregiver Support */
+    .side-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .side-box {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      box-shadow: var(--shadow-sm);
+    }
+    .side-box h3 {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+
+    .stock-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+    }
+    .stock-item:last-child { border-bottom: none; }
+    .badge-pill-low {
+      background: var(--warning-light);
+      color: var(--warning);
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    /* Floating AI Chat Assistant Launcher & Drawer */
+    .chat-launcher {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      font-size: 24px;
+      box-shadow: 0 4px 14px rgba(2, 132, 199, 0.4);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 90;
+    }
+
+    .chat-drawer {
+      position: fixed;
+      bottom: 90px;
+      right: 24px;
+      width: min(360px, calc(100vw - 48px));
+      height: 480px;
+      background: var(--surface);
+      border-radius: var(--radius);
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15);
+      border: 1px solid var(--border);
+      display: none;
+      flex-direction: column;
+      overflow: hidden;
+      z-index: 100;
+    }
+    .chat-drawer.active { display: flex; }
+
+    .chat-header {
+      background: var(--primary);
+      color: #fff;
+      padding: 14px 16px;
+      font-weight: 700;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .chat-body {
+      flex: 1;
+      padding: 14px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      font-size: 13px;
+    }
+    .chat-msg {
+      padding: 8px 12px;
+      border-radius: 8px;
+      max-width: 80%;
+      line-height: 1.4;
+    }
+    .chat-bot { background: #f1f5f9; align-self: flex-start; }
+    .chat-user { background: var(--primary); color: #fff; align-self: flex-end; }
+
+    .chat-input-bar {
+      display: flex;
+      padding: 10px;
+      border-top: 1px solid var(--border);
+      gap: 8px;
+    }
+    .chat-input {
+      flex: 1;
+      border: 1px solid var(--border);
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 13px;
+      outline: none;
+    }
+
+    /* =========================================================
+       RESPONSIVE BREAKPOINTS (320px - 1366px+)
+       ========================================================= */
+    @media (max-width: 1023px) {
+      .desktop-nav-links { display: none; }
+      .mobile-actions { display: flex; }
+      .patient-stats { grid-template-columns: repeat(2, 1fr); gap: 14px; }
+      .dashboard-layout { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 767px) {
+      .welcome-bar { flex-direction: column; align-items: stretch; }
+      .welcome-bar .btn-sos { width: 100%; justify-content: center; }
+      .patient-stats { grid-template-columns: 1fr; gap: 10px; }
+      .dose-card { flex-direction: column; align-items: stretch; gap: 12px; }
+      .dose-actions { width: 100%; }
+      .dose-actions .btn { flex: 1; }
+      .chat-drawer { right: 16px; bottom: 84px; width: calc(100vw - 32px); height: 420px; }
+    }
+
+    @media (max-width: 374px) {
+      .brand-text h1 { font-size: 16px; }
+      .brand-text span { display: none; }
+      .p-stat-card .val { font-size: 20px; }
+      .dose-left { flex-direction: column; align-items: flex-start; gap: 8px; }
+      .time-badge { width: 100%; }
+      .dose-actions { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ================= TOP HEADER NAVBAR ================= -->
+  <header class="site-header">
+    <div class="nav-container">
+      
+      <a href="index.html" class="brand-logo">
+        <div class="logo-icon">+</div>
+        <div class="brand-text">
+          <h1>MediCare</h1>
+          <span>Patient Daily Portal</span>
+        </div>
+      </a>
+
+      <!-- Desktop Links -->
+      <ul class="desktop-nav-links">
+        <li><a href="index.html">Overview</a></li>
+        <li><a href="patient-dashboard.html" class="active">Daily Routine</a></li>
+        <li><a href="medicines.html">My Prescriptions</a></li>
+        <li><a href="caregiver-dashboard.html">Caregiver Hub</a></li>
+      </ul>
+
+      <!-- Desktop SOS Action -->
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <!-- <button class="btn btn-sos" onclick="triggerPatientSOS()">🔴 EMERGENCY SOS</button> -->
+        <button class="btn btn-ghost" onclick="window.location.href='index.html'">Sign Out</button>
+      </div>
+
+      <!-- Mobile Hamburger -->
+      <div class="mobile-actions">
+        <button class="hamburger-btn" id="menuToggle" aria-label="Toggle Menu">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- Mobile Drawer -->
+  <div class="mobile-overlay" id="mobileOverlay"></div>
+  <aside class="mobile-drawer" id="mobileDrawer">
+    <div class="drawer-header">
+      <div class="brand-logo">
+        <div class="logo-icon">+</div>
+        <div class="brand-text"><h1>MediCare</h1></div>
+      </div>
+      <button class="close-btn" id="closeDrawer">&times;</button>
+    </div>
+    <ul class="drawer-links">
+      <li><a href="index.html">🏠 Overview</a></li>
+      <li><a href="patient-dashboard.html" style="color: var(--primary);">🕒 Daily Routine</a></li>
+      <li><a href="medicines.html">💊 My Prescriptions</a></li>
+      <li><a href="caregiver-dashboard.html">🛡️ Caregiver Support</a></li>
+    </ul>
+    <div style="margin-top: auto; padding-top: 14px;">
+      <button class="btn btn-sos" style="width: 100%;" onclick="triggerPatientSOS()">🔴 EMERGENCY SOS</button>
+    </div>
+  </aside>
+
+  <!-- ================= MAIN CONTENT ================= -->
+  <div class="page-wrapper">
+    
+    <!-- Welcome Greeting & Header SOS -->
+    <div class="welcome-bar">
+      <div class="welcome-text">
+        <h2>Namaste, Ramesh Ji! 👋</h2>
+        <p>Today is Thursday, 22 Oct 2026 • 2 Doses pending for today</p>
+      </div>
+      <button class="btn btn-sos" onclick="triggerPatientSOS()">🔴 TAP FOR EMERGENCY (SOS)</button>
+    </div>
+
+    <!-- 4 Stats Cards (Matches /api/dashboard/patient) -->
+    <div class="patient-stats">
+      <div class="p-stat-card">
+        <div class="lbl">Adherence Score</div>
+        <div class="val" id="adherenceVal">88.5%</div>
+        <div class="sub" style="color: var(--success);">🟢 Excellent compliance</div>
+      </div>
+      <div class="p-stat-card">
+        <div class="lbl">Today's Progress</div>
+        <div class="val" id="progressVal">1 / 3 Taken</div>
+        <div class="sub" style="color: var(--primary);">2 upcoming doses</div>
+      </div>
+      <div class="p-stat-card">
+        <div class="lbl">Active Prescriptions</div>
+        <div class="val">3</div>
+        <div class="sub">Under continuous plan</div>
+      </div>
+      <div class="p-stat-card">
+        <div class="lbl">Refill Needed</div>
+        <div class="val" style="color: var(--warning);">1 Med</div>
+        <div class="sub" style="color: var(--warning);">Pan-D (3 pills left)</div>
+      </div>
+    </div>
+
+    <!-- Dashboard Layout: 2 Columns -->
+    <div class="dashboard-layout">
+      
+      <!-- Left Column: Daily Medication Routine -->
+      <div class="routine-container">
+        <div class="routine-header">
+          <h3>Today's Medication Schedule</h3>
+          <span style="font-size: 13px; color: var(--text-muted);">Real-Time Dose Synchronization</span>
+        </div>
+
+        <!-- Dose Card 1: Completed -->
+        <div class="dose-card taken" id="doseCard1">
+          <div class="dose-left">
+            <div class="time-badge">08:00 AM</div>
+            <div class="dose-info">
+              <h4>Metformin 500mg</h4>
+              <p>1 Tablet • Taken at 08:12 AM (After Breakfast)</p>
+            </div>
+          </div>
+          <div class="dose-actions">
+            <span style="color: var(--success); font-weight: 700; font-size: 13.5px;">✅ Completed</span>
+          </div>
+        </div>
+
+        <!-- Dose Card 2: Due Now -->
+        <div class="dose-card due" id="doseCard2">
+          <div class="dose-left">
+            <div class="time-badge" style="background: var(--primary-light); color: var(--primary-dark);">01:30 PM</div>
+            <div class="dose-info">
+              <h4>Pan-D 40mg</h4>
+              <p>1 Capsule • Due Before Lunch (Low Stock: 3 left)</p>
+            </div>
+          </div>
+          <div class="dose-actions">
+            <button class="btn btn-success" onclick="markAsTaken('doseCard2', 'Pan-D 40mg', 102)">✅ Taken</button>
+            <button class="btn btn-snooze" onclick="snoozeDose('doseCard2', 15)">⏳ Snooze 15m</button>
+          </div>
+        </div>
+
+        <!-- Dose Card 3: Upcoming -->
+        <div class="dose-card" id="doseCard3">
+          <div class="dose-left">
+            <div class="time-badge">08:30 PM</div>
+            <div class="dose-info">
+              <h4>Atorvastatin 10mg</h4>
+              <p>1 Tablet • Scheduled After Dinner</p>
+            </div>
+          </div>
+          <div class="dose-actions">
+            <button class="btn btn-success" onclick="markAsTaken('doseCard3', 'Atorvastatin 10mg', 103)">✅ Taken</button>
+            <button class="btn btn-snooze" onclick="snoozeDose('doseCard3', 15)">⏳ Snooze 15m</button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Right Column: Low Stock Alert & Caregiver Contact Card -->
+      <div class="side-panel">
+        
+        <!-- Low Stock Pill Box -->
+        <div class="side-box">
+          <h3>⚠️ Pill Inventory & Refill Alert</h3>
+          <p style="font-size: 12.5px; color: var(--text-muted); margin-bottom: 12px;">Medicines needing purchase soon:</p>
+          
+          <div class="stock-item">
+            <div>
+              <strong>Pan-D 40mg</strong>
+              <div style="font-size: 11.5px; color: var(--text-muted);">Daily: 1 Capsule</div>
+            </div>
+            <span class="badge-pill-low">3 Left (Refill)</span>
+          </div>
+          <div class="stock-item">
+            <div>
+              <strong>Metformin 500mg</strong>
+              <div style="font-size: 11.5px; color: var(--text-muted);">Daily: 1 Tablet</div>
+            </div>
+            <span style="font-size: 12px; color: var(--success); font-weight: 600;">24 Left</span>
+          </div>
+
+          <button class="btn btn-ghost" style="width: 100%; margin-top: 14px; font-size: 12.5px;" onclick="window.location.href='medicines.html'">
+            Manage All Prescriptions →
+          </button>
+        </div>
+
+        <!-- Linked Caregiver Quick Call Box -->
+        <div class="side-box">
+          <h3>🛡️ Connected Caregiver</h3>
+          <p style="font-size: 12.5px; color: var(--text-muted); margin-bottom: 12px;">Your primary caregiver receives missed dose notifications:</p>
+          
+          <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 14px;">
+            <div style="width: 40px; height: 40px; border-radius: 50%; background: #e0f2fe; color: var(--primary); display: flex; align-items: center; justify-content: center; font-weight: 700;">
+              RV
+            </div>
+            <div>
+              <strong style="font-size: 14px;">Rahul Verma (Son)</strong>
+              <div style="font-size: 12px; color: var(--text-muted);">+91 98765-43210</div>
+            </div>
+          </div>
+
+          <a href="tel:+919876543210" class="btn btn-primary" style="width: 100%; font-size: 13px;">📞 Direct Call Caregiver</a>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- ================= FLOATING AI ASSISTANT ================= -->
+  <button class="chat-launcher" id="chatLauncher" onclick="toggleChatDrawer()" title="Ask AI Health Assistant">
+    🤖
+  </button>
+
+  <div class="chat-drawer" id="chatDrawer">
+    <div class="chat-header">
+      <span>MediCare AI Assistant</span>
+      <button style="background:transparent; border:none; color:#fff; font-size:18px; cursor:pointer;" onclick="toggleChatDrawer()">&times;</button>
+    </div>
+    <div class="chat-body" id="chatBody">
+      <div class="chat-msg chat-bot">
+        Hello Ramesh Ji! Main aapka MediCare AI assistant hoon. Kisi dawa ki timing ya side-effect ke baare me sawal poochein.
+      </div>
+    </div>
+    <div class="chat-input-bar">
+      <input type="text" class="chat-input" id="chatInput" placeholder="Sawal poochein..." onkeydown="if(event.key==='Enter') sendChatMessage()">
+      <button class="btn btn-primary" style="padding: 6px 12px;" onclick="sendChatMessage()">Send</button>
+    </div>
+  </div>
+
+  <!-- ================= JAVASCRIPT ================= -->
+  <script>
+    // 1. Mobile Drawer
+    const menuToggle = document.getElementById('menuToggle');
+    const closeDrawer = document.getElementById('closeDrawer');
+    const mobileDrawer = document.getElementById('mobileDrawer');
+    const mobileOverlay = document.getElementById('mobileOverlay');
+
+    function toggleMenu() {
+      mobileDrawer.classList.toggle('active');
+      mobileOverlay.classList.toggle('active');
+      document.body.style.overflow = mobileDrawer.classList.contains('active') ? 'hidden' : '';
+    }
+
+    menuToggle.addEventListener('click', toggleMenu);
+    closeDrawer.addEventListener('click', toggleMenu);
+    mobileOverlay.addEventListener('click', toggleMenu);
+
+    // 2. Mark Dose as Taken (Matches PUT /api/medicinelog/{id}/taken)
+    let takenCount = 1;
+    function markAsTaken(cardId, medName, logId) {
+      const card = document.getElementById(cardId);
+      card.className = 'dose-card taken';
+      
+      const actionArea = card.querySelector('.dose-actions');
+      actionArea.innerHTML = `<span style="color: var(--success); font-weight: 700; font-size: 13.5px;">✅ Completed</span>`;
+      
+      takenCount++;
+      document.getElementById('progressVal').innerText = `${takenCount} / 3 Taken`;
+      document.getElementById('adherenceVal').innerText = "93.4%";
+      
+      alert(`[API CALL: PUT /api/medicinelog/${logId}/taken]\n\n${medName} recorded as taken! Inventory stock decremented.`);
+    }
+
+    // 3. Snooze Dose (Matches PUT /api/medicinelog/{id}/snooze?minutes=15)
+    function snoozeDose(cardId, minutes) {
+      alert(`[API CALL: PUT /api/medicinelog/snooze?minutes=${minutes}]\n\nReminder postponed by ${minutes} minutes. Caregiver timer reset.`);
+    }
+
+    // 4. Emergency SOS Trigger (Matches POST /api/emergency)
+    function triggerPatientSOS() {
+      const confirmation = confirm("🚨 ARE YOU SURE YOU WANT TO TRIGGER AN EMERGENCY SOS ALERT?\n\nThis will send high-priority notifications to all linked caregivers and alert emergency contacts.");
+      if (confirmation) {
+        alert("🚨 EMERGENCY ALERT BROADCASTED!\n\nEmail & App Notifications sent to Rahul Verma (+91 98765-43210).\n[API: POST /api/emergency]");
+      }
+    }
+
+    // 5. AI Chat Assistant (Matches POST /api/chat/ask)
+    const chatDrawer = document.getElementById('chatDrawer');
+    const chatBody = document.getElementById('chatBody');
+    const chatInput = document.getElementById('chatInput');
+
+    function toggleChatDrawer() {
+      chatDrawer.classList.toggle('active');
+    }
+
+    function sendChatMessage() {
+      const query = chatInput.value.trim();
+      if (!query) return;
+
+      // Append User message
+      const userDiv = document.createElement('div');
+      userDiv.className = 'chat-msg chat-user';
+      userDiv.innerText = query;
+      chatBody.appendChild(userDiv);
+      chatInput.value = '';
+      chatBody.scrollTop = chatBody.scrollHeight;
+
+      // Simulate AI response (POST /api/chat/ask)
+      setTimeout(() => {
+        const botDiv = document.createElement('div');
+        botDiv.className = 'chat-msg chat-bot';
+        botDiv.innerText = `MediCare AI: "${query}" ke liye salah: Apni Pan-D 40mg hamesha bhojan se 30 minute pehle lein.`;
+        chatBody.appendChild(botDiv);
+        chatBody.scrollTop = chatBody.scrollHeight;
+      }, 700);
+    }
+  </script>
+
+</body>
+</html>
