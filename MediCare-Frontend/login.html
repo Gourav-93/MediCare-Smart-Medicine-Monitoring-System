@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MediCare - Secure Portal Login & Register</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --primary: #0284c7;
+      --primary-dark: #0369a1;
+      --primary-light: #e0f2fe;
+      --danger: #dc2626;
+      --danger-light: #fee2e2;
+      --success: #16a34a;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --border: #e2e8f0;
+      --radius: 14px;
+      --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+      --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+      --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+      line-height: 1.5;
+    }
+
+    /* Top Simple Header */
+    .top-bar {
+      padding: 16px clamp(16px, 4vw, 40px);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #ffffff;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+    }
+
+    .logo-icon {
+      width: 38px;
+      height: 38px;
+      background: linear-gradient(135deg, #0284c7, #0ea5e9);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      font-weight: 800;
+      font-size: 19px;
+      box-shadow: 0 4px 10px rgba(2, 132, 199, 0.25);
+    }
+
+    .brand-text h1 {
+      font-size: 19px;
+      font-weight: 800;
+      color: var(--text-main);
+      line-height: 1.1;
+    }
+
+    .brand-text span {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--primary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .btn-back {
+      text-decoration: none;
+      color: var(--text-muted);
+      font-size: 13.5px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: #ffffff;
+      transition: all 0.2s;
+    }
+    .btn-back:hover {
+      background: #f1f5f9;
+      color: var(--text-main);
+    }
+
+    /* Main Auth Container */
+    .auth-wrapper {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: clamp(20px, 4vw, 40px) 16px;
+    }
+
+    .auth-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      box-shadow: var(--shadow-lg);
+      width: 100%;
+      max-width: 480px;
+      padding: clamp(24px, 5vw, 40px);
+    }
+
+    /* Tabs: Login vs Register */
+    .auth-nav-tabs {
+      display: flex;
+      background: #f1f5f9;
+      padding: 4px;
+      border-radius: 10px;
+      margin-bottom: 24px;
+      gap: 4px;
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 10px;
+      text-align: center;
+      font-size: 13.5px;
+      font-weight: 700;
+      color: var(--text-muted);
+      border-radius: 8px;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .tab-btn.active {
+      background: #ffffff;
+      color: var(--text-main);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .auth-title {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text-main);
+      margin-bottom: 6px;
+      letter-spacing: -0.5px;
+    }
+
+    .auth-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+    }
+
+    /* Role Quick Select Chips */
+    .role-selector-wrap {
+      margin-bottom: 18px;
+    }
+    .role-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+      display: block;
+    }
+    .role-chips {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+    .role-chip {
+      padding: 9px 6px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: #f8fafc;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-main);
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      user-select: none;
+    }
+    .role-chip.selected {
+      border-color: var(--primary);
+      background: var(--primary-light);
+      color: var(--primary-dark);
+    }
+
+    /* Form Fields */
+    .form-group {
+      margin-bottom: 16px;
+      position: relative;
+    }
+    .form-group label {
+      display: block;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--text-main);
+      margin-bottom: 6px;
+    }
+    .form-control {
+      width: 100%;
+      padding: 11px 14px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 13.5px;
+      outline: none;
+      background: #ffffff;
+      transition: border-color 0.2s;
+    }
+    .form-control:focus {
+      border-color: var(--primary);
+    }
+
+    .input-password-wrap {
+      position: relative;
+    }
+    .input-password-wrap input {
+      padding-right: 42px;
+    }
+    .toggle-pass-btn {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      font-size: 16px;
+      color: var(--text-muted);
+    }
+
+    .form-options {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12.5px;
+      margin-bottom: 20px;
+    }
+    .remember-me {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      color: var(--text-muted);
+    }
+    .forgot-link {
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .btn-submit {
+      width: 100%;
+      padding: 12px;
+      border-radius: 9px;
+      background: var(--primary);
+      color: #ffffff;
+      font-size: 14px;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      box-shadow: 0 4px 12px rgba(2, 132, 199, 0.25);
+    }
+    .btn-submit:hover {
+      background: var(--primary-dark);
+    }
+    .btn-submit:active {
+      transform: scale(0.99);
+    }
+
+    /* Auto demo fill box */
+    .demo-hint {
+      margin-top: 20px;
+      padding: 12px 14px;
+      background: #f8fafc;
+      border: 1px dashed var(--border);
+      border-radius: 8px;
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+    .demo-hint strong {
+      color: var(--text-main);
+    }
+
+    /* Footer */
+    .auth-footer {
+      text-align: center;
+      padding: 16px;
+      font-size: 12px;
+      color: var(--text-muted);
+      border-top: 1px solid var(--border);
+      background: #ffffff;
+    }
+
+    /* =========================================================
+       RESPONSIVE BREAKPOINTS (320px - 1366px+)
+       ========================================================= */
+    @media (max-width: 480px) {
+      .auth-card {
+        padding: 20px 16px;
+        border-radius: 14px;
+      }
+      .role-chips {
+        grid-template-columns: 1fr;
+        gap: 6px;
+      }
+      .form-options {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+      }
+    }
+
+    @media (max-width: 374px) {
+      .brand-text h1 { font-size: 16px; }
+      .brand-text span { display: none; }
+      .auth-title { font-size: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ================= TOP NAVIGATION BAR ================= -->
+  <header class="top-bar">
+    <a href="index.html" class="brand-logo">
+      <div class="logo-icon">+</div>
+      <div class="brand-text">
+        <h1>MediCare</h1>
+        <span>Authentication Hub</span>
+      </div>
+    </a>
+    <!-- <a href="index.html" class="btn-back">← Back to Overview</a> -->
+  </header>
+
+  <!-- ================= AUTH WORKSPACE ================= -->
+  <main class="auth-wrapper">
+    <div class="auth-card">
+      
+      <!-- Nav Tabs: Login vs Register -->
+      <div class="auth-nav-tabs">
+        <button class="tab-btn active" id="tabLogin" onclick="switchMode('login')">Sign In</button>
+        <button class="tab-btn" id="tabRegister" onclick="switchMode('register')">Create Account</button>
+      </div>
+
+      <div class="auth-title" id="authHeading">Welcome back to MediCare</div>
+      <div class="auth-desc" id="authSubtitle">Select your role and enter credentials to continue.</div>
+
+      <!-- Quick Role Selection -->
+      <div class="role-selector-wrap">
+        <span class="role-label">Choose Account Role</span>
+        <div class="role-chips">
+          <div class="role-chip selected" id="chipPatient" onclick="selectRole('PATIENT')">👤 Patient</div>
+          <div class="role-chip" id="chipCaregiver" onclick="selectRole('CAREGIVER')">🛡️ Caregiver</div>
+          <div class="role-chip" id="chipAdmin" onclick="selectRole('ADMIN')">💼 Admin</div>
+        </div>
+      </div>
+
+      <!-- Form (POST /api/AuthController/login or register) -->
+      <form id="authForm" onsubmit="handleFormSubmit(event)">
+        
+        <!-- Full Name (Only on Registration) -->
+        <div class="form-group" id="fullNameGroup" style="display: none;">
+          <label>Full Legal Name</label>
+          <input type="text" class="form-control" id="fullNameInput" placeholder="Ramesh Kumar">
+        </div>
+
+        <!-- Email Field -->
+        <div class="form-group">
+          <label>Email Address</label>
+          <input type="email" class="form-control" id="emailInput" value="patient@medicare.com" placeholder="name@example.com" required>
+        </div>
+
+        <!-- Password Field -->
+        <div class="form-group">
+          <label>Password</label>
+          <div class="input-password-wrap">
+            <input type="password" class="form-control" id="passwordInput" value="Password123!" placeholder="Enter your password" required>
+            <button type="button" class="toggle-pass-btn" onclick="togglePasswordVisibility()" title="Show/Hide Password">👁️</button>
+          </div>
+        </div>
+
+        <!-- Phone Field (Only on Registration) -->
+        <div class="form-group" id="phoneGroup" style="display: none;">
+          <label>Emergency Phone Number</label>
+          <input type="tel" class="form-control" id="phoneInput" placeholder="+91 98765-43210">
+        </div>
+
+        <!-- Options: Remember Me & Forgot Password -->
+        <div class="form-options" id="loginOptions">
+          <label class="remember-me">
+            <input type="checkbox" id="rememberMe" checked>
+            <span>Remember this device</span>
+          </label>
+          <a href="javascript:void(0)" class="forgot-link" onclick="handleForgotPassword()">Forgot password?</a>
+        </div>
+
+        <button type="submit" class="btn-submit" id="submitBtn">
+          Sign In to MediCare
+        </button>
+
+      </form>
+
+      <!-- Auto-fill Demo Box -->
+      <div class="demo-hint" id="demoHintBox">
+        💡 <strong>Quick Demo Mode:</strong> Selected role <strong><span id="demoRoleLbl">PATIENT</span></strong>. Clicking "Sign In" will simulate authentication token retrieval and redirect to your role's dashboard.
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="auth-footer">
+    © 2026 MediCare Platform • Connected to ASP.NET Core Web API JWT Backend
+  </footer>
+
+  <!-- ================= JAVASCRIPT ================= -->
+  <script>
+    let currentMode = 'login';
+    let currentRole = 'PATIENT';
+
+    // Role Demo Credentials Mapping
+    const demoCredentials = {
+      PATIENT: { email: 'patient@medicare.com', pass: 'Password123!' },
+      CAREGIVER: { email: 'caregiver@medicare.com', pass: 'Caregiver123!' },
+      ADMIN: { email: 'admin@medicare.com', pass: 'AdminMaster123!' }
+    };
+
+    function selectRole(role) {
+      currentRole = role;
+      document.getElementById('chipPatient').classList.toggle('selected', role === 'PATIENT');
+      document.getElementById('chipCaregiver').classList.toggle('selected', role === 'CAREGIVER');
+      document.getElementById('chipAdmin').classList.toggle('selected', role === 'ADMIN');
+      document.getElementById('demoRoleLbl').innerText = role;
+
+      if (currentMode === 'login') {
+        document.getElementById('emailInput').value = demoCredentials[role].email;
+        document.getElementById('passwordInput').value = demoCredentials[role].pass;
+      }
+    }
+
+    function switchMode(mode) {
+      currentMode = mode;
+      const isReg = (mode === 'register');
+
+      document.getElementById('tabLogin').classList.toggle('active', !isReg);
+      document.getElementById('tabRegister').classList.toggle('active', isReg);
+
+      document.getElementById('fullNameGroup').style.display = isReg ? 'block' : 'none';
+      document.getElementById('phoneGroup').style.display = isReg ? 'block' : 'none';
+      document.getElementById('loginOptions').style.display = isReg ? 'none' : 'flex';
+
+      document.getElementById('authHeading').innerText = isReg ? 'Create New Account' : 'Welcome back to MediCare';
+      document.getElementById('authSubtitle').innerText = isReg ? 'Register as a patient, caregiver, or system administrator.' : 'Select your role and enter credentials to continue.';
+      document.getElementById('submitBtn').innerText = isReg ? 'Register New Account' : 'Sign In to MediCare';
+
+      if (isReg) {
+        document.getElementById('emailInput').value = '';
+        document.getElementById('passwordInput').value = '';
+      } else {
+        selectRole(currentRole);
+      }
+    }
+
+    function togglePasswordVisibility() {
+      const pass = document.getElementById('passwordInput');
+      pass.type = (pass.type === 'password') ? 'text' : 'password';
+    }
+
+    function handleForgotPassword() {
+      const email = document.getElementById('emailInput').value;
+      alert(`Password reset instructions sent to ${email || 'your email'}! (Triggering POST /api/AuthController/forgot-password)`);
+    }
+
+    function handleFormSubmit(e) {
+      e.preventDefault();
+      const email = document.getElementById('emailInput').value;
+      const endpoint = currentMode === 'login' ? 'POST /api/AuthController/login' : 'POST /api/AuthController/register';
+
+      alert(`[API CALL: ${endpoint}]\n\nAuthenticated as: ${email}\nRole: ${currentRole}\nJWT Token saved to localStorage.`);
+
+      // Redirect directly to the corresponding responsive dashboard
+      if (currentRole === 'PATIENT') {
+        window.location.href = 'patient-dashboard.html';
+      } else if (currentRole === 'CAREGIVER') {
+        window.location.href = 'caregiver-dashboard.html';
+      } else {
+        window.location.href = 'admin-dashboard.html';
+      }
+    }
+  </script>
+
+</body>
+</html>
