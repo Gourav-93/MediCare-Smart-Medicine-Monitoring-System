@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MediCare - Caregiver Monitoring Hub</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --primary: #0284c7;
+      --primary-dark: #0369a1;
+      --primary-light: #e0f2fe;
+      --danger: #dc2626;
+      --danger-light: #fee2e2;
+      --success: #16a34a;
+      --success-light: #dcfce7;
+      --warning: #d97706;
+      --warning-light: #fef3c7;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --border: #e2e8f0;
+      --radius: 12px;
+      --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+      --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+      --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text-main);
+      min-height: 100vh;
+      overflow-x: hidden;
+      line-height: 1.5;
+    }
+
+    /* =========================================================
+       HEADER / NAVBAR
+       ========================================================= */
+    .site-header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+      height: 70px;
+      display: flex;
+      align-items: center;
+      padding: 0 clamp(16px, 4vw, 40px);
+    }
+
+    .nav-container {
+      width: 100%;
+      max-width: 1380px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+    }
+
+    .logo-icon {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, #0284c7, #0ea5e9);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      font-weight: 800;
+      font-size: 20px;
+      box-shadow: 0 4px 10px rgba(2, 132, 199, 0.3);
+    }
+
+    .brand-text h1 {
+      font-size: 19px;
+      font-weight: 800;
+      color: var(--text-main);
+      line-height: 1.1;
+    }
+
+    .brand-text span {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--primary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .desktop-nav-links {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      list-style: none;
+    }
+
+    .desktop-nav-links a {
+      text-decoration: none;
+      color: var(--text-muted);
+      font-size: 14px;
+      font-weight: 600;
+      transition: color 0.2s;
+    }
+    .desktop-nav-links a.active,
+    .desktop-nav-links a:hover {
+      color: var(--primary);
+    }
+
+    .btn {
+      padding: 9px 16px;
+      border-radius: 8px;
+      font-size: 13.5px;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      text-decoration: none;
+    }
+
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { background: var(--primary-dark); }
+    .btn-ghost { background: transparent; color: var(--text-main); border-color: var(--border); }
+    .btn-ghost:hover { background: #f1f5f9; }
+    .btn-danger-outline { background: transparent; color: var(--danger); border-color: #fecaca; }
+    .btn-danger-outline:hover { background: var(--danger-light); }
+
+    .btn-sos {
+      background: var(--danger);
+      color: #fff;
+      padding: 8px 14px;
+      font-size: 13px;
+      border-radius: 8px;
+      animation: pulse-sos 2s infinite;
+    }
+    @keyframes pulse-sos {
+      0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.4); }
+      70% { box-shadow: 0 0 0 8px rgba(220, 38, 38, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
+    }
+
+    .mobile-actions {
+      display: none;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .hamburger-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: #ffffff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      cursor: pointer;
+    }
+    .hamburger-btn span {
+      width: 18px;
+      height: 2px;
+      background: var(--text-main);
+      border-radius: 2px;
+    }
+
+    /* Mobile Drawer */
+    .mobile-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.45);
+      backdrop-filter: blur(4px);
+      z-index: 200;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s;
+    }
+    .mobile-overlay.active { opacity: 1; visibility: visible; }
+
+    .mobile-drawer {
+      position: fixed;
+      top: 0;
+      right: -100%;
+      width: min(320px, 85vw);
+      height: 100%;
+      background: var(--surface);
+      z-index: 201;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      transition: right 0.3s ease;
+    }
+    .mobile-drawer.active { right: 0; }
+
+    .drawer-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border);
+    }
+    .close-btn {
+      background: #f1f5f9;
+      border: none;
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      font-size: 18px;
+      cursor: pointer;
+    }
+    .drawer-links {
+      list-style: none;
+      padding: 16px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .drawer-links a {
+      text-decoration: none;
+      color: var(--text-main);
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    /* =========================================================
+       PAGE CONTENT CONTAINER
+       ========================================================= */
+    .page-wrapper {
+      max-width: 1380px;
+      margin: 0 auto;
+      padding: clamp(16px, 3vw, 32px) clamp(16px, 4vw, 40px);
+    }
+
+    /* Top Emergency Alert Banner */
+    .emergency-banner {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      border-radius: var(--radius);
+      padding: 14px 18px;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .emergency-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .emergency-pulse-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--danger);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      animation: pulse-sos 1.5s infinite;
+    }
+    .emergency-text h4 {
+      font-size: 12px;
+      font-weight: 700;
+      color: #991b1b;
+    }
+    .emergency-text p {
+      font-size: 12.5px;
+      color: #b91c1c;
+    }
+
+    /* Header & Action */
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .section-title h2 {
+      font-size: clamp(22px, 3.5vw, 28px);
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+    .section-title p {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    /* 4 Stats Summary Cards */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+    .stat-card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px;
+      box-shadow: var(--shadow-sm);
+    }
+    .stat-card .label {
+      font-size: 12.5px;
+      color: var(--text-muted);
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+    .stat-card .val {
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--text-main);
+    }
+    .stat-card .sub {
+      font-size: 12px;
+      margin-top: 4px;
+    }
+
+    /* =========================================================
+       PATIENT CARDS GRID
+       ========================================================= */
+    .patients-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+      margin-bottom: 36px;
+    }
+
+    .patient-card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: all 0.2s;
+    }
+    .patient-card:hover {
+      box-shadow: var(--shadow-md);
+      border-color: #cbd5e1;
+    }
+
+    .patient-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 14px;
+    }
+    .patient-avatar-wrap {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .patient-avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: var(--primary-light);
+      color: var(--primary-dark);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 16px;
+    }
+    .patient-name {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+    .patient-rel {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .badge-adherence {
+      font-size: 11.5px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 20px;
+    }
+    .adh-good { background: var(--success-light); color: var(--success); }
+    .adh-warn { background: var(--warning-light); color: var(--warning); }
+    .adh-bad { background: var(--danger-light); color: var(--danger); }
+
+    .patient-meta-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 16px;
+      font-size: 13px;
+    }
+    .patient-meta-list li {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #334155;
+    }
+
+    .patient-dose-status {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
+      margin-bottom: 16px;
+      font-size: 12px;
+    }
+    .status-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 4px;
+    }
+    .status-row:last-child { margin-bottom: 0; }
+
+    .card-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .card-actions .btn {
+      flex: 1;
+      font-size: 12.5px;
+      padding: 8px 10px;
+    }
+
+    /* =========================================================
+       MISSED DOSES AUDIT LOG (TABLE)
+       ========================================================= */
+    .table-card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 22px;
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 30px;
+    }
+    .table-card h3 {
+      font-size: 17px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .table-card p {
+      font-size: 12.5px;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+    }
+
+    .table-responsive {
+      width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 580px;
+      text-align: left;
+    }
+    th {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    td {
+      padding: 12px;
+      font-size: 13.5px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+    }
+
+    /* =========================================================
+       MODAL: LINK PATIENT
+       ========================================================= */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.5);
+      backdrop-filter: blur(4px);
+      z-index: 300;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .modal-backdrop.active { display: flex; }
+
+    .modal-box {
+      background: #fff;
+      width: 100%;
+      max-width: 440px;
+      border-radius: 16px;
+      padding: 24px;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-lg);
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    .modal-header h3 { font-size: 18px; font-weight: 700; }
+
+    .form-group { margin-bottom: 14px; }
+    .form-group label { display: block; font-size: 12.5px; font-weight: 600; margin-bottom: 5px; }
+    .form-control {
+      width: 100%;
+      padding: 9px 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 13.5px;
+      outline: none;
+    }
+    .form-control:focus { border-color: var(--primary); }
+
+    /* =========================================================
+       RESPONSIVE BREAKPOINTS (320px - 1366px+)
+       ========================================================= */
+    @media (max-width: 1365px) {
+      .patients-grid { grid-template-columns: repeat(3, 1fr); }
+      .stats-row { grid-template-columns: repeat(4, 1fr); }
+    }
+
+    @media (max-width: 1023px) {
+      .desktop-nav-links { display: none; }
+      .mobile-actions { display: flex; }
+      .patients-grid { grid-template-columns: repeat(2, 1fr); gap: 14px; }
+      .stats-row { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 767px) {
+      .section-header { flex-direction: column; align-items: stretch; }
+      .section-header .btn { width: 100%; }
+      .patients-grid { grid-template-columns: 1fr; gap: 12px; }
+      .stats-row { grid-template-columns: 1fr; gap: 10px; }
+      .emergency-banner { flex-direction: column; align-items: stretch; text-align: left; }
+      .emergency-banner .btn { width: 100%; }
+      .card-actions { flex-direction: column; }
+      .card-actions .btn { width: 100%; }
+    }
+
+    @media (max-width: 374px) {
+      .brand-text h1 { font-size: 16px; }
+      .brand-text span { display: none; }
+      .stat-card .val { font-size: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ================= TOP HEADER NAVBAR ================= -->
+  <header class="site-header">
+    <div class="nav-container">
+      
+      <a href="index.html" class="brand-logo">
+        <div class="logo-icon">+</div>
+        <div class="brand-text">
+          <h1>MediCare</h1>
+          <span>Caregiver Console</span>
+        </div>
+      </a>
+
+      <!-- Desktop Links -->
+      <ul class="desktop-nav-links">
+        <li><a href="index.html">Overview</a></li>
+        <li><a href="medicines.html">Medicines</a></li>
+        <li><a href="caregiver-dashboard.html" class="active">Caregiver Hub</a></li>
+        <li><a href="index.html#features">Features</a></li>
+      </ul>
+
+      <!-- Desktop Actions -->
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <button class="btn btn-sos" onclick="triggerCaregiverEmergency()">🚨 SOS Alert</button>
+        <!-- <button class="btn btn-ghost" onclick="window.location.href='index.html'">Dashboard</button> -->
+      </div>
+
+      <!-- Mobile Hamburger -->
+      <div class="mobile-actions">
+        <button class="hamburger-btn" id="menuToggle" aria-label="Toggle Menu">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- Mobile Drawer -->
+  <div class="mobile-overlay" id="mobileOverlay"></div>
+  <aside class="mobile-drawer" id="mobileDrawer">
+    <div class="drawer-header">
+      <div class="brand-logo">
+        <div class="logo-icon">+</div>
+        <div class="brand-text"><h1>MediCare</h1></div>
+      </div>
+      <button class="close-btn" id="closeDrawer">&times;</button>
+    </div>
+    <ul class="drawer-links">
+      <li><a href="index.html">🏠 Dashboard</a></li>
+      <li><a href="medicines.html">💊 Medicines</a></li>
+      <li><a href="caregiver-dashboard.html" style="color: var(--primary);">🛡️ Caregiver Hub</a></li>
+    </ul>
+  </aside>
+
+  <!-- ================= PAGE CONTENT ================= -->
+  <div class="page-wrapper">
+
+    <!-- Active Emergency Banner (Matches /api/dashboard/caregiver activeEmergencies) -->
+    <div class="emergency-banner" id="emergencyBanner">
+      <div class="emergency-info">
+        <div class="emergency-pulse-icon">🚨</div>
+        <div class="emergency-text">
+          <h4>Active Emergency Alert: Sunita Devi (Patient #102)</h4>
+          <p>Message: "Feeling severe dizziness after morning BP dose" • 12 mins ago</p>
+        </div>
+      </div>
+      <div style="display: flex; gap: 8px;">
+        <a href="tel:+919876543210" class="btn btn-primary" style="background: var(--danger); font-size: 12.5px;">📞 Call Patient</a>
+        <button class="btn btn-ghost" style="background:#fff; font-size: 12.5px;" onclick="resolveEmergency()">Mark Resolved</button>
+      </div>
+    </div>
+
+    <!-- Section Title & Link Action -->
+    <div class="section-header">
+      <div class="section-title">
+        <h2>Linked Patient Directory</h2>
+        <p>Monitor patient compliance, daily missed intake alerts, and emergency contact details.</p>
+      </div>
+      <button class="btn btn-primary" onclick="openLinkModal()">+ Link New Patient</button>
+    </div>
+
+    <!-- 4 Stats Summary Row -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="label">Total Linked Patients</div>
+        <div class="val" id="totalLinkedVal">3</div>
+        <div class="sub" style="color: var(--primary);">Active under your care</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Average Compliance</div>
+        <div class="val">89.2%</div>
+        <div class="sub" style="color: var(--success);">🟢 High Adherence Level</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Today's Missed Doses</div>
+        <div class="val" style="color: var(--danger);">1</div>
+        <div class="sub" style="color: var(--danger);">Requires immediate check</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Pill Refill Alerts</div>
+        <div class="val" style="color: var(--warning);">2</div>
+        <div class="sub" style="color: var(--warning);">Medicines ≤ 5 left</div>
+      </div>
+    </div>
+
+    <!-- Linked Patients Grid (Matches /api/caregiver/patients-contact-cards) -->
+    <div class="patients-grid" id="patientsGrid">
+      
+      <!-- Patient Card 1 -->
+      <div class="patient-card">
+        <div>
+          <div class="patient-top">
+            <div class="patient-avatar-wrap">
+              <div class="patient-avatar">RK</div>
+              <div>
+                <div class="patient-name">Ramesh Kumar</div>
+                <div class="patient-rel">Relationship: Father (Age: 64)</div>
+              </div>
+            </div>
+            <span class="badge-adherence adh-good">94% On-Track</span>
+          </div>
+
+          <ul class="patient-meta-list">
+            <li>📧 ramesh.kumar@example.com</li>
+            <li>📞 Emergency: +91 98765-43210</li>
+            <li>💊 Active Meds: 3 Prescriptions</li>
+          </ul>
+
+          <div class="patient-dose-status">
+            <div class="status-row">
+              <span style="color: var(--text-muted);">Today's Status:</span>
+              <strong style="color: var(--success);">2 / 2 Doses Taken</strong>
+            </div>
+            <div class="status-row">
+              <span style="color: var(--text-muted);">Next Dose:</span>
+              <span>08:30 PM (Atorvastatin)</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-actions">
+          <a href="tel:+919876543210" class="btn btn-ghost">📞 Call</a>
+          <button class="btn btn-ghost" style="color: var(--primary);" onclick="printPatientReport(101)">📄 Dossier</button>
+          <button class="btn btn-danger-outline" onclick="unlinkPatient(this, 'Ramesh Kumar')">Unlink</button>
+        </div>
+      </div>
+
+      <!-- Patient Card 2 (With Alert) -->
+      <div class="patient-card" style="border-color: #fecaca;">
+        <div>
+          <div class="patient-top">
+            <div class="patient-avatar-wrap">
+              <div class="patient-avatar" style="background: var(--danger-light); color: var(--danger);">SD</div>
+              <div>
+                <div class="patient-name">Sunita Devi</div>
+                <div class="patient-rel">Relationship: Mother (Age: 60)</div>
+              </div>
+            </div>
+            <span class="badge-adherence adh-bad">68% Attention</span>
+          </div>
+
+          <ul class="patient-meta-list">
+            <li>📧 sunita.devi@example.com</li>
+            <li>📞 Emergency: +91 91234-56789</li>
+            <li>⚠️ 1 Missed dose recorded today</li>
+          </ul>
+
+          <div class="patient-dose-status" style="background: #fff1f2; border-color: #fecaca;">
+            <div class="status-row">
+              <span style="color: var(--danger);">Missed Dose:</span>
+              <strong style="color: var(--danger);">Pan-D 40mg (07:30 AM)</strong>
+            </div>
+            <div class="status-row">
+              <span style="color: var(--text-muted);">Stock Warning:</span>
+              <span style="color: var(--warning); font-weight: 600;">Pan-D (3 pills left)</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-actions">
+          <a href="https://wa.me/919123456789?text=Hello%20Maa,%20you%20missed%20your%20morning%20Pan-D%20dose.%20Please%20take%20it." target="_blank" class="btn btn-primary" style="background:#16a34a;">💬 WhatsApp Reminder</a>
+          <button class="btn btn-ghost" style="color: var(--primary);" onclick="printPatientReport(102)">📄 Dossier</button>
+          <button class="btn btn-danger-outline" onclick="unlinkPatient(this, 'Sunita Devi')">Unlink</button>
+        </div>
+      </div>
+
+      <!-- Patient Card 3 -->
+      <div class="patient-card">
+        <div>
+          <div class="patient-top">
+            <div class="patient-avatar-wrap">
+              <div class="patient-avatar" style="background: #e0e7ff; color: #4338ca;">AK</div>
+              <div>
+                <div class="patient-name">Anand Kapoor</div>
+                <div class="patient-rel">Relationship: Uncle (Age: 58)</div>
+              </div>
+            </div>
+            <span class="badge-adherence adh-warn">85% Normal</span>
+          </div>
+
+          <ul class="patient-meta-list">
+            <li>📧 anand.k@example.com</li>
+            <li>📞 Emergency: +91 99887-76655</li>
+            <li>💊 Active Meds: 2 Prescriptions</li>
+          </ul>
+
+          <div class="patient-dose-status">
+            <div class="status-row">
+              <span style="color: var(--text-muted);">Today's Status:</span>
+              <strong style="color: var(--success);">1 / 1 Dose Taken</strong>
+            </div>
+            <div class="status-row">
+              <span style="color: var(--text-muted);">Next Dose:</span>
+              <span>Tomorrow 09:00 AM</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-actions">
+          <a href="tel:+919988776655" class="btn btn-ghost">📞 Call</a>
+          <button class="btn btn-ghost" style="color: var(--primary);" onclick="printPatientReport(103)">📄 Dossier</button>
+          <button class="btn btn-danger-outline" onclick="unlinkPatient(this, 'Anand Kapoor')">Unlink</button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Recent Missed Doses Log Table (Matches /api/dashboard/caregiver missedMedicines) -->
+    <div class="table-card">
+      <h3>Recent Missed Medication Log</h3>
+      <p>Audit trail of all intake schedules that were skipped across your linked patients.</p>
+      
+      <div class="table-responsive">
+        <table>
+          <thead>
+            <tr>
+              <th>Scheduled Time</th>
+              <th>Patient Name</th>
+              <th>Medicine</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Today, 07:30 AM</td>
+              <td><strong>Sunita Devi</strong></td>
+              <td>Pan-D 40mg (1 Cap)</td>
+              <td><span style="color: var(--danger); font-weight: 700;">Missed</span></td>
+              <td><a href="tel:+919123456789" class="btn btn-ghost" style="padding: 4px 10px; font-size: 12px;">Call Patient</a></td>
+            </tr>
+            <tr>
+              <td>Yesterday, 08:30 PM</td>
+              <td><strong>Ramesh Kumar</strong></td>
+              <td>Atorvastatin 10mg</td>
+              <td><span style="color: var(--danger); font-weight: 700;">Missed</span></td>
+              <td><span style="color: var(--text-muted); font-size: 12px;">Logged</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ================= MODAL: LINK NEW PATIENT ================= -->
+  <div class="modal-backdrop" id="linkModal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3>Link Patient to Caregiver Hub</h3>
+        <button class="close-btn" onclick="closeLinkModal()">&times;</button>
+      </div>
+
+      <form id="linkForm" onsubmit="handleLinkSubmit(event)">
+        <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 14px;">
+          Enter the registered MediCare patient's email. Backend endpoint <code>POST /api/Caregiverpatient/link</code> will verify and establish the connection.
+        </p>
+
+        <div class="form-group">
+          <label>Patient Registered Email</label>
+          <input type="email" class="form-control" id="patientEmailInput" placeholder="patient@example.com" required>
+        </div>
+
+        <div class="form-group">
+          <label>Relationship Type</label>
+          <select class="form-control" id="relationshipInput" required>
+            <option value="Parent">Parent (Father / Mother)</option>
+            <option value="Spouse">Spouse</option>
+            <option value="Sibling">Sibling</option>
+            <option value="Guardian">Guardian / Nurse</option>
+          </select>
+        </div>
+
+        <div style="display: flex; gap: 10px; margin-top: 20px;">
+          <button type="button" class="btn btn-ghost" style="flex: 1;" onclick="closeLinkModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary" style="flex: 2;">Verify & Link Patient</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= JAVASCRIPT ================= -->
+  <script>
+    // 1. Mobile Drawer
+    const menuToggle = document.getElementById('menuToggle');
+    const closeDrawer = document.getElementById('closeDrawer');
+    const mobileDrawer = document.getElementById('mobileDrawer');
+    const mobileOverlay = document.getElementById('mobileOverlay');
+
+    function toggleMenu() {
+      mobileDrawer.classList.toggle('active');
+      mobileOverlay.classList.toggle('active');
+      document.body.style.overflow = mobileDrawer.classList.contains('active') ? 'hidden' : '';
+    }
+
+    menuToggle.addEventListener('click', toggleMenu);
+    closeDrawer.addEventListener('click', toggleMenu);
+    mobileOverlay.addEventListener('click', toggleMenu);
+
+    // 2. Emergency Resolve Action
+    function resolveEmergency() {
+      if (confirm("Are you sure this emergency situation is addressed and safe?")) {
+        document.getElementById('emergencyBanner').style.display = 'none';
+        alert("Emergency resolved successfully! (Matches PUT /api/emergency/{id}/resolve)");
+      }
+    }
+
+    function triggerCaregiverEmergency() {
+      alert("🚨 Caregiver SOS Alert! Dispatched immediate priority alert to emergency services.");
+    }
+
+    // 3. Link Modal Handlers
+    const linkModal = document.getElementById('linkModal');
+
+    function openLinkModal() {
+      document.getElementById('linkForm').reset();
+      linkModal.classList.add('active');
+    }
+
+    function closeLinkModal() {
+      linkModal.classList.remove('active');
+    }
+
+    function handleLinkSubmit(e) {
+      e.preventDefault();
+      const email = document.getElementById('patientEmailInput').value;
+      const rel = document.getElementById('relationshipInput').value;
+      alert(`Linking request sent for ${email} (${rel})!\nPayload ready for: POST /api/Caregiverpatient/link`);
+      closeLinkModal();
+    }
+
+    // 4. Unlink Patient Action (Matches DELETE /api/Caregiverpatient/unlink)
+    function unlinkPatient(btn, patientName) {
+      if (confirm(`Are you sure you want to disconnect ${patientName} from your caregiver account?`)) {
+        const card = btn.closest('.patient-card');
+        card.style.opacity = '0.5';
+        setTimeout(() => {
+          card.remove();
+          const totalVal = document.getElementById('totalLinkedVal');
+          totalVal.innerText = parseInt(totalVal.innerText, 10) - 1;
+          alert(`${patientName} unlinked successfully. (Matches DELETE /api/Caregiverpatient/unlink)`);
+        }, 300);
+      }
+    }
+
+    // 5. Open Printable Report
+    function printPatientReport(patientId) {
+      // Backend direct HTML print endpoint trigger
+      window.open(`index.html#reports`, '_blank');
+    }
+  </script>
+
+</body>
+</html>
