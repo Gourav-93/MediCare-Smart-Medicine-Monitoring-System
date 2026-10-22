@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MediCare - Medicine Intake History</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --primary: #0284c7;
+      --primary-dark: #0369a1;
+      --primary-light: #e0f2fe;
+      --danger: #dc2626;
+      --danger-light: #fee2e2;
+      --success: #16a34a;
+      --success-light: #dcfce7;
+      --warning: #d97706;
+      --warning-light: #fef3c7;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --border: #e2e8f0;
+      --radius: 12px;
+      --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+      --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text-main);
+      min-height: 100vh;
+      overflow-x: hidden;
+      line-height: 1.5;
+    }
+
+    /* Header */
+    .site-header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+      height: 70px;
+      display: flex;
+      align-items: center;
+      padding: 0 clamp(16px, 4vw, 40px);
+    }
+
+    .nav-container {
+      width: 100%;
+      max-width: 1380px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+    }
+
+    .logo-icon {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, #0284c7, #0ea5e9);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      font-weight: 800;
+      font-size: 20px;
+    }
+
+    .brand-text h1 {
+      font-size: 19px;
+      font-weight: 800;
+      color: var(--text-main);
+      line-height: 1.1;
+    }
+
+    .brand-text span {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--primary);
+      text-transform: uppercase;
+    }
+
+    .desktop-nav-links {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      list-style: none;
+    }
+
+    .desktop-nav-links a {
+      text-decoration: none;
+      color: var(--text-muted);
+      font-size: 14px;
+      font-weight: 600;
+    }
+    .desktop-nav-links a.active { color: var(--primary); }
+
+    .btn {
+      padding: 9px 16px;
+      border-radius: 8px;
+      font-size: 13.5px;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid transparent;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+    }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-ghost { background: transparent; color: var(--text-main); border-color: var(--border); }
+    .btn-ghost:hover { background: #f1f5f9; }
+
+    /* Mobile Controls */
+    .mobile-actions { display: none; }
+    .hamburger-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: #ffffff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      cursor: pointer;
+    }
+    .hamburger-btn span {
+      width: 18px;
+      height: 2px;
+      background: var(--text-main);
+    }
+
+    /* Mobile Drawer */
+    .mobile-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.45);
+      backdrop-filter: blur(4px);
+      z-index: 200;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s;
+    }
+    .mobile-overlay.active { opacity: 1; visibility: visible; }
+
+    .mobile-drawer {
+      position: fixed;
+      top: 0;
+      right: -100%;
+      width: min(320px, 85vw);
+      height: 100%;
+      background: var(--surface);
+      z-index: 201;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      transition: right 0.3s;
+    }
+    .mobile-drawer.active { right: 0; }
+
+    /* Page Container */
+    .page-wrapper {
+      max-width: 1380px;
+      margin: 0 auto;
+      padding: clamp(16px, 3vw, 32px) clamp(16px, 4vw, 40px);
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .section-title h2 {
+      font-size: clamp(22px, 3.5vw, 28px);
+      font-weight: 800;
+    }
+    .section-title p {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    /* 4 Summary Stats */
+    .history-stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .h-stat-card {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      box-shadow: var(--shadow-sm);
+    }
+    .h-stat-card .lbl { font-size: 12px; color: var(--text-muted); font-weight: 600; }
+    .h-stat-card .val { font-size: 24px; font-weight: 800; color: var(--text-main); margin-top: 4px; }
+
+    /* Filter Controls Card */
+    .filter-card {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      margin-bottom: 20px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .filter-left {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      flex: 1;
+      min-width: 280px;
+    }
+    .form-control {
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 13px;
+      outline: none;
+      background: #fff;
+    }
+    .form-control:focus { border-color: var(--primary); }
+
+    .status-tabs {
+      display: flex;
+      background: #f1f5f9;
+      padding: 3px;
+      border-radius: 8px;
+      gap: 3px;
+      flex-wrap: wrap;
+    }
+    .tab-item {
+      padding: 6px 12px;
+      border: none;
+      background: transparent;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .tab-item.active {
+      background: #ffffff;
+      color: var(--text-main);
+      box-shadow: var(--shadow-sm);
+    }
+
+    /* History Table */
+    .table-card {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      box-shadow: var(--shadow-sm);
+    }
+    .table-responsive {
+      width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 600px;
+      font-size: 13px;
+    }
+    th, td {
+      padding: 12px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+    }
+    th {
+      font-size: 11.5px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      font-weight: 700;
+      background: #f8fafc;
+    }
+
+    .badge-status {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-weight: 700;
+      font-size: 11px;
+    }
+    .status-taken { background: var(--success-light); color: var(--success); }
+    .status-missed { background: var(--danger-light); color: var(--danger); }
+    .status-pending { background: var(--warning-light); color: var(--warning); }
+
+    /* =========================================================
+       RESPONSIVE BREAKPOINTS (320px - 1366px+)
+       ========================================================= */
+    @media (max-width: 1023px) {
+      .desktop-nav-links { display: none; }
+      .mobile-actions { display: flex; }
+      .history-stats { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 767px) {
+      .section-header { flex-direction: column; align-items: stretch; }
+      .filter-card { flex-direction: column; align-items: stretch; }
+      .filter-left { flex-direction: column; min-width: 100%; }
+      .status-tabs { width: 100%; }
+      .tab-item { flex: 1; text-align: center; }
+      .history-stats { grid-template-columns: 1fr; gap: 10px; }
+    }
+
+    @media (max-width: 374px) {
+      .brand-text h1 { font-size: 16px; }
+      .brand-text span { display: none; }
+      .h-stat-card .val { font-size: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ================= HEADER NAVBAR ================= -->
+  <header class="site-header">
+    <div class="nav-container">
+      
+      <a href="index.html" class="brand-logo">
+        <div class="logo-icon">+</div>
+        <div class="brand-text">
+          <h1>MediCare</h1>
+          <span>Intake History</span>
+        </div>
+      </a>
+
+      <!-- Desktop Links -->
+      <ul class="desktop-nav-links">
+        <li><a href="index.html">Overview</a></li>
+        <li><a href="patient-dashboard.html">Routine</a></li>
+        <li><a href="medicines.html">Medicines</a></li>
+        <li><a href="history.html" class="active">History Log</a></li>
+        <li><a href="print-report.html">Report</a></li>
+      </ul>
+
+      <div style="display: flex; gap: 10px;">
+        <!-- <button class="btn btn-ghost" onclick="window.location.href='patient-dashboard.html'">Back to Routine</button> -->
+      </div>
+
+      <!-- Mobile Hamburger -->
+      <div class="mobile-actions">
+        <button class="hamburger-btn" id="menuToggle" aria-label="Toggle Menu">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- Mobile Drawer -->
+  <div class="mobile-overlay" id="mobileOverlay"></div>
+  <aside class="mobile-drawer" id="mobileDrawer">
+    <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 14px; border-bottom: 1px solid var(--border);">
+      <div class="brand-logo">
+        <div class="logo-icon">+</div>
+        <div class="brand-text"><h1>MediCare</h1></div>
+      </div>
+      <button style="background:#f1f5f9; border:none; width:34px; height:34px; border-radius:8px; font-size:18px;" id="closeDrawer">&times;</button>
+    </div>
+    <ul style="list-style:none; padding:16px 0; display:flex; flex-direction:column; gap:14px;">
+      <li><a href="index.html" style="text-decoration:none; color:var(--text-main); font-weight:600;">🏠 Overview</a></li>
+      <li><a href="patient-dashboard.html" style="text-decoration:none; color:var(--text-main); font-weight:600;">🕒 Today Routine</a></li>
+      <li><a href="medicines.html" style="text-decoration:none; color:var(--text-main); font-weight:600;">💊 Prescriptions</a></li>
+      <li><a href="history.html" style="text-decoration:none; color:var(--primary); font-weight:600;">📋 Intake History</a></li>
+      <li><a href="print-report.html" style="text-decoration:none; color:var(--text-main); font-weight:600;">📄 Print Dossier</a></li>
+    </ul>
+  </aside>
+
+  <!-- ================= MAIN CONTENT ================= -->
+  <div class="page-wrapper">
+    
+    <div class="section-header">
+      <div class="section-title">
+        <h2>Medication Intake Audit Trail</h2>
+        <p>Complete historical log of scheduled times, actual intake confirmations, and snoozes.</p>
+      </div>
+      <button class="btn btn-primary" onclick="window.location.href='print-report.html'">🖨️ Export Dossier</button>
+    </div>
+
+    <!-- 4 Summary Stats -->
+    <div class="history-stats">
+      <div class="h-stat-card">
+        <div class="lbl">Total Doses Scheduled</div>
+        <div class="val">64</div>
+      </div>
+      <div class="h-stat-card">
+        <div class="lbl">Doses Confirmed (Taken)</div>
+        <div class="val" style="color: var(--success);">58</div>
+      </div>
+      <div class="h-stat-card">
+        <div class="lbl">Doses Skipped (Missed)</div>
+        <div class="val" style="color: var(--danger);">6</div>
+      </div>
+      <div class="h-stat-card">
+        <div class="lbl">Snooze Postponements</div>
+        <div class="val" style="color: var(--warning);">9 Times</div>
+      </div>
+    </div>
+
+    <!-- Filter Bar (Matches MedicineLogFilterDto) -->
+    <div class="filter-card">
+      <div class="filter-left">
+        <input type="text" class="form-control" id="searchMed" placeholder="Search medicine..." onkeyup="applyHistoryFilter()">
+        
+        <select class="form-control" id="dateFilter" onchange="applyHistoryFilter()">
+          <option value="all">All Dates</option>
+          <option value="today">Today Only</option>
+          <option value="7">Last 7 Days</option>
+          <option value="30">Last 30 Days</option>
+        </select>
+      </div>
+
+      <div class="status-tabs">
+        <button class="tab-item active" onclick="setStatusTab('all', this)">All</button>
+        <button class="tab-item" onclick="setStatusTab('Taken', this)">Taken</button>
+        <button class="tab-item" onclick="setStatusTab('Missed', this)">Missed</button>
+        <button class="tab-item" onclick="setStatusTab('Pending', this)">Pending</button>
+      </div>
+    </div>
+
+    <!-- History Log Table -->
+    <div class="table-card">
+      <div class="table-responsive">
+        <table>
+          <thead>
+            <tr>
+              <th>Scheduled Time</th>
+              <th>Medicine Name</th>
+              <th>Dosage</th>
+              <th>Status</th>
+              <th>Actual Time Taken</th>
+              <th>Snooze Count</th>
+            </tr>
+          </thead>
+          <tbody id="historyTableBody">
+            <tr data-med="Metformin 500mg" data-status="Taken">
+              <td><strong>22 Oct 2026, 08:00 AM</strong></td>
+              <td>Metformin 500mg</td>
+              <td>1 Tablet</td>
+              <td><span class="badge-status status-taken">✅ Taken</span></td>
+              <td>08:12 AM</td>
+              <td>0</td>
+            </tr>
+            <tr data-med="Pan-D 40mg" data-status="Pending">
+              <td><strong>22 Oct 2026, 01:30 PM</strong></td>
+              <td>Pan-D 40mg</td>
+              <td>1 Capsule</td>
+              <td><span class="badge-status status-pending">⏳ Pending</span></td>
+              <td>-</td>
+              <td>1 (+15 mins)</td>
+            </tr>
+            <tr data-med="Atorvastatin 10mg" data-status="Taken">
+              <td><strong>21 Oct 2026, 08:30 PM</strong></td>
+              <td>Atorvastatin 10mg</td>
+              <td>1 Tablet</td>
+              <td><span class="badge-status status-taken">✅ Taken</span></td>
+              <td>08:35 PM</td>
+              <td>0</td>
+            </tr>
+            <tr data-med="Pan-D 40mg" data-status="Missed">
+              <td><strong>21 Oct 2026, 07:30 AM</strong></td>
+              <td>Pan-D 40mg</td>
+              <td>1 Capsule</td>
+              <td><span class="badge-status status-missed">❌ Missed</span></td>
+              <td>-</td>
+              <td>2 (Caregiver alerted)</td>
+            </tr>
+            <tr data-med="Metformin 500mg" data-status="Taken">
+              <td><strong>21 Oct 2026, 08:00 AM</strong></td>
+              <td>Metformin 500mg</td>
+              <td>1 Tablet</td>
+              <td><span class="badge-status status-taken">✅ Taken</span></td>
+              <td>08:20 AM</td>
+              <td>1 (+15 mins)</td>
+            </tr>
+            <tr data-med="Calpol 650mg" data-status="Taken">
+              <td><strong>20 Oct 2026, 02:00 PM</strong></td>
+              <td>Calpol 650mg</td>
+              <td>1 Tablet</td>
+              <td><span class="badge-status status-taken">✅ Taken</span></td>
+              <td>02:10 PM</td>
+              <td>0</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- JAVASCRIPT -->
+  <script>
+    // 1. Mobile Drawer
+    const menuToggle = document.getElementById('menuToggle');
+    const closeDrawer = document.getElementById('closeDrawer');
+    const mobileDrawer = document.getElementById('mobileDrawer');
+    const mobileOverlay = document.getElementById('mobileOverlay');
+
+    function toggleMenu() {
+      mobileDrawer.classList.toggle('active');
+      mobileOverlay.classList.toggle('active');
+      document.body.style.overflow = mobileDrawer.classList.contains('active') ? 'hidden' : '';
+    }
+
+    menuToggle.addEventListener('click', toggleMenu);
+    closeDrawer.addEventListener('click', toggleMenu);
+    mobileOverlay.addEventListener('click', toggleMenu);
+
+    // 2. Tab & Input Filter Handling
+    let activeStatus = 'all';
+
+    function setStatusTab(status, btn) {
+      activeStatus = status;
+      document.querySelectorAll('.tab-item').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      applyHistoryFilter();
+    }
+
+    function applyHistoryFilter() {
+      const search = document.getElementById('searchMed').value.toLowerCase();
+      const rows = document.querySelectorAll('#historyTableBody tr');
+
+      rows.forEach(row => {
+        const medName = row.getAttribute('data-med').toLowerCase();
+        const rowStatus = row.getAttribute('data-status');
+
+        const matchesSearch = medName.includes(search);
+        const matchesStatus = (activeStatus === 'all') || (rowStatus === activeStatus);
+
+        row.style.display = (matchesSearch && matchesStatus) ? '' : 'none';
+      });
+    }
+  </script>
+
+</body>
+</html>
