@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MediCare - Account & Health Settings</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --primary: #0284c7;
+      --primary-dark: #0369a1;
+      --primary-light: #e0f2fe;
+      --danger: #dc2626;
+      --danger-light: #fee2e2;
+      --success: #16a34a;
+      --success-light: #dcfce7;
+      --warning: #d97706;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --border: #e2e8f0;
+      --radius: 14px;
+      --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+      --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text-main);
+      min-height: 100vh;
+      overflow-x: hidden;
+      line-height: 1.5;
+    }
+
+    /* =========================================================
+       HEADER / NAVBAR
+       ========================================================= */
+    .site-header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+      height: 70px;
+      display: flex;
+      align-items: center;
+      padding: 0 clamp(16px, 4vw, 40px);
+    }
+
+    .nav-container {
+      width: 100%;
+      max-width: 1380px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+    }
+
+    .logo-icon {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, #0284c7, #0ea5e9);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      font-weight: 800;
+      font-size: 20px;
+      box-shadow: 0 4px 10px rgba(2, 132, 199, 0.25);
+    }
+
+    .brand-text h1 {
+      font-size: 19px;
+      font-weight: 800;
+      color: var(--text-main);
+      line-height: 1.1;
+    }
+
+    .brand-text span {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--primary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .desktop-nav-links {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      list-style: none;
+    }
+
+    .desktop-nav-links a {
+      text-decoration: none;
+      color: var(--text-muted);
+      font-size: 14px;
+      font-weight: 600;
+      transition: color 0.2s;
+    }
+    .desktop-nav-links a:hover,
+    .desktop-nav-links a.active {
+      color: var(--primary);
+    }
+
+    .btn {
+      padding: 9px 16px;
+      border-radius: 8px;
+      font-size: 13.5px;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid transparent;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { background: var(--primary-dark); }
+    .btn-ghost { background: transparent; color: var(--text-main); border-color: var(--border); }
+    .btn-ghost:hover { background: #f1f5f9; }
+
+    /* Mobile Controls */
+    .mobile-actions { display: none; align-items: center; gap: 8px; }
+    .hamburger-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: #ffffff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      cursor: pointer;
+    }
+    .hamburger-btn span {
+      width: 18px;
+      height: 2px;
+      background: var(--text-main);
+      border-radius: 2px;
+    }
+
+    /* Mobile Drawer */
+    .mobile-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.45);
+      backdrop-filter: blur(4px);
+      z-index: 200;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s;
+    }
+    .mobile-overlay.active { opacity: 1; visibility: visible; }
+
+    .mobile-drawer {
+      position: fixed;
+      top: 0;
+      right: -100%;
+      width: min(320px, 85vw);
+      height: 100%;
+      background: var(--surface);
+      z-index: 201;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      transition: right 0.3s ease;
+    }
+    .mobile-drawer.active { right: 0; }
+
+    /* =========================================================
+       PAGE CONTENT CONTAINER
+       ========================================================= */
+    .page-wrapper {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: clamp(16px, 3vw, 32px) clamp(16px, 4vw, 40px);
+    }
+
+    .page-header {
+      margin-bottom: 24px;
+    }
+    .page-header h2 {
+      font-size: clamp(22px, 3.5vw, 28px);
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+    .page-header p {
+      font-size: 13.5px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    /* Layout Split: Left Identity Card + Right Settings Forms */
+    .settings-grid {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 20px;
+      align-items: start;
+    }
+
+    /* =========================================================
+       CENTERED PROFILE IDENTITY CARD
+       ========================================================= */
+    .profile-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      align-items: center;      /* Horizontal Center */
+      justify-content: center;   /* Vertical Center */
+      text-align: center;        /* Centered Text */
+      width: 100%;
+    }
+
+    .profile-avatar {
+      width: 86px;
+      height: 86px;
+      border-radius: 50%;
+      background: var(--primary-light);
+      color: var(--primary-dark);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 26px;
+      margin-bottom: 14px;
+      box-shadow: 0 4px 12px rgba(2, 132, 199, 0.15);
+      border: 3px solid #ffffff;
+      outline: 2px solid var(--primary-light);
+    }
+
+    .profile-name {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--text-main);
+      margin-bottom: 6px;
+    }
+
+    .role-chip {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 5px 14px;
+      background-color: var(--primary-light);
+      color: var(--primary-dark);
+      font-size: 12px;
+      font-weight: 700;
+      border-radius: 20px;
+      letter-spacing: 0.3px;
+      margin-bottom: 18px;
+    }
+
+    .profile-quick-stats {
+      width: 100%;
+      border-top: 1px dashed var(--border);
+      padding-top: 16px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      text-align: center;
+    }
+    .p-stat-item .p-num {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--text-main);
+    }
+    .p-stat-item .p-lbl {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    /* =========================================================
+       SETTINGS SECTIONS (RIGHT COLUMN)
+       ========================================================= */
+    .settings-sections {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .settings-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: clamp(18px, 3vw, 24px);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .card-header-area {
+      margin-bottom: 18px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 12px;
+    }
+    .card-header-area h3 {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+    .card-header-area p {
+      font-size: 12.5px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+
+    .form-group {
+      margin-bottom: 14px;
+    }
+    .form-group label {
+      display: block;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--text-main);
+      margin-bottom: 6px;
+    }
+    .form-control {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 13.5px;
+      outline: none;
+      background: #ffffff;
+      color: var(--text-main);
+    }
+    .form-control:focus {
+      border-color: var(--primary);
+    }
+
+    /* Switch Notification Preferences */
+    .pref-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .pref-item:last-child {
+      border-bottom: none;
+    }
+    .pref-text strong {
+      display: block;
+      font-size: 13.5px;
+      color: var(--text-main);
+    }
+    .pref-text span {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    /* Toggle Switch */
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 44px;
+      height: 24px;
+      flex-shrink: 0;
+    }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      inset: 0;
+      background-color: #cbd5e1;
+      transition: .3s;
+      border-radius: 24px;
+    }
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: .3s;
+      border-radius: 50%;
+    }
+    input:checked + .slider { background-color: var(--primary); }
+    input:checked + .slider:before { transform: translateX(20px); }
+
+    /* =========================================================
+       RESPONSIVE BREAKPOINTS (320px - 1366px+)
+       ========================================================= */
+    @media (max-width: 1023px) {
+      .desktop-nav-links { display: none; }
+      .mobile-actions { display: flex; }
+      .settings-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 767px) {
+      .form-row { grid-template-columns: 1fr; gap: 10px; }
+      .settings-card { padding: 16px; }
+      .btn { width: 100%; justify-content: center; }
+    }
+
+    @media (max-width: 374px) {
+      .brand-text h1 { font-size: 16px; }
+      .brand-text span { display: none; }
+      .profile-name { font-size: 18px; }
+      .pref-item { flex-direction: column; align-items: flex-start; gap: 8px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ================= TOP HEADER NAVBAR ================= -->
+  <header class="site-header">
+    <div class="nav-container">
+      
+      <a href="index.html" class="brand-logo">
+        <div class="logo-icon">+</div>
+        <div class="brand-text">
+          <h1>MediCare</h1>
+          <span>Account Settings</span>
+        </div>
+      </a>
+
+      <!-- Desktop Links -->
+      <ul class="desktop-nav-links">
+        <li><a href="index.html">Overview</a></li>
+        <li><a href="patient-dashboard.html">Routine</a></li>
+        <li><a href="medicines.html">Medicines</a></li>
+        <li><a href="caregiver-dashboard.html">Caregivers</a></li>
+        <li><a href="history.html">History</a></li>
+        <li><a href="settings.html" class="active">Settings</a></li>
+      </ul>
+
+      <!-- Desktop Action -->
+      <div style="display: flex; gap: 10px;">
+        <!-- <button class="btn btn-ghost" onclick="window.location.href='patient-dashboard.html'">Back to Dashboard</button> -->
+      </div>
+
+      <!-- Mobile Hamburger -->
+      <div class="mobile-actions">
+        <button class="hamburger-btn" id="menuToggle" aria-label="Toggle Menu">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- Mobile Drawer -->
+  <div class="mobile-overlay" id="mobileOverlay"></div>
+  <aside class="mobile-drawer" id="mobileDrawer">
+    <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 14px; border-bottom: 1px solid var(--border);">
+      <div class="brand-logo">
+        <div class="logo-icon">+</div>
+        <div class="brand-text"><h1>MediCare</h1></div>
+      </div>
+      <button style="background:#f1f5f9; border:none; width:34px; height:34px; border-radius:8px; font-size:18px;" id="closeDrawer">&times;</button>
+    </div>
+    <ul style="list-style:none; padding:16px 0; display:flex; flex-direction:column; gap:14px;">
+      <li><a href="index.html" style="text-decoration:none; color:var(--text-main); font-weight:600;">🏠 Overview</a></li>
+      <li><a href="patient-dashboard.html" style="text-decoration:none; color:var(--text-main); font-weight:600;">🕒 Today Routine</a></li>
+      <li><a href="medicines.html" style="text-decoration:none; color:var(--text-main); font-weight:600;">💊 Prescriptions</a></li>
+      <li><a href="caregiver-dashboard.html" style="text-decoration:none; color:var(--text-main); font-weight:600;">🛡️ Caregivers</a></li>
+      <li><a href="settings.html" style="text-decoration:none; color:var(--primary); font-weight:600;">⚙️ Account Settings</a></li>
+    </ul>
+    <div style="margin-top: auto; padding-top: 14px;">
+      <button class="btn btn-ghost" style="width: 100%; border: 1px solid var(--border);" onclick="window.location.href='patient-dashboard.html'">
+        Back to Dashboard
+      </button>
+    </div>
+  </aside>
+
+  <!-- ================= PAGE CONTENT ================= -->
+  <div class="page-wrapper">
+    
+    <div class="page-header">
+      <h2>Account & Health Settings</h2>
+      <p>Manage your profile identity, emergency distress contacts, and notification channels.</p>
+    </div>
+
+    <div class="settings-grid">
+      
+      <!-- ================= LEFT: CENTERED IDENTITY CARD ================= -->
+      <div class="profile-card">
+        <div class="profile-avatar">RK</div>
+        <div class="profile-name">Ramesh Kumar</div>
+        <div class="role-chip">Role: PATIENT</div>
+        
+        <div class="profile-quick-stats">
+          <div class="p-stat-item">
+            <div class="p-num">91.4%</div>
+            <div class="p-lbl">Adherence</div>
+          </div>
+          <div class="p-stat-item">
+            <div class="p-num">3 Meds</div>
+            <div class="p-lbl">Active Regimens</div>
+          </div>
+        </div>
+
+        <button class="btn btn-ghost" style="width: 100%; margin-top: 20px; font-size: 13px;" onclick="window.location.href='index.html'">
+          Log Out of Account
+        </button>
+      </div>
+
+      <!-- ================= RIGHT: SETTINGS FORM SECTIONS ================= -->
+      <div class="settings-sections">
+        
+        <!-- Section 1: Personal Demographic & Health Info -->
+        <div class="settings-card">
+          <div class="card-header-area">
+            <h3>Personal Health Profile</h3>
+            <p>Your demographic and medical record information mapped to <code>PUT /api/user/profile</code>.</p>
+          </div>
+
+          <form id="profileForm" onsubmit="handleProfileSave(event)">
+            <div class="form-row">
+              <div class="form-group">
+                <label>Full Name</label>
+                <input type="text" class="form-control" value="Ramesh Kumar" required>
+              </div>
+              <div class="form-group">
+                <label>Registered Email</label>
+                <input type="email" class="form-control" value="ramesh.kumar@example.com" disabled style="background: #f1f5f9;">
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label>Phone Number</label>
+                <input type="tel" class="form-control" value="+91 98765-43210" required>
+              </div>
+              <div class="form-group">
+                <label>Date of Birth</label>
+                <input type="date" class="form-control" value="1962-08-15" required>
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="padding: 10px 22px;">Save Profile Changes</button>
+          </form>
+        </div>
+
+        <!-- Section 2: Emergency Distress Routing -->
+        <div class="settings-card">
+          <div class="card-header-area">
+            <h3>Emergency SOS Distress Routing</h3>
+            <p>Contacts alerted automatically when you press the emergency SOS beacon.</p>
+          </div>
+
+          <form id="emergencyContactForm" onsubmit="handleEmergencySave(event)">
+            <div class="form-row">
+              <div class="form-group">
+                <label>Primary Emergency Contact</label>
+                <input type="text" class="form-control" value="Rahul Verma (Son)" required>
+              </div>
+              <div class="form-group">
+                <label>Emergency Phone</label>
+                <input type="tel" class="form-control" value="+91 98765-43210" required>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Doctor / Clinic Contact</label>
+              <input type="text" class="form-control" value="Dr. Mehta (Cardiologist) - +91 91234-56780">
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="padding: 10px 22px;">Update Emergency Contacts</button>
+          </form>
+        </div>
+
+        <!-- Section 3: Notification Preferences -->
+        <div class="settings-card">
+          <div class="card-header-area">
+            <h3>Alert & Notification Preferences</h3>
+            <p>Customize intake reminders, stock warnings, and WhatsApp dispatches.</p>
+          </div>
+
+          <div class="pref-item">
+            <div class="pref-text">
+              <strong>Dose Intake Push Reminders</strong>
+              <span>Send browser reminders 15 minutes before scheduled dose</span>
+            </div>
+            <label class="switch">
+              <input type="checkbox" checked>
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <div class="pref-item">
+            <div class="pref-text">
+              <strong>Critical Refill Stock Alerts</strong>
+              <span>Notify when any medicine inventory drops to 5 pills or fewer</span>
+            </div>
+            <label class="switch">
+              <input type="checkbox" checked>
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <div class="pref-item">
+            <div class="pref-text">
+              <strong>Caregiver Missed Dose Alerts</strong>
+              <span>Automatically ping linked caregivers if a dose is skipped</span>
+            </div>
+            <label class="switch">
+              <input type="checkbox" checked>
+              <span class="slider"></span>
+            </label>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- ================= JAVASCRIPT ================= -->
+  <script>
+    // 1. Mobile Drawer Navigation
+    const menuToggle = document.getElementById('menuToggle');
+    const closeDrawer = document.getElementById('closeDrawer');
+    const mobileDrawer = document.getElementById('mobileDrawer');
+    const mobileOverlay = document.getElementById('mobileOverlay');
+
+    function toggleMenu() {
+      mobileDrawer.classList.toggle('active');
+      mobileOverlay.classList.toggle('active');
+      document.body.style.overflow = mobileDrawer.classList.contains('active') ? 'hidden' : '';
+    }
+
+    menuToggle.addEventListener('click', toggleMenu);
+    closeDrawer.addEventListener('click', toggleMenu);
+    mobileOverlay.addEventListener('click', toggleMenu);
+
+    // 2. Profile Save Handler (PUT /api/user/profile)
+    function handleProfileSave(e) {
+      e.preventDefault();
+      alert("[API CALL: PUT /api/user/profile]\nPersonal health profile updated successfully!");
+    }
+
+    // 3. Emergency Contact Save Handler (POST /api/emergency/contacts)
+    function handleEmergencySave(e) {
+      e.preventDefault();
+      alert("[API CALL: POST /api/emergency/contacts]\nEmergency distress contacts updated and synced with SOS engine!");
+    }
+  </script>
+
+</body>
+</html>
