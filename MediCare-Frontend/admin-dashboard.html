@@ -8,6 +8,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
+  <!-- Common MediCare Design Tokens & Core Styles -->
+  <link rel="stylesheet" href="css/common.css" />
+
   <style>
     :root {
       --primary: #0284c7;
@@ -445,66 +448,8 @@
 </head>
 <body>
 
-  <!-- ================= TOP HEADER NAVBAR ================= -->
-  <header class="site-header">
-    <div class="nav-container">
-      
-      <a href="index.html" class="brand-logo">
-        <div class="logo-icon">+</div>
-        <div class="brand-text">
-          <h1>MediCare</h1>
-          <span>Admin Console</span>
-        </div>
-      </a>
-
-      <!-- Desktop Links -->
-      <ul class="desktop-nav-links">
-        <li><a href="admin-dashboard.html" class="active">Overview</a></li>
-        <li><a href="patient-dashboard.html">Patient View</a></li>
-        <li><a href="caregiver-dashboard.html">Caregiver View</a></li>
-        <li><a href="medicines.html">Pharmacy Stock</a></li>
-      </ul>
-
-      <!-- Desktop Quick Actions -->
-      <div style="display: flex; align-items: center; gap: 12px;">
-        <!-- <button class="btn btn-ghost" onclick="openNotifyModal()">📢 Broadcast Notification</button> -->
-        <button class="btn btn-primary" onclick="window.location.href='index.html'">Sign Out</button>
-      </div>
-
-      <!-- Mobile Hamburger -->
-      <div class="mobile-actions">
-        <button class="hamburger-btn" id="menuToggle" aria-label="Toggle Menu">
-          <span></span>
-          <span></span>
-          <span></span>
-        </button>
-      </div>
-
-    </div>
-  </header>
-
-  <!-- Mobile Drawer -->
-  <div class="mobile-overlay" id="mobileOverlay"></div>
-  <aside class="mobile-drawer" id="mobileDrawer">
-    <div class="drawer-header">
-      <div class="brand-logo">
-        <div class="logo-icon">+</div>
-        <div class="brand-text"><h1>MediCare</h1></div>
-      </div>
-      <button class="close-btn" id="closeDrawer">&times;</button>
-    </div>
-    <ul class="drawer-links">
-      <li><a href="admin-dashboard.html" style="color: var(--primary);">💼 Admin Overview</a></li>
-      <li><a href="patient-dashboard.html">👤 Patient Portal</a></li>
-      <li><a href="caregiver-dashboard.html">🛡️ Caregiver Hub</a></li>
-      <li><a href="medicines.html">💊 Pharmacy Stock</a></li>
-    </ul>
-    <div style="margin-top: auto;">
-      <button class="btn btn-ghost" style="width: 100%; border: 1px solid var(--border);" onclick="openNotifyModal(); toggleMenu();">
-        📢 Broadcast Notification
-      </button>
-    </div>
-  </aside>
+  <!-- ================= MODULAR GLOBAL HEADER ================= -->
+  <header id="global-header"></header>
 
   <!-- ================= MAIN CONTENT ================= -->
   <div class="page-wrapper">
@@ -800,5 +745,8 @@
     }
   </script>
 
+  <!-- Shared MediCare API & Modular Navbar Utilities -->
+  <script src="js/api.js"></script>
+  <script src="js/navbar.js"></script>
 </body>
 </html>

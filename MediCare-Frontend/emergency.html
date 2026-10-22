@@ -8,6 +8,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
+  <!-- Common MediCare Design Tokens & Core Styles -->
+  <link rel="stylesheet" href="css/common.css" />
+
   <style>
     :root {
       --primary: #0284c7;
@@ -409,61 +412,8 @@
 </head>
 <body>
 
-  <!-- ================= TOP HEADER NAVBAR ================= -->
-  <header class="site-header">
-    <div class="nav-container">
-      
-      <a href="index.html" class="brand-logo">
-        <div class="logo-icon">🚨</div>
-        <div class="brand-text">
-          <h1>MediCare</h1>
-          <span>SOS Command</span>
-        </div>
-      </a>
-
-      <!-- Desktop Links -->
-      <ul class="desktop-nav-links">
-        <li><a href="index.html">Overview</a></li>
-        <li><a href="patient-dashboard.html">Routine</a></li>
-        <li><a href="medicines.html">Medicines</a></li>
-        <li><a href="caregiver-dashboard.html">Caregiver Hub</a></li>
-        <li><a href="emergency.html" class="active">Emergency SOS</a></li>
-      </ul>
-
-      <div style="display: flex; gap: 10px;">
-        <!-- <button class="btn btn-ghost" onclick="window.history.back()">Back</button> -->
-      </div>
-
-      <!-- Mobile Hamburger -->
-      <div class="mobile-actions">
-        <button class="hamburger-btn" id="menuToggle" aria-label="Toggle Menu">
-          <span></span>
-          <span></span>
-          <span></span>
-        </button>
-      </div>
-
-    </div>
-  </header>
-
-  <!-- Mobile Drawer -->
-  <div class="mobile-overlay" id="mobileOverlay"></div>
-  <aside class="mobile-drawer" id="mobileDrawer">
-    <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 14px; border-bottom: 1px solid var(--border);">
-      <div class="brand-logo">
-        <div class="logo-icon">🚨</div>
-        <div class="brand-text"><h1>MediCare</h1></div>
-      </div>
-      <button style="background:#f1f5f9; border:none; width:34px; height:34px; border-radius:8px; font-size:18px;" id="closeDrawer">&times;</button>
-    </div>
-    <ul style="list-style:none; padding:16px 0; display:flex; flex-direction:column; gap:14px;">
-      <li><a href="index.html" style="text-decoration:none; color:var(--text-main); font-weight:600;">🏠 Overview</a></li>
-      <li><a href="patient-dashboard.html" style="text-decoration:none; color:var(--text-main); font-weight:600;">🕒 Today Routine</a></li>
-      <li><a href="medicines.html" style="text-decoration:none; color:var(--text-main); font-weight:600;">💊 Prescriptions</a></li>
-      <li><a href="caregiver-dashboard.html" style="text-decoration:none; color:var(--text-main); font-weight:600;">🛡️ Caregiver Hub</a></li>
-      <li><a href="emergency.html" style="text-decoration:none; color:var(--danger); font-weight:600;">🚨 Emergency SOS</a></li>
-    </ul>
-  </aside>
+  <!-- ================= MODULAR GLOBAL HEADER ================= -->
+  <header id="global-header"></header>
 
   <!-- ================= MAIN EMERGENCY CONTENT ================= -->
   <div class="page-wrapper">
@@ -615,5 +565,8 @@
     }
   </script>
 
+  <!-- Shared MediCare API & Modular Navbar Utilities -->
+  <script src="js/api.js"></script>
+  <script src="js/navbar.js"></script>
 </body>
 </html>

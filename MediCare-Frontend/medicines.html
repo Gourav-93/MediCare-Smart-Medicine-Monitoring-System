@@ -8,6 +8,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
+  <!-- Common MediCare Design Tokens & Core Styles -->
+  <link rel="stylesheet" href="css/common.css" />
+
   <style>
     :root {
       --primary: #0284c7;
@@ -611,61 +614,8 @@
 </head>
 <body>
 
-  <!-- ================= TOP HEADER NAVBAR ================= -->
-  <header class="site-header">
-    <div class="nav-container">
-      
-      <a href="index.html" class="brand-logo">
-        <div class="logo-icon">+</div>
-        <div class="brand-text">
-          <h1>MediCare</h1>
-          <span>Inventory & Routine</span>
-        </div>
-      </a>
-
-      <!-- Desktop Links -->
-      <ul class="desktop-nav-links">
-        <li><a href="index.html">Overview</a></li>
-        <li><a href="medicines.html" class="active">Medicines</a></li>
-        <li><a href="#">Routines</a></li>
-        <li><a href="#">Caregivers</a></li>
-      </ul>
-
-      <!-- Desktop Actions -->
-      <div class="desktop-actions">
-        <button class="btn btn-ghost" onclick="window.location.href='index.html'">Dashboard</button>
-      </div>
-
-      <!-- Mobile Hamburger & SOS -->
-      <div class="mobile-actions">
-        <button class="btn btn-sos" onclick="alert('🚨 SOS Alert Triggered!')">🚨 SOS</button>
-        <button class="hamburger-btn" id="menuToggle" aria-label="Toggle Menu">
-          <span></span>
-          <span></span>
-          <span></span>
-        </button>
-      </div>
-
-    </div>
-  </header>
-
-  <!-- Mobile Drawer -->
-  <div class="mobile-overlay" id="mobileOverlay"></div>
-  <aside class="mobile-drawer" id="mobileDrawer">
-    <div class="drawer-header">
-      <div class="brand-logo">
-        <div class="logo-icon">+</div>
-        <div class="brand-text"><h1>MediCare</h1></div>
-      </div>
-      <button class="close-btn" id="closeDrawer">&times;</button>
-    </div>
-    <ul class="drawer-links">
-      <li><a href="index.html">🏠 Home & Dashboard</a></li>
-      <li><a href="medicines.html" style="color: var(--primary);">💊 Medicine Inventory</a></li>
-      <li><a href="#">⏰ Daily Schedules</a></li>
-      <li><a href="#">🛡️ Caregiver Support</a></li>
-    </ul>
-  </aside>
+  <!-- ================= MODULAR GLOBAL HEADER ================= -->
+  <header id="global-header"></header>
 
   <!-- ================= PAGE CONTENT ================= -->
   <div class="page-wrapper">
@@ -1005,5 +955,8 @@
     }
   </script>
 
+  <!-- Shared MediCare API & Modular Navbar Utilities -->
+  <script src="js/api.js"></script>
+  <script src="js/navbar.js"></script>
 </body>
 </html>

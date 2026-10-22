@@ -13,6 +13,9 @@
     />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.8.0/chart.min.js"></script>
 
+    <!-- Common MediCare Design Tokens & Core Styles -->
+    <link rel="stylesheet" href="css/common.css" />
+
     <style>
       :root {
         --primary: #0284c7;
@@ -769,90 +772,8 @@
     </style>
   </head>
   <body>
-    <!-- ================= HEADER NAVBAR ================= -->
-    <header class="site-header">
-      <div class="nav-container">
-        <!-- Brand Logo -->
-        <a href="#" class="brand-logo">
-          <div class="logo-icon">+</div>
-          <div class="brand-text">
-            <h1>MediCare</h1>
-            <span>Smart Healthcare</span>
-          </div>
-        </a>
-
-        <!-- Desktop Links -->
-        <ul class="desktop-nav-links">
-          <li><a href="#features">Features</a></li>
-          <li><a href="#dashboard-overview">Live Charts</a></li>
-        </ul>
-
-        <!-- Desktop Auth -->
-        <div class="desktop-auth-actions">
-          <button class="btn btn-ghost" onclick="openAuthModal('login')">
-            Sign In
-          </button>
-          <button class="btn btn-primary" onclick="openAuthModal('register')">
-            Get Started
-          </button>
-        </div>
-
-        <!-- Mobile Right Hamburger -->
-        <div class="mobile-actions">
-          <button
-            class="hamburger-btn"
-            id="menuToggle"
-            aria-label="Toggle Menu"
-          >
-            <span></span>
-            <span></span>
-            <span></span>
-          </button>
-        </div>
-      </div>
-    </header>
-
-    <!-- Mobile Drawer -->
-    <div class="mobile-overlay" id="mobileOverlay"></div>
-    <aside class="mobile-drawer" id="mobileDrawer">
-      <div class="drawer-header">
-        <div class="brand-logo">
-          <div class="logo-icon">+</div>
-          <div class="brand-text"><h1>MediCare</h1></div>
-        </div>
-        <button class="close-btn" id="closeDrawer">&times;</button>
-      </div>
-      <ul class="drawer-links">
-        <li>
-          <a href="#features" onclick="toggleMenu()">⚡Features</a>
-        </li>
-        <li>
-          <a href="#dashboard-overview" onclick="toggleMenu()"
-            >📊 Compliance Graphs</a
-          >
-        </li>
-      </ul>
-      <div class="drawer-auth">
-        <button
-          class="btn btn-primary"
-          onclick="
-            openAuthModal('register');
-            toggleMenu();
-          "
-        >
-          Create Account
-        </button>
-        <button
-          class="btn btn-ghost"
-          onclick="
-            openAuthModal('login');
-            toggleMenu();
-          "
-        >
-          Sign In
-        </button>
-      </div>
-    </aside>
+    <!-- ================= MODULAR GLOBAL HEADER ================= -->
+    <header id="global-header"></header>
 
     <!-- ================= HERO INTRO ================= -->
     <main>
@@ -1360,8 +1281,20 @@
 
       function handleAuthSubmit(e) {
         e.preventDefault();
+        const emailInput = e.target.querySelector('input[type="email"]');
+        const roleSelect = document.getElementById("roleGroup") ? document.getElementById("roleGroup").querySelector("select") : null;
+        const email = emailInput && emailInput.value ? emailInput.value : "patient@medicare.com";
+        const role = roleSelect && roleSelect.value ? roleSelect.value : "PATIENT";
+
+        if (window.setAuthToken) {
+          window.setAuthToken("medicare_token_" + Date.now(), {
+            email: email,
+            role: role,
+            name: email.split("@")[0],
+          });
+        }
         alert(
-          "Form submitted! Ready to connect with /api/AuthController endpoints.",
+          `Logged in successfully as: ${email}\nRole: ${role}\n\nPortal links in header are now unlocked!`,
         );
         closeAuthModal();
       }
@@ -1437,5 +1370,9 @@
         });
       });
     </script>
+
+    <!-- Shared MediCare API & Modular Navbar Utilities -->
+    <script src="js/api.js"></script>
+    <script src="js/navbar.js"></script>
   </body>
 </html>

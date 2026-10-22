@@ -8,6 +8,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
+  <!-- Common MediCare Design Tokens & Core Styles -->
+  <link rel="stylesheet" href="css/common.css" />
+
   <style>
     :root {
       --primary: #0284c7;
@@ -396,15 +399,7 @@
 <body>
 
   <!-- ================= TOP WEB HEADER (NO-PRINT) ================= -->
-  <header class="web-header no-print">
-    <div class="brand-title">
-      <span>💙</span> MediCare Dossier Service
-    </div>
-    <div class="header-actions">
-      <!-- <button class="btn btn-ghost" onclick="window.close(); history.back();">← Back</button> -->
-      <button class="btn btn-primary" onclick="triggerNativePrint()">🖨️ Print / Download PDF</button>
-    </div>
-  </header>
+  <header id="global-header" class="no-print"></header>
 
   <!-- ================= MAIN REPORT CONTAINER ================= -->
   <div class="page-container">
@@ -626,5 +621,8 @@
     }
   </script>
 
+  <!-- Shared MediCare API & Modular Navbar Utilities -->
+  <script src="js/api.js"></script>
+  <script src="js/navbar.js"></script>
 </body>
 </html>

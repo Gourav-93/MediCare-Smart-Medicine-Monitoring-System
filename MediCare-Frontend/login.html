@@ -8,6 +8,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
+  <!-- Common MediCare Design Tokens & Core Styles -->
+  <link rel="stylesheet" href="css/common.css" />
+
   <style>
     :root {
       --primary: #0284c7;
@@ -347,16 +350,7 @@
 <body>
 
   <!-- ================= TOP NAVIGATION BAR ================= -->
-  <header class="top-bar">
-    <a href="index.html" class="brand-logo">
-      <div class="logo-icon">+</div>
-      <div class="brand-text">
-        <h1>MediCare</h1>
-        <span>Authentication Hub</span>
-      </div>
-    </a>
-    <!-- <a href="index.html" class="btn-back">← Back to Overview</a> -->
-  </header>
+  <header id="global-header"></header>
 
   <!-- ================= AUTH WORKSPACE ================= -->
   <main class="auth-wrapper">
@@ -502,6 +496,13 @@
       const email = document.getElementById('emailInput').value;
       const endpoint = currentMode === 'login' ? 'POST /api/AuthController/login' : 'POST /api/AuthController/register';
 
+      if (window.setAuthToken) {
+        window.setAuthToken('medicare_token_' + Date.now(), { email: email, role: currentRole, name: email.split('@')[0] });
+      } else {
+        localStorage.setItem('medicare_role', currentRole);
+        localStorage.setItem('userRole', currentRole);
+      }
+
       alert(`[API CALL: ${endpoint}]\n\nAuthenticated as: ${email}\nRole: ${currentRole}\nJWT Token saved to localStorage.`);
 
       // Redirect directly to the corresponding responsive dashboard
@@ -515,5 +516,8 @@
     }
   </script>
 
+  <!-- Shared MediCare API & Modular Navbar Utilities -->
+  <script src="js/api.js"></script>
+  <script src="js/navbar.js"></script>
 </body>
 </html>
