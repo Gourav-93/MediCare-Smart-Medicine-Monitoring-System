@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MediCare - Clinical Adherence Dossier</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --primary: #0284c7;
+      --primary-dark: #0369a1;
+      --primary-light: #e0f2fe;
+      --danger: #dc2626;
+      --danger-light: #fee2e2;
+      --success: #16a34a;
+      --success-light: #dcfce7;
+      --warning: #d97706;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --border: #cbd5e1;
+      --radius: 10px;
+      --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+      --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text-main);
+      min-height: 100vh;
+      overflow-x: hidden;
+      line-height: 1.5;
+    }
+
+    /* Top Web Navigation */
+    .web-header {
+      background: #ffffff;
+      border-bottom: 1px solid #e2e8f0;
+      padding: 14px clamp(16px, 4vw, 40px);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .brand-title {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .btn {
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 13.5px;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid transparent;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { background: var(--primary-dark); }
+    .btn-ghost { background: #fff; border-color: #cbd5e1; color: var(--text-main); }
+    .btn-ghost:hover { background: #f1f5f9; }
+
+    /* Page Container */
+    .page-container {
+      max-width: 1000px;
+      margin: 24px auto 60px;
+      padding: 0 clamp(12px, 3vw, 24px);
+    }
+
+    /* Duration Filter Controls */
+    .filter-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .range-tabs {
+      display: flex;
+      background: #e2e8f0;
+      padding: 3px;
+      border-radius: 8px;
+      gap: 4px;
+    }
+    .range-btn {
+      padding: 6px 14px;
+      border-radius: 6px;
+      border: none;
+      font-size: 12.5px;
+      font-weight: 600;
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+    }
+    .range-btn.active {
+      background: #fff;
+      color: var(--text-main);
+      box-shadow: var(--shadow-sm);
+    }
+
+    /* =========================================================
+       CLINICAL REPORT SHEET (DOCUMENT CARD)
+       ========================================================= */
+    .report-sheet {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: var(--radius);
+      padding: clamp(20px, 4vw, 44px);
+      box-shadow: var(--shadow-md);
+    }
+
+    /* Sheet Header */
+    .sheet-header {
+      border-bottom: 2px solid var(--primary);
+      padding-bottom: 18px;
+      margin-bottom: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      flex-wrap: wrap;
+      gap: 14px;
+    }
+    .sheet-title h1 {
+      font-size: clamp(20px, 3vw, 26px);
+      font-weight: 800;
+      color: #0f172a;
+      letter-spacing: -0.5px;
+    }
+    .sheet-title p {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+    .badge-period {
+      background: var(--primary-light);
+      color: var(--primary-dark);
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-weight: 700;
+      font-size: 13px;
+      display: inline-block;
+    }
+
+    /* Patient Metadata Grid */
+    .meta-box {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 14px 18px;
+      margin-bottom: 24px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      font-size: 13px;
+    }
+    .meta-item strong {
+      color: var(--text-main);
+      display: block;
+      font-size: 13.5px;
+    }
+    .meta-item span {
+      color: var(--text-muted);
+      font-size: 12px;
+    }
+
+    /* 4 Compliance Stats Grid */
+    .stats-summary-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 28px;
+    }
+    .stat-pill-card {
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 12px;
+      background: #f8fafc;
+      text-align: center;
+    }
+    .stat-pill-val {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--primary);
+    }
+    .stat-pill-lbl {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      margin-top: 2px;
+      font-weight: 600;
+    }
+
+    /* Section Subheadings */
+    .section-head {
+      font-size: 15px;
+      font-weight: 700;
+      color: #0f172a;
+      margin: 24px 0 10px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    /* Data Tables */
+    .table-wrap {
+      width: 100%;
+      overflow-x: auto;
+      margin-bottom: 20px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      min-width: 520px;
+    }
+    th, td {
+      border: 1px solid #e2e8f0;
+      padding: 10px 12px;
+      text-align: left;
+    }
+    th {
+      background: #f1f5f9;
+      font-weight: 700;
+      color: #334155;
+    }
+
+    .badge-status {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-weight: 700;
+      font-size: 11.5px;
+    }
+    .status-taken { background: var(--success-light); color: var(--success); }
+    .status-missed { background: var(--danger-light); color: var(--danger); }
+    .status-pending { background: #fef3c7; color: var(--warning); }
+
+    /* Doctor Signature Footer */
+    .signature-area {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 40px;
+      padding-top: 24px;
+      border-top: 1px dashed #cbd5e1;
+    }
+    .sign-block {
+      text-align: center;
+      width: 200px;
+    }
+    .sign-line {
+      border-bottom: 1px solid #0f172a;
+      height: 36px;
+      margin-bottom: 6px;
+    }
+    .sign-label {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    /* Document Footer Note */
+    .dossier-footer {
+      margin-top: 28px;
+      text-align: center;
+      font-size: 11px;
+      color: #94a3b8;
+    }
+
+    /* =========================================================
+       NATIVE PRINT MEDIA STYLING (A4 PDF EXPORT)
+       ========================================================= */
+    @media print {
+      body, html {
+        background: #ffffff !important;
+        color: #000000 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+      .no-print, .web-header, .filter-toolbar {
+        display: none !important;
+      }
+      .page-container {
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+      .report-sheet {
+        border: none !important;
+        box-shadow: none !important;
+        padding: 10mm 15mm !important;
+      }
+      .meta-box, .stat-pill-card {
+        background: #ffffff !important;
+        border: 1px solid #cbd5e1 !important;
+      }
+      th {
+        background: #f1f5f9 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+      table {
+        min-width: 100% !important;
+        font-size: 11.5px !important;
+      }
+      th, td {
+        padding: 6px 8px !important;
+      }
+      .badge-period, .badge-status {
+        border: 1px solid #cbd5e1 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+    }
+
+    /* =========================================================
+       RESPONSIVE BREAKPOINTS (320px - 1024px)
+       ========================================================= */
+    @media screen and (max-width: 767px) {
+      .web-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+      }
+      .header-actions {
+        width: 100%;
+      }
+      .header-actions .btn {
+        flex: 1;
+        justify-content: center;
+      }
+      .meta-box {
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+      .stats-summary-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+      .signature-area {
+        flex-direction: column;
+        align-items: center;
+        gap: 24px;
+      }
+      .sign-block {
+        width: 100%;
+        max-width: 240px;
+      }
+    }
+
+    @media screen and (max-width: 374px) {
+      .stats-summary-grid {
+        grid-template-columns: 1fr;
+      }
+      .stat-pill-val {
+        font-size: 18px;
+      }
+      .range-tabs {
+        width: 100%;
+      }
+      .range-btn {
+        flex: 1;
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ================= TOP WEB HEADER (NO-PRINT) ================= -->
+  <header class="web-header no-print">
+    <div class="brand-title">
+      <span>💙</span> MediCare Dossier Service
+    </div>
+    <div class="header-actions">
+      <!-- <button class="btn btn-ghost" onclick="window.close(); history.back();">← Back</button> -->
+      <button class="btn btn-primary" onclick="triggerNativePrint()">🖨️ Print / Download PDF</button>
+    </div>
+  </header>
+
+  <!-- ================= MAIN REPORT CONTAINER ================= -->
+  <div class="page-container">
+    
+    <!-- Filter Toolbar (NO-PRINT) -->
+    <div class="filter-toolbar no-print">
+      <div style="font-size: 13px; color: var(--text-muted);">
+        Select evaluation period for doctor verification:
+      </div>
+      <div class="range-tabs">
+        <button class="range-btn" onclick="setPeriod(7, this)">Last 7 Days</button>
+        <button class="range-btn active" onclick="setPeriod(30, this)">Last 30 Days</button>
+        <button class="range-btn" onclick="setPeriod(90, this)">Last 90 Days</button>
+      </div>
+    </div>
+
+    <!-- ================= CLINICAL REPORT DOCUMENT ================= -->
+    <div class="report-sheet">
+      
+      <!-- Sheet Header -->
+      <div class="sheet-header">
+        <div class="sheet-title">
+          <h1>MediCare Smart Health Dossier</h1>
+          <p>Electronic Medication Adherence & Prescription Compliance Record</p>
+        </div>
+        <div style="text-align: right;">
+          <div class="badge-period" id="periodBadge">Period: Last 30 Days</div>
+          <div style="font-size: 11.5px; color: var(--text-muted); margin-top: 4px;">
+            Generated: <span id="genTimestamp">22 Oct 2026, 04:00 PM</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Patient Information Metadata -->
+      <div class="meta-box">
+        <div class="meta-item">
+          <span>Patient Full Name</span>
+          <strong>Ramesh Kumar</strong>
+        </div>
+        <div class="meta-item">
+          <span>Email Address</span>
+          <strong>ramesh.kumar@example.com</strong>
+        </div>
+        <div class="meta-item">
+          <span>Date of Birth / Age</span>
+          <strong>15-Aug-1962 (64 Yrs)</strong>
+        </div>
+        <div class="meta-item">
+          <span>Emergency Contact</span>
+          <strong>+91 98765-43210 (Rahul Verma - Son)</strong>
+        </div>
+        <div class="meta-item">
+          <span>Primary Caregiver</span>
+          <strong>Linked & Monitored</strong>
+        </div>
+        <div class="meta-item">
+          <span>Clinical Dossier ID</span>
+          <strong>MED-PAT-101-2026</strong>
+        </div>
+      </div>
+
+      <!-- 4 Compliance KPI Stats -->
+      <div class="stats-summary-grid">
+        <div class="stat-pill-card">
+          <div class="stat-pill-val" id="statAdherence">91.4%</div>
+          <div class="stat-pill-lbl">Overall Adherence</div>
+        </div>
+        <div class="stat-pill-card">
+          <div class="stat-pill-val" id="statTotalDoses">60</div>
+          <div class="stat-pill-lbl">Total Doses Due</div>
+        </div>
+        <div class="stat-pill-card">
+          <div class="stat-pill-val" style="color: var(--success);" id="statTaken">55</div>
+          <div class="stat-pill-lbl">Doses Taken</div>
+        </div>
+        <div class="stat-pill-card">
+          <div class="stat-pill-val" style="color: var(--danger);" id="statMissed">5</div>
+          <div class="stat-pill-lbl">Doses Missed</div>
+        </div>
+      </div>
+
+      <!-- Section 1: Active Prescribed Medications -->
+      <div class="section-head">1. Active Prescribed Medications</div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Medicine Name</th>
+              <th>Dosage Quantity</th>
+              <th>Current Stock</th>
+              <th>Daily Routine Slots</th>
+              <th>Instructions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Metformin 500mg</strong></td>
+              <td>1 Tablet</td>
+              <td>24 Pills</td>
+              <td>08:00 AM, 08:30 PM</td>
+              <td>After Breakfast & Dinner</td>
+            </tr>
+            <tr>
+              <td><strong>Pan-D 40mg</strong></td>
+              <td>1 Capsule</td>
+              <td><span style="color: var(--danger); font-weight: 700;">3 Pills ⚠️</span></td>
+              <td>07:30 AM</td>
+              <td>Before Breakfast (Empty Stomach)</td>
+            </tr>
+            <tr>
+              <td><strong>Atorvastatin 10mg</strong></td>
+              <td>1 Tablet</td>
+              <td>18 Pills</td>
+              <td>08:30 PM</td>
+              <td>After Dinner</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Section 2: Recent Intake Audit Trail -->
+      <div class="section-head">2. Recent Intake Audit Log</div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Scheduled Time</th>
+              <th>Medicine</th>
+              <th>Recorded Status</th>
+              <th>Actual Taken Time</th>
+              <th>Audit Remarks</th>
+            </tr>
+          </thead>
+          <tbody id="logsTableBody">
+            <tr>
+              <td>22 Oct 2026, 08:00 AM</td>
+              <td>Metformin 500mg</td>
+              <td><span class="badge-status status-taken">✅ Taken</span></td>
+              <td>22 Oct 2026, 08:12 AM</td>
+              <td>On Schedule</td>
+            </tr>
+            <tr>
+              <td>21 Oct 2026, 08:30 PM</td>
+              <td>Atorvastatin 10mg</td>
+              <td><span class="badge-status status-taken">✅ Taken</span></td>
+              <td>21 Oct 2026, 08:35 PM</td>
+              <td>On Schedule</td>
+            </tr>
+            <tr>
+              <td>21 Oct 2026, 07:30 AM</td>
+              <td>Pan-D 40mg</td>
+              <td><span class="badge-status status-missed">❌ Missed</span></td>
+              <td>-</td>
+              <td>Caregiver SMS reminder triggered</td>
+            </tr>
+            <tr>
+              <td>20 Oct 2026, 08:00 AM</td>
+              <td>Metformin 500mg</td>
+              <td><span class="badge-status status-taken">✅ Taken</span></td>
+              <td>20 Oct 2026, 08:20 AM</td>
+              <td>Delayed by 20 mins</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Section 3: Physician Sign & Stamp -->
+      <div class="signature-area">
+        <div class="sign-block">
+          <div class="sign-line"></div>
+          <div class="sign-label">Patient / Guardian Signature</div>
+        </div>
+        <div class="sign-block">
+          <div class="sign-line"></div>
+          <div class="sign-label">Attending Physician / Doctor Stamp</div>
+        </div>
+      </div>
+
+      <!-- Legal & Confidentiality Note -->
+      <div class="dossier-footer">
+        Automated Electronic Adherence Dossier generated via MediCare Smart Health System.<br>
+        Verified through ASP.NET Core EF Audit Log Engine • Confidential Medical Record
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ================= JAVASCRIPT ================= -->
+  <script>
+    // 1. Native Print Trigger
+    function triggerNativePrint() {
+      window.print();
+    }
+
+    // 2. Change Evaluation Period (Matches /api/report/patient/{id}/data?days={period})
+    function setPeriod(days, btn) {
+      document.querySelectorAll('.range-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      document.getElementById('periodBadge').innerText = `Period: Last ${days} Days`;
+      
+      // Simulate dynamic recalculation
+      if (days === 7) {
+        document.getElementById('statAdherence').innerText = "94.2%";
+        document.getElementById('statTotalDoses').innerText = "14";
+        document.getElementById('statTaken').innerText = "13";
+        document.getElementById('statMissed').innerText = "1";
+      } else if (days === 30) {
+        document.getElementById('statAdherence').innerText = "91.4%";
+        document.getElementById('statTotalDoses').innerText = "60";
+        document.getElementById('statTaken').innerText = "55";
+        document.getElementById('statMissed').innerText = "5";
+      } else {
+        document.getElementById('statAdherence').innerText = "88.0%";
+        document.getElementById('statTotalDoses').innerText = "180";
+        document.getElementById('statTaken').innerText = "158";
+        document.getElementById('statMissed').innerText = "22";
+      }
+    }
+  </script>
+
+</body>
+</html>
