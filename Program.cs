@@ -74,7 +74,7 @@ builder.Services.AddScoped<IMedicineLogRepository, MedicineLogRepository>();
 builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
 builder.Services.AddScoped<ICaregiverPatientRepository, CaregiverPatientRepository>();
 builder.Services.AddScoped<ICaregiverService, CaregiverService>();
-    
+
 // Service
 builder.Services.AddScoped<IMedicineService, MedicineService>();
 builder.Services.AddScoped<IMedicineScheduleService, MedicineScheduleService>();

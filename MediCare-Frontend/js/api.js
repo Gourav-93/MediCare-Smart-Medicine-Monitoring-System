@@ -9,10 +9,22 @@
   'use strict';
 
   // 1. CONFIGURATION CONSTANTS
-  const API_BASE_URL = window.MEDICARE_API_BASE_URL ||
-    (typeof window !== 'undefined' && window.location && (window.location.port === '5000' || window.location.port === '5095')
-      ? `${window.location.origin}/api`
-      : 'http://localhost:5000/api');
+  // The .NET Core backend runs on port 5000 (and 5095).
+  // If the page is hosted by Kestrel itself (port 5000 or 5095), use relative origin.
+  // When running on VS Code Live Server (e.g. 5500, 5501) or other dev servers, point to http://localhost:5000/api.
+  function resolveApiBaseUrl() {
+    if (typeof window !== 'undefined' && window.MEDICARE_API_BASE_URL) {
+      return window.MEDICARE_API_BASE_URL;
+    }
+    if (typeof window !== 'undefined' && window.location) {
+      const port = String(window.location.port || '');
+      if (port === '5000' || port === '5095') {
+        return `${window.location.origin}/api`;
+      }
+    }
+    return 'http://localhost:5000/api';
+  }
+  const API_BASE_URL = resolveApiBaseUrl();
   const TOKEN_KEY = 'medicare_jwt_token';
   const USER_KEY = 'medicare_user';
   const ROLE_KEY = 'medicare_role';

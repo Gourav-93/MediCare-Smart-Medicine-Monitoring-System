@@ -10,7 +10,7 @@ namespace MediCare.Controllers;
 
 [ApiController]
 [Route("api/medicine")]
-[AllowAnonymous]
+// [Authorize(Roles = "ADMIN,PATIENT,CAREGIVER")]
 public class MedicineController : ControllerBase
 {
     private readonly IMedicineService _service;
