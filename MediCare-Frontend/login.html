@@ -356,6 +356,12 @@
   <main class="auth-wrapper">
     <div class="auth-card">
       
+      <!-- Access Restriction Notice -->
+      <div id="authAlertBanner" style="display: none; background: #fee2e2; border: 1px solid #f87171; color: #991b1b; padding: 12px 16px; border-radius: 10px; font-size: 13.5px; font-weight: 600; margin-bottom: 16px; align-items: center; gap: 8px;">
+        <span>🔒</span>
+        <span id="authAlertText">Please sign in or create an account to access the requested portal page.</span>
+      </div>
+
       <!-- Nav Tabs: Login vs Register -->
       <div class="auth-nav-tabs">
         <button class="tab-btn active" id="tabLogin" onclick="switchMode('login')">Sign In</button>
@@ -501,11 +507,20 @@
       } else {
         localStorage.setItem('medicare_role', currentRole);
         localStorage.setItem('userRole', currentRole);
+        localStorage.setItem('medicare_jwt_token', 'medicare_token_' + Date.now());
       }
 
       alert(`[API CALL: ${endpoint}]\n\nAuthenticated as: ${email}\nRole: ${currentRole}\nJWT Token saved to localStorage.`);
 
-      // Redirect directly to the corresponding responsive dashboard
+      // Check if redirect query parameter exists
+      const urlParams = new URLSearchParams(window.location.search);
+      const redirectTarget = urlParams.get('redirect');
+      if (redirectTarget && redirectTarget.endsWith('.html') && redirectTarget !== 'login.html') {
+        window.location.href = redirectTarget;
+        return;
+      }
+
+      // Default role dashboards
       if (currentRole === 'PATIENT') {
         window.location.href = 'patient-dashboard.html';
       } else if (currentRole === 'CAREGIVER') {
@@ -514,6 +529,29 @@
         window.location.href = 'admin-dashboard.html';
       }
     }
+
+    // Process incoming query parameters (?mode=register, ?auth_required=true, ?redirect=...)
+    window.addEventListener('DOMContentLoaded', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const mode = urlParams.get('mode');
+      const authRequired = urlParams.get('auth_required') || urlParams.get('expired');
+      const redirectPage = urlParams.get('redirect');
+
+      if (mode === 'register') {
+        switchMode('register');
+      }
+
+      if (authRequired || redirectPage) {
+        const banner = document.getElementById('authAlertBanner');
+        const alertText = document.getElementById('authAlertText');
+        if (banner) {
+          banner.style.display = 'flex';
+          if (redirectPage) {
+            alertText.innerText = `Access Restricted: Please sign in or register to open "${redirectPage}".`;
+          }
+        }
+      }
+    });
   </script>
 
   <!-- Shared MediCare API & Modular Navbar Utilities -->

@@ -23,7 +23,7 @@
         --primary-light: #e0f2fe;
         --danger: #dc2626;
         --danger-light: #fee2e2;
-        --success: #16a34a;
+        --success: #18a74c;
         --success-light: #dcfce7;
         --warning: #d97706;
         --warning-light: #fef3c7;
@@ -907,13 +907,12 @@
             </div>
           </div>
 
-          <div class="chart-canvas-wrap">
-            <canvas id="adherenceLineChart"></canvas>
-          </div>
-
-          <!-- Doughnut Chart Wrapper -->
-          <div class="chart-canvas-wrap doughnut-wrap">
-            <canvas id="doseStatusDoughnut"></canvas>
+          <div class="chart-box">
+            <h4>Dose Compliance Breakdown</h4>
+            <p>Real-time intake status for active routines</p>
+            <div class="chart-canvas-wrap doughnut-wrap">
+              <canvas id="doseStatusDoughnut"></canvas>
+            </div>
           </div>
         </div>
       </section>
@@ -1221,61 +1220,61 @@
 
     <!-- ================= JAVASCRIPT ================= -->
     <script>
-      // 1. Mobile Drawer
-      const menuToggle = document.getElementById("menuToggle");
-      const closeDrawer = document.getElementById("closeDrawer");
-      const mobileDrawer = document.getElementById("mobileDrawer");
-      const mobileOverlay = document.getElementById("mobileOverlay");
-
+      // 1. Mobile Drawer (Dynamic listeners attached safely)
       function toggleMenu() {
-        mobileDrawer.classList.toggle("active");
-        mobileOverlay.classList.toggle("active");
-        document.body.style.overflow = mobileDrawer.classList.contains("active")
-          ? "hidden"
-          : "";
+        if (typeof window.openDrawer === "function" && typeof window.closeDrawer === "function") {
+          window.toggleMenu();
+        } else {
+          const mobileDrawer = document.getElementById("mobileDrawer");
+          const mobileOverlay = document.getElementById("mobileOverlay");
+          if (mobileDrawer && mobileOverlay) {
+            mobileDrawer.classList.toggle("active");
+            mobileOverlay.classList.toggle("active");
+          }
+        }
       }
-
-      menuToggle.addEventListener("click", toggleMenu);
-      closeDrawer.addEventListener("click", toggleMenu);
-      mobileOverlay.addEventListener("click", toggleMenu);
 
       // 2. SOS Trigger
       function triggerSOS() {
-        alert(
-          "🚨 EMERGENCY ALERT TRIGGERED!\n\nLinked caregivers notified via Email and in-app alerts.\nAPI: POST /api/emergency",
-        );
+        if (typeof window.handleGlobalSOS === "function") {
+          window.handleGlobalSOS();
+        } else {
+          alert("🚨 EMERGENCY ALERT TRIGGERED!\n\nLinked caregivers notified via Email and in-app alerts.\nAPI: POST /api/emergency");
+        }
       }
 
       // 3. Auth Modal Functions
-      const authModal = document.getElementById("authModal");
-      const tabLogin = document.getElementById("tabLogin");
-      const tabRegister = document.getElementById("tabRegister");
-      const nameGroup = document.getElementById("nameGroup");
-      const roleGroup = document.getElementById("roleGroup");
-      const authSubmitBtn = document.getElementById("authSubmitBtn");
-
       function openAuthModal(mode) {
+        const authModal = document.getElementById("authModal");
+        if (!authModal) return;
         authModal.classList.add("active");
         switchAuthTab(mode);
       }
 
       function closeAuthModal() {
-        authModal.classList.remove("active");
+        const authModal = document.getElementById("authModal");
+        if (authModal) authModal.classList.remove("active");
       }
 
       function switchAuthTab(mode) {
+        const tabLogin = document.getElementById("tabLogin");
+        const tabRegister = document.getElementById("tabRegister");
+        const nameGroup = document.getElementById("nameGroup");
+        const roleGroup = document.getElementById("roleGroup");
+        const authSubmitBtn = document.getElementById("authSubmitBtn");
+
         if (mode === "register") {
-          tabRegister.classList.add("active");
-          tabLogin.classList.remove("active");
-          nameGroup.style.display = "block";
-          roleGroup.style.display = "block";
-          authSubmitBtn.innerText = "Create Account";
+          if (tabRegister) tabRegister.classList.add("active");
+          if (tabLogin) tabLogin.classList.remove("active");
+          if (nameGroup) nameGroup.style.display = "block";
+          if (roleGroup) roleGroup.style.display = "block";
+          if (authSubmitBtn) authSubmitBtn.innerText = "Create Account";
         } else {
-          tabLogin.classList.add("active");
-          tabRegister.classList.remove("active");
-          nameGroup.style.display = "none";
-          roleGroup.style.display = "none";
-          authSubmitBtn.innerText = "Sign In";
+          if (tabLogin) tabLogin.classList.add("active");
+          if (tabRegister) tabRegister.classList.remove("active");
+          if (nameGroup) nameGroup.style.display = "none";
+          if (roleGroup) roleGroup.style.display = "none";
+          if (authSubmitBtn) authSubmitBtn.innerText = "Sign In";
         }
       }
 
@@ -1300,75 +1299,105 @@
       }
 
       // 4. Chart.js Graphs Initialization
-      window.addEventListener("DOMContentLoaded", () => {
-        // Line Chart (Adherence Trend)
-        const ctxLine = document
-          .getElementById("adherenceLineChart")
-          .getContext("2d");
-        new Chart(ctxLine, {
-          type: "line",
-          data: {
-            labels: ["May", "Jun", "Jul", "Aug", "Sep", "Oct"],
-            datasets: [
-              {
-                label: "Adherence Rate (%)",
-                data: [78, 82, 80, 87, 89, 91.4],
-                borderColor: "#0284c7",
-                backgroundColor: "rgba(2, 132, 199, 0.08)",
-                borderWidth: 3,
-                tension: 0.35,
-                fill: true,
-                pointBackgroundColor: "#0284c7",
-                pointRadius: 4,
-              },
-            ],
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-              legend: { display: false },
-            },
-            scales: {
-              y: {
-                min: 60,
-                max: 100,
-                ticks: { callback: (v) => v + "%" },
-              },
-            },
-          },
-        });
+      function initIndexCharts() {
+        if (typeof Chart === "undefined") {
+          setTimeout(initIndexCharts, 150);
+          return;
+        }
 
-        // Doughnut Chart (Dose Status)
-        const ctxDoughnut = document
-          .getElementById("doseStatusDoughnut")
-          .getContext("2d");
-        new Chart(ctxDoughnut, {
-          type: "doughnut",
-          data: {
-            labels: ["Taken (Completed)", "Pending (Upcoming)", "Missed Doses"],
-            datasets: [
-              {
-                data: [82, 12, 6],
-                backgroundColor: ["#16a34a", "#d97706", "#dc2626"],
-                borderWidth: 2,
-                borderColor: "#ffffff",
+        const lineCanvas = document.getElementById("adherenceLineChart");
+        const doughnutCanvas = document.getElementById("doseStatusDoughnut");
+
+        if (lineCanvas) {
+          if (window.adherenceChartInstance) {
+            window.adherenceChartInstance.destroy();
+          }
+          const ctxLine = lineCanvas.getContext("2d");
+          window.adherenceChartInstance = new Chart(ctxLine, {
+            type: "line",
+            data: {
+              labels: ["May", "Jun", "Jul", "Aug", "Sep", "Oct"],
+              datasets: [
+                {
+                  label: "Adherence Rate (%)",
+                  data: [78, 82, 80, 87, 89, 91.4],
+                  borderColor: "#0284c7",
+                  backgroundColor: "rgba(2, 132, 199, 0.08)",
+                  borderWidth: 3,
+                  tension: 0.35,
+                  fill: true,
+                  pointBackgroundColor: "#0284c7",
+                  pointRadius: 4,
+                  pointHoverRadius: 6,
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: { display: false },
+                tooltip: {
+                  callbacks: {
+                    label: (context) => ` Adherence: ${context.parsed.y}%`,
+                  },
+                },
               },
-            ],
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-              legend: {
-                position: "bottom",
-                labels: { boxWidth: 12, padding: 6, font: { size: 10 } },
+              scales: {
+                y: {
+                  min: 60,
+                  max: 100,
+                  ticks: { callback: (v) => v + "%" },
+                },
               },
             },
-            cutout: "70%",
-          },
-        });
-      });
+          });
+        }
+
+        if (doughnutCanvas) {
+          if (window.doughnutChartInstance) {
+            window.doughnutChartInstance.destroy();
+          }
+          const ctxDoughnut = doughnutCanvas.getContext("2d");
+          window.doughnutChartInstance = new Chart(ctxDoughnut, {
+            type: "doughnut",
+            data: {
+              labels: ["Taken (Completed)", "Pending (Upcoming)", "Missed Doses"],
+              datasets: [
+                {
+                  data: [82, 12, 6],
+                  backgroundColor: ["#16a34a", "#d97706", "#dc2626"],
+                  borderWidth: 2,
+                  borderColor: "#ffffff",
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: {
+                  position: "bottom",
+                  labels: {
+                    boxWidth: 12,
+                    padding: 10,
+                    font: { size: 11, family: "'Plus Jakarta Sans', sans-serif" },
+                  },
+                },
+              },
+              cutout: "70%",
+            },
+          });
+        }
+      }
+
+      // Safe trigger across all document ready states
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", initIndexCharts);
+      } else {
+        initIndexCharts();
+      }
+      window.addEventListener("load", initIndexCharts);
     </script>
 
     <!-- Shared MediCare API & Modular Navbar Utilities -->

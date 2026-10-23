@@ -2,13 +2,32 @@
  * MEDICARE PLATFORM - MODULAR HEADER & MOBILE NAVIGATION DRAWER
  * File: js/navbar.js
  * Description: Client-side dynamic injection for the unified navigation header,
- *              responsive action cluster, dynamic role indicators, and slide-in drawer.
+ *              responsive action cluster, dynamic role indicators, slide-in drawer,
+ *              strict route guards, and unauthenticated access prevention.
  */
 
 (function (window, document) {
   'use strict';
 
-  // 1. PAGE METADATA CONFIGURATION
+  // 1. PUBLIC PAGES (Always accessible without login or registration)
+  const PUBLIC_PAGES = ['index.html', 'login.html', ''];
+
+  // 2. PROTECTED ROUTES & ROLE PERMISSIONS
+  const ROUTE_PERMISSIONS = {
+    'patient-dashboard.html': ['PATIENT', 'ADMIN'],
+    'caregiver-dashboard.html': ['CAREGIVER', 'ADMIN'],
+    'admin-dashboard.html': ['ADMIN'],
+    'medicines.html': ['PATIENT', 'CAREGIVER', 'ADMIN'],
+    'history.html': ['PATIENT', 'CAREGIVER', 'ADMIN'],
+    'notifications.html': ['PATIENT', 'CAREGIVER', 'ADMIN'],
+    'settings.html': ['PATIENT', 'CAREGIVER', 'ADMIN'],
+    'profile-settings.html': ['PATIENT', 'CAREGIVER', 'ADMIN'],
+    'emergency.html': ['PATIENT', 'CAREGIVER', 'ADMIN'],
+    'ai-assistant.html': ['PATIENT', 'CAREGIVER', 'ADMIN'],
+    'print-report.html': ['PATIENT', 'CAREGIVER', 'ADMIN'],
+  };
+
+  // 3. PAGE METADATA CONFIGURATION
   const PAGE_MAP = {
     'index.html': {
       title: 'MediCare',
@@ -91,43 +110,78 @@
     },
   };
 
-  // 1. PUBLIC LINKS (Visible BEFORE Login / Registration)
+  // 4. PUBLIC LINKS (Strictly visible BEFORE Login / Registration)
   const PUBLIC_NAV_LINKS = [
     { label: 'Overview', href: 'index.html', key: 'overview' },
     { label: 'Features', href: 'index.html#features', key: 'features' },
     { label: 'Live Charts', href: 'index.html#dashboard-overview', key: 'charts' },
   ];
 
-  // 2. AUTHENTICATED PORTAL LINKS (Unlocked AFTER Login / Registration)
-  const AUTH_NAV_LINKS = [
-    { label: 'Overview', href: 'index.html', key: 'overview' },
-    { label: 'Routine', href: 'patient-dashboard.html', key: 'routine' },
-    { label: 'Prescriptions', href: 'medicines.html', key: 'prescriptions' },
-    { label: 'Caregiver Hub', href: 'caregiver-dashboard.html', key: 'caregiver' },
-    { label: 'History', href: 'history.html', key: 'history' },
-    { label: 'Alerts', href: 'notifications.html', key: 'alerts' },
-    { label: 'Settings', href: 'settings.html', key: 'settings' },
-  ];
+  // 5. AUTHENTICATED ROLE-BASED PORTAL LINKS (Unlocked ONLY AFTER Login / Registration)
+  const ROLE_NAV_LINKS = {
+    PATIENT: [
+      { label: 'Overview', href: 'index.html', key: 'overview' },
+      { label: 'Routine', href: 'patient-dashboard.html', key: 'routine' },
+      { label: 'Prescriptions', href: 'medicines.html', key: 'prescriptions' },
+      { label: 'History', href: 'history.html', key: 'history' },
+      { label: 'Alerts', href: 'notifications.html', key: 'alerts' },
+      { label: 'Settings', href: 'settings.html', key: 'settings' },
+    ],
+    CAREGIVER: [
+      { label: 'Overview', href: 'index.html', key: 'overview' },
+      { label: 'Caregiver Hub', href: 'caregiver-dashboard.html', key: 'caregiver' },
+      { label: 'Prescriptions', href: 'medicines.html', key: 'prescriptions' },
+      { label: 'History', href: 'history.html', key: 'history' },
+      { label: 'Alerts', href: 'notifications.html', key: 'alerts' },
+      { label: 'Settings', href: 'settings.html', key: 'settings' },
+    ],
+    ADMIN: [
+      { label: 'Overview', href: 'index.html', key: 'overview' },
+      { label: 'Admin Console', href: 'admin-dashboard.html', key: 'admin' },
+      { label: 'Prescriptions', href: 'medicines.html', key: 'prescriptions' },
+      { label: 'History', href: 'history.html', key: 'history' },
+      { label: 'Alerts', href: 'notifications.html', key: 'alerts' },
+      { label: 'Settings', href: 'settings.html', key: 'settings' },
+    ],
+  };
 
-  // 3. PUBLIC DRAWER LINKS (Before Login / Registration)
+  // 6. PUBLIC DRAWER LINKS (Before Login / Registration)
   const PUBLIC_DRAWER_LINKS = [
     { label: 'Home Overview', href: 'index.html', icon: '🏠', key: 'overview' },
     { label: 'Platform Features', href: 'index.html#features', icon: '⚡', key: 'features' },
     { label: 'Compliance Graphs', href: 'index.html#dashboard-overview', icon: '📊', key: 'charts' },
   ];
 
-  // 4. AUTHENTICATED DRAWER LINKS (Unlocked AFTER Login / Registration)
-  const AUTH_DRAWER_LINKS = [
-    { label: 'Overview', href: 'index.html', icon: '🏠', key: 'overview' },
-    { label: 'Daily Routine', href: 'patient-dashboard.html', icon: '🕒', key: 'routine' },
-    { label: 'Prescriptions', href: 'medicines.html', icon: '💊', key: 'prescriptions' },
-    { label: 'Caregiver Hub', href: 'caregiver-dashboard.html', icon: '🛡️', key: 'caregiver' },
-    { label: 'Intake History', href: 'history.html', icon: '📋', key: 'history' },
-    { label: 'Notification Alerts', href: 'notifications.html', icon: '🔔', key: 'alerts' },
-    { label: 'Account Settings', href: 'settings.html', icon: '⚙️', key: 'settings' },
-    { label: 'AI Health Assistant', href: 'ai-assistant.html', icon: '🤖', key: 'ai' },
-    { label: 'Emergency SOS', href: 'emergency.html', icon: '🚨', key: 'emergency' },
-  ];
+  // 7. AUTHENTICATED ROLE-BASED DRAWER LINKS (Unlocked AFTER Login / Registration)
+  const ROLE_DRAWER_LINKS = {
+    PATIENT: [
+      { label: 'Home Overview', href: 'index.html', icon: '🏠', key: 'overview' },
+      { label: 'Daily Routine', href: 'patient-dashboard.html', icon: '🕒', key: 'routine' },
+      { label: 'Prescriptions', href: 'medicines.html', icon: '💊', key: 'prescriptions' },
+      { label: 'Intake History', href: 'history.html', icon: '📋', key: 'history' },
+      { label: 'Notification Alerts', href: 'notifications.html', icon: '🔔', key: 'alerts' },
+      { label: 'Account Settings', href: 'settings.html', icon: '⚙️', key: 'settings' },
+      { label: 'AI Health Assistant', href: 'ai-assistant.html', icon: '🤖', key: 'ai' },
+      { label: 'Emergency SOS', href: 'emergency.html', icon: '🚨', key: 'emergency' },
+    ],
+    CAREGIVER: [
+      { label: 'Home Overview', href: 'index.html', icon: '🏠', key: 'overview' },
+      { label: 'Caregiver Hub', href: 'caregiver-dashboard.html', icon: '🛡️', key: 'caregiver' },
+      { label: 'Prescriptions & Stock', href: 'medicines.html', icon: '💊', key: 'prescriptions' },
+      { label: 'Patient History', href: 'history.html', icon: '📋', key: 'history' },
+      { label: 'Critical Alerts', href: 'notifications.html', icon: '🔔', key: 'alerts' },
+      { label: 'Account Settings', href: 'settings.html', icon: '⚙️', key: 'settings' },
+      { label: 'Emergency SOS', href: 'emergency.html', icon: '🚨', key: 'emergency' },
+    ],
+    ADMIN: [
+      { label: 'Home Overview', href: 'index.html', icon: '🏠', key: 'overview' },
+      { label: 'Admin Console', href: 'admin-dashboard.html', icon: '💼', key: 'admin' },
+      { label: 'Medicine Catalog', href: 'medicines.html', icon: '💊', key: 'prescriptions' },
+      { label: 'Intake History', href: 'history.html', icon: '📋', key: 'history' },
+      { label: 'System Alerts', href: 'notifications.html', icon: '🔔', key: 'alerts' },
+      { label: 'Global Settings', href: 'settings.html', icon: '⚙️', key: 'settings' },
+    ],
+  };
 
   /**
    * Determine Current Page Filename
@@ -138,29 +192,77 @@
   }
 
   /**
-   * Determine User Role and Dashboard Target
+   * Determine User Role and Dashboard Target with strict token validation
    */
   function getUserSession() {
     let role = null;
     let token = null;
 
     if (window.MediCareAPI) {
-      role = window.MediCareAPI.getUserRole();
       token = window.MediCareAPI.getAuthToken();
+      role = window.MediCareAPI.getUserRole();
     } else {
+      token = localStorage.getItem('medicare_jwt_token') || localStorage.getItem('jwtToken') || localStorage.getItem('token');
       role = localStorage.getItem('medicare_role') || localStorage.getItem('userRole');
-      token = localStorage.getItem('medicare_jwt_token') || localStorage.getItem('token');
     }
 
+    // Strict validation: token must exist and not be empty / null string
+    const isValidToken = !!token && token !== 'null' && token !== 'undefined' && token.trim() !== '';
+
+    if (!isValidToken) {
+      return {
+        isLoggedIn: false,
+        role: null,
+        dashboardUrl: 'login.html',
+      };
+    }
+
+    role = role ? role.toUpperCase() : 'PATIENT';
     let dashboardUrl = 'patient-dashboard.html';
     if (role === 'CAREGIVER') dashboardUrl = 'caregiver-dashboard.html';
     else if (role === 'ADMIN') dashboardUrl = 'admin-dashboard.html';
 
     return {
-      isLoggedIn: !!token,
-      role: role ? role.toUpperCase() : null,
+      isLoggedIn: true,
+      role,
       dashboardUrl,
     };
+  }
+
+  /**
+   * Route Guard: Prevent unauthenticated users from opening protected links/pages
+   */
+  function enforceRouteGuard(session, currentPage) {
+    if (PUBLIC_PAGES.includes(currentPage)) {
+      return true;
+    }
+
+    // Unauthenticated user trying to open a protected page
+    if (!session.isLoggedIn) {
+      try {
+        if (document.body) document.body.style.display = 'none';
+        document.documentElement.style.display = 'none';
+      } catch (e) {}
+
+      alert('🔒 Access Restricted: Please sign in or register to access this MediCare portal page.');
+      window.location.replace(`login.html?redirect=${encodeURIComponent(currentPage)}&auth_required=true`);
+      return false;
+    }
+
+    // Role-based permission check for authenticated users
+    const allowedRoles = ROUTE_PERMISSIONS[currentPage];
+    if (allowedRoles && !allowedRoles.includes(session.role)) {
+      try {
+        if (document.body) document.body.style.display = 'none';
+        document.documentElement.style.display = 'none';
+      } catch (e) {}
+
+      alert(`⚠️ Access Restricted: Your account (${session.role}) does not have permission for this portal.`);
+      window.location.replace(session.dashboardUrl || 'index.html');
+      return false;
+    }
+
+    return true;
   }
 
   /**
@@ -169,7 +271,7 @@
   function buildHeaderHTML(meta, session, currentPage) {
     const isPrintPage = meta.isPrintReport || currentPage === 'print-report.html';
 
-    // 1. Brand Section
+    // 1. Brand Section (Role badge only shown when logged in)
     const roleBadge = session.isLoggedIn && session.role
       ? `<span class="badge badge-role" style="margin-left: 6px;">${session.role}</span>`
       : '';
@@ -185,17 +287,16 @@
       </a>
     `;
 
-    // 2. Desktop Links (Hidden until logged in / registered)
+    // 2. Desktop Links:
+    // When LOGGED IN: show role-specific authenticated links
+    // When NOT LOGGED IN: strictly show only public links (Overview, Features, Live Charts)
     let navLinksHTML = '';
     if (!isPrintPage && currentPage !== 'login.html') {
-      // Logic: Only show full portal links if logged in; otherwise show only public links
       let linksToShow = [];
       if (session.isLoggedIn) {
-        linksToShow = AUTH_NAV_LINKS;
-      } else if (currentPage === 'index.html') {
-        linksToShow = PUBLIC_NAV_LINKS;
+        linksToShow = ROLE_NAV_LINKS[session.role] || ROLE_NAV_LINKS.PATIENT;
       } else {
-        linksToShow = [{ label: 'Overview', href: 'index.html', key: 'overview' }];
+        linksToShow = PUBLIC_NAV_LINKS;
       }
 
       const linksItems = linksToShow.map((item) => {
@@ -222,7 +323,7 @@
         </div>
       `;
     } else if (session.isLoggedIn) {
-      // Unlocked actions after login
+      // Unlocked actions after login: SOS, Dashboard, and Sign Out
       actionsHTML = `
         <div class="desktop-actions">
           <button class="btn btn-sos" id="headerSosBtn" onclick="window.handleGlobalSOS()">🚨 SOS</button>
@@ -231,7 +332,7 @@
         </div>
       `;
     } else {
-      // Actions when NOT logged in: Sign In & Get Started
+      // Actions when NOT logged in: Sign In & Register buttons
       actionsHTML = `
         <div class="desktop-auth-actions">
           <button class="btn btn-ghost" onclick="window.openAuthOrLogin('login')">Sign In</button>
@@ -240,7 +341,7 @@
       `;
     }
 
-    // 4. Mobile Actions (Hamburger & SOS only when logged in)
+    // 4. Mobile Actions (Hamburger always, SOS only when logged in)
     const mobileActionsHTML = isPrintPage
       ? ''
       : `
@@ -272,7 +373,9 @@
     if (isPrintPage) return '';
 
     // Logic: Only show full portal links in drawer if logged in; otherwise show only public links
-    const drawerLinksToShow = session.isLoggedIn ? AUTH_DRAWER_LINKS : PUBLIC_DRAWER_LINKS;
+    const drawerLinksToShow = session.isLoggedIn
+      ? (ROLE_DRAWER_LINKS[session.role] || ROLE_DRAWER_LINKS.PATIENT)
+      : PUBLIC_DRAWER_LINKS;
 
     const drawerItems = drawerLinksToShow.map((item) => {
       const isActive = item.href === currentPage || meta.navKey === item.key;
@@ -340,7 +443,7 @@
     `;
   }
 
-  // 2. DRAWER CONTROLLER FUNCTIONS
+  // 8. DRAWER CONTROLLER FUNCTIONS
   function toggleMenu() {
     const drawer = document.getElementById('mobileDrawer');
     const overlay = document.getElementById('mobileOverlay');
@@ -376,9 +479,8 @@
     document.body.style.overflow = '';
   }
 
-  // 3. ACTION HANDLERS
+  // 9. ACTION HANDLERS
   function handleGlobalSOS() {
-    // 1. Check if page has its own dedicated SOS function
     if (typeof window.triggerPatientSOS === 'function') {
       window.triggerPatientSOS();
       return;
@@ -396,7 +498,6 @@
       return;
     }
 
-    // 2. Default fallback behavior: navigate to emergency.html
     const currentPage = getCurrentPageName();
     if (currentPage !== 'emergency.html') {
       window.location.href = 'emergency.html';
@@ -410,9 +511,15 @@
       if (window.MediCareAPI && window.MediCareAPI.clearAuthToken) {
         window.MediCareAPI.clearAuthToken();
       } else {
-        localStorage.clear();
+        localStorage.removeItem('medicare_jwt_token');
+        localStorage.removeItem('jwtToken');
+        localStorage.removeItem('token');
+        localStorage.removeItem('medicare_role');
+        localStorage.removeItem('userRole');
+        localStorage.removeItem('medicare_user');
       }
-      window.location.href = 'login.html';
+      // Return to homepage with logged-out public view
+      window.location.href = 'index.html';
     }
   }
 
@@ -424,7 +531,39 @@
     }
   }
 
-  // 4. ATTACH INTERACTIVE EVENT LISTENERS
+  // 10. PUBLIC PAGE CLICK INTERCEPTOR
+  // Intercept any click pointing to a protected portal page when user is not logged in
+  function attachPublicLinkInterceptors() {
+    document.addEventListener(
+      'click',
+      function (e) {
+        const link = e.target.closest('a');
+        if (!link) return;
+        const href = link.getAttribute('href');
+        if (!href || href.startsWith('#') || href.startsWith('javascript:') || href.startsWith('mailto:') || href.startsWith('tel:')) {
+          return;
+        }
+
+        const targetPage = href.split('/').pop().split('?')[0].split('#')[0].toLowerCase();
+        if (targetPage && targetPage.endsWith('.html') && !PUBLIC_PAGES.includes(targetPage)) {
+          const session = getUserSession();
+          if (!session.isLoggedIn) {
+            e.preventDefault();
+            e.stopPropagation();
+            const doAuth = confirm(
+              '🔒 Login Required\n\nThis section requires an active MediCare account.\n\nWould you like to Sign In or Create an Account now?'
+            );
+            if (doAuth) {
+              openAuthOrLogin('login');
+            }
+          }
+        }
+      },
+      true
+    );
+  }
+
+  // 11. ATTACH DRAWER LISTENERS
   function attachDrawerListeners() {
     const menuToggle = document.getElementById('menuToggle');
     const closeDrawerBtn = document.getElementById('closeDrawer');
@@ -445,28 +584,30 @@
       overlay.addEventListener('click', closeDrawer);
     }
 
-    // Keyboard ESC key to close drawer
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') closeDrawer();
     });
 
-    // Auto-close on viewport resize to desktop
     window.addEventListener('resize', () => {
       if (window.innerWidth > 920) closeDrawer();
     });
   }
 
-  // 5. INITIALIZATION & DOM INJECTION
+  // 12. INITIALIZATION & DOM INJECTION
   function initNavbar() {
     const currentPage = getCurrentPageName();
-    let headerMount = document.getElementById('global-header');
+    const session = getUserSession();
 
-    // If no #global-header, look for existing .site-header or .top-bar
+    // 1. Strict route guard check
+    if (!enforceRouteGuard(session, currentPage)) {
+      return;
+    }
+
+    // 2. Locate or create header mount element
+    let headerMount = document.getElementById('global-header');
     if (!headerMount) {
       headerMount = document.querySelector('.site-header, .top-bar, .web-header');
     }
-
-    // If still none, create and mount into body
     if (!headerMount) {
       headerMount = document.createElement('header');
       headerMount.id = 'global-header';
@@ -474,15 +615,13 @@
       document.body.prepend(headerMount);
     }
 
-    // Ensure site-header class is present
     headerMount.classList.add('site-header');
 
-    // Handle print-report page special styling
     if (currentPage === 'print-report.html') {
       headerMount.classList.add('no-print');
     }
 
-    // Resolve Page Metadata
+    // 3. Resolve Page Metadata
     const customSubtitle = headerMount.getAttribute('data-subtitle');
     const customIcon = headerMount.getAttribute('data-icon');
     const customNavKey = headerMount.getAttribute('data-nav');
@@ -500,18 +639,16 @@
     if (customIcon) meta.icon = customIcon;
     if (customNavKey) meta.navKey = customNavKey;
 
-    const session = getUserSession();
-
-    // Render Header
+    // 4. Render Header
     headerMount.innerHTML = buildHeaderHTML(meta, session, currentPage);
 
-    // Remove any previous dynamic drawer elements to avoid duplicates
+    // 5. Remove any previous dynamic drawer elements to avoid duplicates
     const oldOverlay = document.getElementById('mobileOverlay');
     const oldDrawer = document.getElementById('mobileDrawer');
     if (oldOverlay) oldOverlay.remove();
     if (oldDrawer) oldDrawer.remove();
 
-    // Render Drawer right after Header
+    // 6. Render Drawer right after Header
     if (currentPage !== 'print-report.html') {
       const drawerFragment = document.createRange().createContextualFragment(
         buildDrawerHTML(meta, session, currentPage)
@@ -519,11 +656,11 @@
       headerMount.parentNode.insertBefore(drawerFragment, headerMount.nextSibling);
     }
 
-    // Bind event listeners
+    // 7. Bind interactive listeners
     attachDrawerListeners();
   }
 
-  // 6. EXPORT GLOBALS & AUTO-RUN
+  // 13. EXPORT GLOBALS & AUTO-RUN
   window.toggleMenu = toggleMenu;
   window.openDrawer = openDrawer;
   window.closeDrawer = closeDrawer;
@@ -531,6 +668,10 @@
   window.handleSignOut = handleSignOut;
   window.openAuthOrLogin = openAuthOrLogin;
   window.initMediCareNavbar = initNavbar;
+  window.getUserSession = getUserSession;
+
+  // Attach link click interceptor on public pages
+  attachPublicLinkInterceptors();
 
   // Run on DOM ready
   if (document.readyState === 'loading') {
@@ -539,7 +680,7 @@
     initNavbar();
   }
 
-  // Reactive listener: instantly unlock or hide links when user logs in, registers, or logs out
+  // Reactive listeners: instantly unlock or hide links when user logs in, registers, or logs out
   window.addEventListener('medicare:auth-change', initNavbar);
   window.addEventListener('storage', (e) => {
     if (!e.key || e.key.includes('medicare') || e.key.includes('token') || e.key.includes('Role')) {

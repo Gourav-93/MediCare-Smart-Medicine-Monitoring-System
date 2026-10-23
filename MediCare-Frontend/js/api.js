@@ -40,12 +40,15 @@
 
   // 2. JWT TOKEN STORAGE HELPERS
   function getAuthToken() {
-    return (
+    const token =
       localStorage.getItem(TOKEN_KEY) ||
       localStorage.getItem('jwtToken') ||
       localStorage.getItem('token') ||
-      null
-    );
+      null;
+    if (!token || token === 'null' || token === 'undefined' || token.trim() === '') {
+      return null;
+    }
+    return token;
   }
 
   function setAuthToken(token, user = null) {
@@ -137,11 +140,13 @@
   }
 
   function getUserRole() {
+    const token = getAuthToken();
+    if (!token) return null; // No role when not logged in
     const user = getCurrentUser();
     if (user && user.role) return user.role.toUpperCase();
     const storedRole = localStorage.getItem(ROLE_KEY) || localStorage.getItem('userRole');
-    if (storedRole) return storedRole.toUpperCase();
-    return null;
+    if (storedRole && storedRole !== 'null' && storedRole !== 'undefined') return storedRole.toUpperCase();
+    return 'PATIENT';
   }
 
   // 3. GENERIC API FETCH WRAPPER
