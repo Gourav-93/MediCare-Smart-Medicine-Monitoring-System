@@ -265,6 +265,13 @@
     return true;
   }
 
+  // Medical Cross SVG Icon for professional healthcare branding
+  const DEFAULT_MED_ICON = `
+    <svg class="med-cross-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M14.5 4.5C14.5 3.67157 13.8284 3 13 3H11C10.1716 3 9.5 3.67157 9.5 4.5V9.5H4.5C3.67157 9.5 3 10.1716 3 11V13C3 13.8284 3.67157 14.5 4.5 14.5H9.5V19.5C9.5 20.3284 10.1716 21 11 21H13C13.8284 21 14.5 20.3284 14.5 19.5V14.5H19.5C20.3284 14.5 21 13.8284 21 13V11C21 10.1716 20.3284 9.5 19.5 9.5H14.5V4.5Z" fill="currentColor"/>
+    </svg>
+  `;
+
   /**
    * Build Header HTML Template
    */
@@ -273,15 +280,17 @@
 
     // 1. Brand Section (Role badge only shown when logged in)
     const roleBadge = session.isLoggedIn && session.role
-      ? `<span class="badge badge-role" style="margin-left: 6px;">${session.role}</span>`
+      ? `<span class="badge badge-role role-${session.role.toLowerCase()}"><span class="role-status-dot"></span>${session.role}</span>`
       : '';
+
+    const iconContent = (meta.icon === '+' || !meta.icon) ? DEFAULT_MED_ICON : meta.icon;
 
     const brandHTML = `
       <a href="index.html" class="brand-logo" title="MediCare Home">
-        <div class="logo-icon">${meta.icon}</div>
+        <div class="logo-icon">${iconContent}</div>
         <div class="brand-text">
-          <h1>${meta.title}</h1>
-          <span>${meta.subtitle}</span>
+          <h1>Medi<span class="brand-accent">Care</span></h1>
+          <span class="brand-subtitle">${meta.subtitle}</span>
         </div>
         ${roleBadge}
       </a>
@@ -326,7 +335,7 @@
       // Unlocked actions after login: SOS, Dashboard, and Sign Out
       actionsHTML = `
         <div class="desktop-actions">
-          <button class="btn btn-sos" id="headerSosBtn" onclick="window.handleGlobalSOS()">🚨 SOS</button>
+          <button class="btn btn-sos" id="headerSosBtn" onclick="window.handleGlobalSOS()">🚨 SOS PANIC</button>
           <a href="${session.dashboardUrl}" class="btn btn-ghost">Dashboard</a>
           <button class="btn btn-ghost" onclick="window.handleSignOut()">Sign Out</button>
         </div>
@@ -336,7 +345,7 @@
       actionsHTML = `
         <div class="desktop-auth-actions">
           <button class="btn btn-ghost" onclick="window.openAuthOrLogin('login')">Sign In</button>
-          <button class="btn btn-primary" onclick="window.openAuthOrLogin('register')">Get Started</button>
+          <button class="btn btn-primary" onclick="window.openAuthOrLogin('register')">Get Started →</button>
         </div>
       `;
     }
@@ -382,22 +391,25 @@
       return `
         <li>
           <a href="${item.href}" class="${isActive ? 'active' : ''}">
-            <span style="font-size: 18px;">${item.icon}</span>
+            <span class="drawer-link-icon">${item.icon}</span>
             <span>${item.label}</span>
           </a>
         </li>
       `;
     }).join('');
 
+    const iconContent = (meta.icon === '+' || !meta.icon) ? DEFAULT_MED_ICON : meta.icon;
+
     let drawerAuthHTML = '';
     if (session.isLoggedIn) {
       drawerAuthHTML = `
         <div class="drawer-auth">
-          <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 4px;">
-            Account: <strong>${session.role || 'User'}</strong>
+          <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 4px; display: flex; align-items: center; justify-content: space-between;">
+            <span>Connected Role:</span>
+            <span class="badge badge-role role-${(session.role || 'user').toLowerCase()}"><span class="role-status-dot"></span>${session.role || 'User'}</span>
           </div>
           <button class="btn btn-sos" style="width: 100%;" onclick="window.handleGlobalSOS()">
-            🚨 EMERGENCY SOS
+            🚨 EMERGENCY SOS PANIC
           </button>
           <a href="${session.dashboardUrl}" class="btn btn-primary" style="width: 100%;">
             👤 My Dashboard
@@ -414,7 +426,7 @@
             Sign in or register to unlock your personal health portal.
           </div>
           <button class="btn btn-primary" style="width: 100%;" onclick="window.openAuthOrLogin('register'); window.toggleMenu();">
-            Create Account
+            Create Account →
           </button>
           <button class="btn btn-ghost" style="width: 100%;" onclick="window.openAuthOrLogin('login'); window.toggleMenu();">
             Sign In
@@ -428,12 +440,18 @@
       <aside class="mobile-drawer" id="mobileDrawer" aria-label="Mobile Navigation Drawer">
         <div class="drawer-header">
           <div class="brand-logo">
-            <div class="logo-icon">${meta.icon}</div>
+            <div class="logo-icon">${iconContent}</div>
             <div class="brand-text">
-              <h1 style="font-size: 18px;">${meta.title}</h1>
+              <h1 style="font-size: 18px;">Medi<span class="brand-accent">Care</span></h1>
+              <span class="brand-subtitle">${meta.subtitle}</span>
             </div>
           </div>
-          <button class="close-btn" id="closeDrawer" aria-label="Close Navigation Drawer">&times;</button>
+          <button class="close-btn" id="closeDrawer" aria-label="Close Navigation Drawer">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
         </div>
         <ul class="drawer-links">
           ${drawerItems}
@@ -446,7 +464,6 @@
   // 8. DRAWER CONTROLLER FUNCTIONS
   function toggleMenu() {
     const drawer = document.getElementById('mobileDrawer');
-    const overlay = document.getElementById('mobileOverlay');
     if (!drawer) return;
 
     const isOpen = drawer.classList.contains('active');
@@ -460,10 +477,12 @@
   function openDrawer() {
     const drawer = document.getElementById('mobileDrawer');
     const overlay = document.getElementById('mobileOverlay');
+    const menuToggle = document.getElementById('menuToggle');
     if (!drawer) return;
 
     drawer.classList.add('active');
     if (overlay) overlay.classList.add('active');
+    if (menuToggle) menuToggle.classList.add('active');
     document.body.classList.add('drawer-open');
     document.body.style.overflow = 'hidden';
   }
@@ -471,10 +490,12 @@
   function closeDrawer() {
     const drawer = document.getElementById('mobileDrawer');
     const overlay = document.getElementById('mobileOverlay');
+    const menuToggle = document.getElementById('menuToggle');
     if (!drawer) return;
 
     drawer.classList.remove('active');
     if (overlay) overlay.classList.remove('active');
+    if (menuToggle) menuToggle.classList.remove('active');
     document.body.classList.remove('drawer-open');
     document.body.style.overflow = '';
   }
@@ -658,6 +679,22 @@
 
     // 7. Bind interactive listeners
     attachDrawerListeners();
+    initHeaderScrollListener();
+  }
+
+  // Header scroll elevation controller
+  function initHeaderScrollListener() {
+    const handleScroll = () => {
+      const header = document.getElementById('global-header') || document.querySelector('.site-header');
+      if (!header) return;
+      if (window.scrollY > 8) {
+        header.classList.add('scrolled');
+      } else {
+        header.classList.remove('scrolled');
+      }
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
   }
 
   // 13. EXPORT GLOBALS & AUTO-RUN
