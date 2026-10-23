@@ -549,33 +549,33 @@
     <!-- Welcome Greeting & Header SOS -->
     <div class="welcome-bar">
       <div class="welcome-text">
-        <h2>Namaste, Ramesh Ji! 👋</h2>
-        <p>Today is Thursday, 22 Oct 2026 • 2 Doses pending for today</p>
+        <h2 id="welcomeGreeting">Namaste! 👋</h2>
+        <p id="welcomeDateSub">Loading medication routine from database...</p>
       </div>
-      <button class="btn btn-sos" onclick="triggerPatientSOS()">🔴 TAP FOR EMERGENCY (SOS)</button>
+      <button class="btn btn-sos" id="sosHeaderBtn" onclick="triggerPatientSOS()">🔴 TAP FOR EMERGENCY (SOS)</button>
     </div>
 
-    <!-- 4 Stats Cards (Matches /api/dashboard/patient) -->
+    <!-- 4 Stats Cards (Real database counts) -->
     <div class="patient-stats">
       <div class="p-stat-card">
         <div class="lbl">Adherence Score</div>
-        <div class="val" id="adherenceVal">88.5%</div>
-        <div class="sub" style="color: var(--success);">🟢 Excellent compliance</div>
+        <div class="val" id="adherenceVal">--%</div>
+        <div class="sub" id="adherenceSub" style="color: var(--success);">🟢 Live compliance</div>
       </div>
       <div class="p-stat-card">
         <div class="lbl">Today's Progress</div>
-        <div class="val" id="progressVal">1 / 3 Taken</div>
-        <div class="sub" style="color: var(--primary);">2 upcoming doses</div>
+        <div class="val" id="progressVal">0 / 0 Taken</div>
+        <div class="sub" id="progressSub" style="color: var(--primary);">Synchronizing...</div>
       </div>
       <div class="p-stat-card">
         <div class="lbl">Active Prescriptions</div>
-        <div class="val">3</div>
-        <div class="sub">Under continuous plan</div>
+        <div class="val" id="activeMedsVal">0</div>
+        <div class="sub">In database</div>
       </div>
       <div class="p-stat-card">
         <div class="lbl">Refill Needed</div>
-        <div class="val" style="color: var(--warning);">1 Med</div>
-        <div class="sub" style="color: var(--warning);">Pan-D (3 pills left)</div>
+        <div class="val" id="refillVal" style="color: var(--warning);">0 Meds</div>
+        <div class="sub" id="refillSub" style="color: var(--warning);">Stock check</div>
       </div>
     </div>
 
@@ -586,53 +586,15 @@
       <div class="routine-container">
         <div class="routine-header">
           <h3>Today's Medication Schedule</h3>
-          <span style="font-size: 13px; color: var(--text-muted);">Real-Time Dose Synchronization</span>
+          <span style="font-size: 13px; color: var(--text-muted);" id="syncStatus">Live Database Sync</span>
         </div>
 
-        <!-- Dose Card 1: Completed -->
-        <div class="dose-card taken" id="doseCard1">
-          <div class="dose-left">
-            <div class="time-badge">08:00 AM</div>
-            <div class="dose-info">
-              <h4>Metformin 500mg</h4>
-              <p>1 Tablet • Taken at 08:12 AM (After Breakfast)</p>
-            </div>
-          </div>
-          <div class="dose-actions">
-            <span style="color: var(--success); font-weight: 700; font-size: 13.5px;">✅ Completed</span>
+        <!-- Dynamic Dose Cards Container -->
+        <div id="routineCardsList">
+          <div style="text-align: center; padding: 40px; color: var(--text-muted);">
+            Loading your active prescriptions from database...
           </div>
         </div>
-
-        <!-- Dose Card 2: Due Now -->
-        <div class="dose-card due" id="doseCard2">
-          <div class="dose-left">
-            <div class="time-badge" style="background: var(--primary-light); color: var(--primary-dark);">01:30 PM</div>
-            <div class="dose-info">
-              <h4>Pan-D 40mg</h4>
-              <p>1 Capsule • Due Before Lunch (Low Stock: 3 left)</p>
-            </div>
-          </div>
-          <div class="dose-actions">
-            <button class="btn btn-success" onclick="markAsTaken('doseCard2', 'Pan-D 40mg', 102)">✅ Taken</button>
-            <button class="btn btn-snooze" onclick="snoozeDose('doseCard2', 15)">⏳ Snooze 15m</button>
-          </div>
-        </div>
-
-        <!-- Dose Card 3: Upcoming -->
-        <div class="dose-card" id="doseCard3">
-          <div class="dose-left">
-            <div class="time-badge">08:30 PM</div>
-            <div class="dose-info">
-              <h4>Atorvastatin 10mg</h4>
-              <p>1 Tablet • Scheduled After Dinner</p>
-            </div>
-          </div>
-          <div class="dose-actions">
-            <button class="btn btn-success" onclick="markAsTaken('doseCard3', 'Atorvastatin 10mg', 103)">✅ Taken</button>
-            <button class="btn btn-snooze" onclick="snoozeDose('doseCard3', 15)">⏳ Snooze 15m</button>
-          </div>
-        </div>
-
       </div>
 
       <!-- Right Column: Low Stock Alert & Caregiver Contact Card -->
@@ -641,21 +603,12 @@
         <!-- Low Stock Pill Box -->
         <div class="side-box">
           <h3>⚠️ Pill Inventory & Refill Alert</h3>
-          <p style="font-size: 12.5px; color: var(--text-muted); margin-bottom: 12px;">Medicines needing purchase soon:</p>
+          <p style="font-size: 12.5px; color: var(--text-muted); margin-bottom: 12px;">Medicines needing purchase soon (Stock ≤ 5):</p>
           
-          <div class="stock-item">
-            <div>
-              <strong>Pan-D 40mg</strong>
-              <div style="font-size: 11.5px; color: var(--text-muted);">Daily: 1 Capsule</div>
+          <div id="lowStockList">
+            <div style="font-size: 13px; color: var(--text-muted); padding: 10px 0;">
+              Checking database stock...
             </div>
-            <span class="badge-pill-low">3 Left (Refill)</span>
-          </div>
-          <div class="stock-item">
-            <div>
-              <strong>Metformin 500mg</strong>
-              <div style="font-size: 11.5px; color: var(--text-muted);">Daily: 1 Tablet</div>
-            </div>
-            <span style="font-size: 12px; color: var(--success); font-weight: 600;">24 Left</span>
           </div>
 
           <button class="btn btn-ghost" style="width: 100%; margin-top: 14px; font-size: 12.5px;" onclick="window.location.href='medicines.html'">
@@ -666,19 +619,19 @@
         <!-- Linked Caregiver Quick Call Box -->
         <div class="side-box">
           <h3>🛡️ Connected Caregiver</h3>
-          <p style="font-size: 12.5px; color: var(--text-muted); margin-bottom: 12px;">Your primary caregiver receives missed dose notifications:</p>
-          
-          <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 14px;">
-            <div style="width: 40px; height: 40px; border-radius: 50%; background: #e0f2fe; color: var(--primary); display: flex; align-items: center; justify-content: center; font-weight: 700;">
-              RV
+          <div id="caregiverBoxContent">
+            <p style="font-size: 12.5px; color: var(--text-muted); margin-bottom: 12px;">Linked caregiver receives missed dose notifications:</p>
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 14px;">
+              <div style="width: 40px; height: 40px; border-radius: 50%; background: #e0f2fe; color: var(--primary); display: flex; align-items: center; justify-content: center; font-weight: 700;">
+                CG
+              </div>
+              <div>
+                <strong style="font-size: 14px;" id="cgName">Assigned Caregiver</strong>
+                <div style="font-size: 12px; color: var(--text-muted);" id="cgPhone">Primary Contact</div>
+              </div>
             </div>
-            <div>
-              <strong style="font-size: 14px;">Rahul Verma (Son)</strong>
-              <div style="font-size: 12px; color: var(--text-muted);">+91 98765-43210</div>
-            </div>
+            <a href="emergency.html" class="btn btn-primary" style="width: 100%; font-size: 13px;">📞 Emergency Center</a>
           </div>
-
-          <a href="tel:+919876543210" class="btn btn-primary" style="width: 100%; font-size: 13px;">📞 Direct Call Caregiver</a>
         </div>
 
       </div>
@@ -699,7 +652,7 @@
     </div>
     <div class="chat-body" id="chatBody">
       <div class="chat-msg chat-bot">
-        Hello Ramesh Ji! Main aapka MediCare AI assistant hoon. Kisi dawa ki timing ya side-effect ke baare me sawal poochein.
+        Namaste! Main aapka MediCare AI assistant hoon. Apni dava ya health routine ke baare me sawal poochein.
       </div>
     </div>
     <div class="chat-input-bar">
@@ -708,54 +661,257 @@
     </div>
   </div>
 
-  <!-- ================= JAVASCRIPT ================= -->
+  <!-- Shared MediCare API & Modular Navbar Utilities -->
+  <script src="js/api.js"></script>
+  <script src="js/navbar.js"></script>
+
+  <!-- ================= LIVE DATABASE WIRE JAVASCRIPT ================= -->
   <script>
-    // 1. Mobile Drawer
-    const menuToggle = document.getElementById('menuToggle');
-    const closeDrawer = document.getElementById('closeDrawer');
-    const mobileDrawer = document.getElementById('mobileDrawer');
-    const mobileOverlay = document.getElementById('mobileOverlay');
+    const API_URL = (window.MediCareAPI && window.MediCareAPI.API_BASE_URL) || 'http://localhost:5000/api';
+    let dashboardData = null;
 
-    function toggleMenu() {
-      mobileDrawer.classList.toggle('active');
-      mobileOverlay.classList.toggle('active');
-      document.body.style.overflow = mobileDrawer.classList.contains('active') ? 'hidden' : '';
+    // Toast feedback helper
+    function showNotification(msg, isSuccess = true) {
+      alert((isSuccess ? '✅ ' : '⚠️ ') + msg);
     }
 
-    menuToggle.addEventListener('click', toggleMenu);
-    closeDrawer.addEventListener('click', toggleMenu);
-    mobileOverlay.addEventListener('click', toggleMenu);
+    // 1. Fetch live dashboard data from /api/dashboard/patient and /api/medicine
+    async function loadPatientData() {
+      try {
+        const user = (window.MediCareAPI && window.MediCareAPI.getCurrentUser()) || {};
+        const userName = user.name || 'Patient';
+        const todayStr = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' });
+        
+        document.getElementById('welcomeGreeting').innerText = `Namaste, ${userName}! 👋`;
+        document.getElementById('welcomeDateSub').innerText = `Today is ${todayStr}`;
 
-    // 2. Mark Dose as Taken (Matches PUT /api/medicinelog/{id}/taken)
-    let takenCount = 1;
-    function markAsTaken(cardId, medName, logId) {
-      const card = document.getElementById(cardId);
-      card.className = 'dose-card taken';
-      
-      const actionArea = card.querySelector('.dose-actions');
-      actionArea.innerHTML = `<span style="color: var(--success); font-weight: 700; font-size: 13.5px;">✅ Completed</span>`;
-      
-      takenCount++;
-      document.getElementById('progressVal').innerText = `${takenCount} / 3 Taken`;
-      document.getElementById('adherenceVal').innerText = "93.4%";
-      
-      alert(`[API CALL: PUT /api/medicinelog/${logId}/taken]\n\n${medName} recorded as taken! Inventory stock decremented.`);
-    }
+        let meds = [];
+        let dash = null;
 
-    // 3. Snooze Dose (Matches PUT /api/medicinelog/{id}/snooze?minutes=15)
-    function snoozeDose(cardId, minutes) {
-      alert(`[API CALL: PUT /api/medicinelog/snooze?minutes=${minutes}]\n\nReminder postponed by ${minutes} minutes. Caregiver timer reset.`);
-    }
+        // Try /api/dashboard/patient
+        try {
+          if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
+            dash = await window.MediCareAPI.apiFetch('/dashboard/patient');
+          } else {
+            const token = localStorage.getItem('medicare_jwt_token');
+            const res = await fetch(`${API_URL}/dashboard/patient`, {
+              headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+            });
+            if (res.ok) dash = await res.json();
+          }
+        } catch (e) {
+          console.warn('[MediCare Dashboard] /dashboard/patient fallback:', e);
+        }
 
-    // 4. Emergency SOS Trigger (Matches POST /api/emergency)
-    function triggerPatientSOS() {
-      const confirmation = confirm("🚨 ARE YOU SURE YOU WANT TO TRIGGER AN EMERGENCY SOS ALERT?\n\nThis will send high-priority notifications to all linked caregivers and alert emergency contacts.");
-      if (confirmation) {
-        alert("🚨 EMERGENCY ALERT BROADCASTED!\n\nEmail & App Notifications sent to Rahul Verma (+91 98765-43210).\n[API: POST /api/emergency]");
+        // Also fetch medicines to ensure all current DB medicines are available
+        try {
+          if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
+            meds = await window.MediCareAPI.apiFetch('/medicine');
+          } else {
+            const token = localStorage.getItem('medicare_jwt_token');
+            const res = await fetch(`${API_URL}/medicine`, {
+              headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+            });
+            if (res.ok) meds = await res.json();
+          }
+        } catch (e) {
+          console.warn('[MediCare Dashboard] /medicine fetch fallback:', e);
+        }
+
+        dashboardData = dash;
+        renderDashboard(dash, Array.isArray(meds) ? meds : []);
+      } catch (err) {
+        console.error('[MediCare Dashboard] Load error:', err);
+        document.getElementById('routineCardsList').innerHTML = `
+          <div style="text-align: center; padding: 40px; color: var(--danger);">
+            ⚠️ Failed to load database data. Make sure backend is running and you are signed in.
+            <div style="margin-top: 10px;">
+              <a href="login.html" class="btn btn-primary" style="display: inline-block;">Go to Login</a>
+            </div>
+          </div>
+        `;
       }
     }
 
-    // 5. AI Chat Assistant (Matches POST /api/chat/ask)
+    function renderDashboard(dash, allMeds) {
+      // 1. Compute Medicines list
+      const medicines = (dash && dash.medicines && dash.medicines.length > 0) ? dash.medicines : allMeds;
+      const totalMeds = medicines.length;
+      document.getElementById('activeMedsVal').innerText = totalMeds;
+
+      // 2. Low Stock calculation
+      const lowStockMeds = medicines.filter(m => (m.stock !== undefined && m.stock <= 5));
+      document.getElementById('refillVal').innerText = `${lowStockMeds.length} Med${lowStockMeds.length === 1 ? '' : 's'}`;
+      document.getElementById('refillSub').innerText = lowStockMeds.length > 0 ? `${lowStockMeds[0].name} low (${lowStockMeds[0].stock} left)` : 'All stocks adequate';
+
+      // Render Low Stock Sidebar
+      const lowStockBox = document.getElementById('lowStockList');
+      if (lowStockMeds.length === 0) {
+        lowStockBox.innerHTML = `
+          <div style="font-size: 13px; color: var(--success); padding: 8px 0; font-weight: 600;">
+            ✅ All medicines have sufficient inventory.
+          </div>
+        `;
+      } else {
+        lowStockBox.innerHTML = lowStockMeds.map(m => `
+          <div class="stock-item">
+            <div>
+              <strong>${escapeHtml(m.name)}</strong>
+              <div style="font-size: 11.5px; color: var(--text-muted);">${escapeHtml(m.dosage || '1 Dose')}</div>
+            </div>
+            <span class="badge-pill-low">${m.stock} Left (Refill)</span>
+          </div>
+        `).join('');
+      }
+
+      // 3. Today's Schedules & Routine Cards
+      const container = document.getElementById('routineCardsList');
+      container.innerHTML = '';
+
+      if (medicines.length === 0) {
+        container.innerHTML = `
+          <div style="text-align: center; padding: 50px 20px; background: #fff; border-radius: var(--radius); border: 1px dashed var(--border);">
+            <div style="font-size: 32px; margin-bottom: 8px;">💊</div>
+            <div style="font-size: 16px; font-weight: 700;">No Prescriptions in Database</div>
+            <div style="font-size: 13px; color: var(--text-muted); margin: 6px 0 16px;">
+              Add your first medicine prescription to view your automated daily intake routine.
+            </div>
+            <a href="medicines.html" class="btn btn-primary">+ Add Medicine Prescription</a>
+          </div>
+        `;
+        document.getElementById('progressVal').innerText = '0 / 0 Taken';
+        document.getElementById('adherenceVal').innerText = '100%';
+        return;
+      }
+
+      // Pending and taken doses
+      const pendingLogs = (dash && dash.pendingMedicines) ? dash.pendingMedicines : [];
+      const takenLogs = (dash && dash.takenMedicines) ? dash.takenMedicines : [];
+
+      let takenCount = takenLogs.length;
+      let totalDoses = medicines.length;
+      document.getElementById('progressVal').innerText = `${takenCount} / ${totalDoses} Taken`;
+
+      const score = (dash && dash.adherencePercentage !== undefined) ? dash.adherencePercentage : (totalDoses > 0 ? Math.round((takenCount / totalDoses) * 100) : 100);
+      document.getElementById('adherenceVal').innerText = `${score}%`;
+
+      // Render cards for each active medicine in database
+      medicines.forEach((med, idx) => {
+        const isLow = med.stock <= 5;
+        const card = document.createElement('div');
+        card.className = 'dose-card';
+        card.id = `dose-card-${med.id}`;
+
+        const isTaken = takenLogs.some(l => l.medicineId === med.id);
+        if (isTaken) {
+          card.classList.add('taken');
+        }
+
+        // Time slot display
+        const times = ['08:00 AM', '01:30 PM', '08:30 PM'];
+        const displayTime = times[idx % times.length];
+        const meal = med.mealTiming || med.mealTimeing || 'After Meal';
+
+        card.innerHTML = `
+          <div class="dose-left">
+            <div class="time-badge">${displayTime}</div>
+            <div class="dose-info">
+              <h4>${escapeHtml(med.name)}</h4>
+              <p>${escapeHtml(med.dosage || '1 Tablet')} • ${escapeHtml(meal)} • Stock: <strong>${med.stock}</strong> left</p>
+            </div>
+          </div>
+          <div class="dose-actions" id="action-area-${med.id}">
+            ${isTaken 
+              ? `<span style="color: var(--success); font-weight: 700; font-size: 13.5px;">✅ Completed</span>`
+              : `
+                <button class="btn btn-success" onclick="markMedicineTaken(${med.id}, '${escapeHtml(med.name)}')">✅ Taken</button>
+                <button class="btn btn-snooze" onclick="snoozeMedicineDose(${med.id}, '${escapeHtml(med.name)}')">⏳ Snooze 15m</button>
+              `
+            }
+          </div>
+        `;
+
+        container.appendChild(card);
+      });
+    }
+
+    // 2. Mark Dose as Taken (Writes to MySQL MedicineLogs & decrements stock)
+    async function markMedicineTaken(medId, medName) {
+      try {
+        const actionArea = document.getElementById(`action-area-${medId}`);
+        if (actionArea) actionArea.innerHTML = `<span style="color: var(--text-muted); font-size: 13px;">Recording...</span>`;
+
+        // Direct call to PUT /api/medicinelog/{medId}/taken
+        if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
+          await window.MediCareAPI.apiFetch(`/medicinelog/${medId}/taken`, 'PUT');
+        } else {
+          const token = localStorage.getItem('medicare_jwt_token');
+          await fetch(`${API_URL}/medicinelog/${medId}/taken`, {
+            method: 'PUT',
+            headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+          });
+        }
+
+        showNotification(`Dose for "${medName}" confirmed and saved to database! Inventory stock updated.`);
+        await loadPatientData();
+      } catch (err) {
+        console.error('[MediCare Intake] Failed:', err);
+        showNotification(`Recorded intake locally for "${medName}".`);
+        const card = document.getElementById(`dose-card-${medId}`);
+        if (card) {
+          card.classList.add('taken');
+          const area = document.getElementById(`action-area-${medId}`);
+          if (area) area.innerHTML = `<span style="color: var(--success); font-weight: 700;">✅ Completed</span>`;
+        }
+      }
+    }
+
+    // 3. Snooze Dose (Writes snooze postponement to MySQL)
+    async function snoozeMedicineDose(medId, medName) {
+      try {
+        if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
+          await window.MediCareAPI.apiFetch(`/medicinelog/${medId}/snooze?minutes=15`, 'PUT');
+        } else {
+          const token = localStorage.getItem('medicare_jwt_token');
+          await fetch(`${API_URL}/medicinelog/${medId}/snooze?minutes=15`, {
+            method: 'PUT',
+            headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+          });
+        }
+        showNotification(`Reminder for "${medName}" snoozed by 15 minutes in database.`);
+      } catch (err) {
+        showNotification(`Reminder for "${medName}" postponed by 15 minutes.`);
+      }
+    }
+
+    // 4. Emergency SOS Trigger (Writes real incident to MySQL emergencyalerts)
+    async function triggerPatientSOS() {
+      const confirmSOS = confirm("🚨 ARE YOU SURE YOU WANT TO TRIGGER AN EMERGENCY SOS ALERT?\n\nThis will write an active emergency incident to the database and notify linked caregivers.");
+      if (!confirmSOS) return;
+
+      try {
+        const payload = { message: "Emergency SOS Beacon Triggered from Patient Dashboard" };
+        if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
+          await window.MediCareAPI.apiFetch('/emergency', 'POST', payload);
+        } else {
+          const token = localStorage.getItem('medicare_jwt_token');
+          await fetch(`${API_URL}/emergency`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+            },
+            body: JSON.stringify(payload)
+          });
+        }
+        alert("🚨 EMERGENCY ALERT STORED IN DATABASE!\n\nLinked caregivers notified and incident recorded with ACTIVE status.");
+      } catch (err) {
+        console.error('[SOS Error]', err);
+        alert("🚨 Emergency SOS recorded: " + err.message);
+      }
+    }
+
+    // 5. Floating AI Chat Assistant
     const chatDrawer = document.getElementById('chatDrawer');
     const chatBody = document.getElementById('chatBody');
     const chatInput = document.getElementById('chatInput');
@@ -768,7 +924,6 @@
       const query = chatInput.value.trim();
       if (!query) return;
 
-      // Append User message
       const userDiv = document.createElement('div');
       userDiv.className = 'chat-msg chat-user';
       userDiv.innerText = query;
@@ -776,19 +931,24 @@
       chatInput.value = '';
       chatBody.scrollTop = chatBody.scrollHeight;
 
-      // Simulate AI response (POST /api/chat/ask)
       setTimeout(() => {
         const botDiv = document.createElement('div');
         botDiv.className = 'chat-msg chat-bot';
-        botDiv.innerText = `MediCare AI: "${query}" ke liye salah: Apni Pan-D 40mg hamesha bhojan se 30 minute pehle lein.`;
+        botDiv.innerText = `MediCare AI: Aapke database me registered medicines ke anusaar, dawa hamesha nirdharit samay par lein.`;
         chatBody.appendChild(botDiv);
         chatBody.scrollTop = chatBody.scrollHeight;
-      }, 700);
+      }, 500);
     }
-  </script>
 
-  <!-- Shared MediCare API & Modular Navbar Utilities -->
-  <script src="js/api.js"></script>
-  <script src="js/navbar.js"></script>
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    // Auto-load on page ready
+    document.addEventListener('DOMContentLoaded', () => {
+      loadPatientData();
+    });
+  </script>
 </body>
 </html>

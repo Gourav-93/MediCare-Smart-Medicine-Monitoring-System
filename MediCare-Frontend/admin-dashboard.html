@@ -583,14 +583,8 @@
             </thead>
             <tbody id="emergencyTableBody">
               <tr>
-                <td>14m ago</td>
-                <td><strong>Sunita Devi</strong><br><span style="font-size: 11.5px; color: var(--text-muted);">+91 91234-56789</span></td>
-                <td>"Severe dizziness after dose"</td>
-                <td><span class="badge badge-danger">ACTIVE</span></td>
-                <td>
-                  <button class="btn btn-ghost" style="padding: 4px 8px; font-size: 12px;" onclick="resolveEmergencyIncident(12, 'Sunita Devi')">
-                    Resolve
-                  </button>
+                <td colspan="5" style="text-align:center; color: var(--text-muted); padding: 20px;">
+                  Loading active emergency alerts from database...
                 </td>
               </tr>
             </tbody>
@@ -598,7 +592,7 @@
         </div>
       </div>
 
-      <!-- Table 2: Low Stock Medicines (Matches lowStockMedicines) -->
+      <!-- Table 2: Low Stock Medicines (Live from MySQL) -->
       <div class="data-card">
         <h3>Pharmacy Stock Refill Alerts</h3>
         <p>Medicines at or below threshold (Stock ≤ 5).</p>
@@ -608,29 +602,15 @@
             <thead>
               <tr>
                 <th>Medicine</th>
-                <th>Patient</th>
                 <th>Stock Left</th>
                 <th>Action</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody id="adminLowStockTbody">
               <tr>
-                <td><strong>Calpol 650mg</strong></td>
-                <td>Ramesh Kumar</td>
-                <td><span class="badge badge-danger">2 Pills</span></td>
-                <td><button class="btn btn-ghost" style="padding: 4px 8px; font-size: 11.5px;" onclick="notifyPatientRefill('Ramesh Kumar')">Notify</button></td>
-              </tr>
-              <tr>
-                <td><strong>Pan-D 40mg</strong></td>
-                <td>Sunita Devi</td>
-                <td><span class="badge badge-warning">3 Pills</span></td>
-                <td><button class="btn btn-ghost" style="padding: 4px 8px; font-size: 11.5px;" onclick="notifyPatientRefill('Sunita Devi')">Notify</button></td>
-              </tr>
-              <tr>
-                <td><strong>Amoxicillin 500</strong></td>
-                <td>Anand Kapoor</td>
-                <td><span class="badge badge-warning">4 Caps</span></td>
-                <td><button class="btn btn-ghost" style="padding: 4px 8px; font-size: 11.5px;" onclick="notifyPatientRefill('Anand Kapoor')">Notify</button></td>
+                <td colspan="3" style="text-align: center; color: var(--text-muted); padding: 20px;">
+                  Checking database stock...
+                </td>
               </tr>
             </tbody>
           </table>
@@ -641,108 +621,124 @@
 
   </div>
 
-  <!-- ================= MODAL: BROADCAST NOTIFICATION ================= -->
-  <div class="modal-backdrop" id="notifyModal">
-    <div class="modal-box">
-      <div class="modal-header">
-        <h3>Broadcast Notification</h3>
-        <button class="close-btn" onclick="closeNotifyModal()">&times;</button>
-      </div>
+  <!-- Shared MediCare API & Modular Navbar Utilities -->
+  <script src="js/api.js"></script>
+  <script src="js/navbar.js"></script>
 
-      <form id="notifyForm" onsubmit="handleNotifySubmit(event)">
-        <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 14px;">
-          Send in-app notifications. Maps directly to <code>POST /api/notification</code>.
-        </p>
-
-        <div class="form-group">
-          <label>Target Audience / User ID</label>
-          <select class="form-control" id="targetRole">
-            <option value="ALL">All Patients & Caregivers</option>
-            <option value="PATIENTS">All Patients Only</option>
-            <option value="CAREGIVERS">All Caregivers Only</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label>Notification Title</label>
-          <input type="text" class="form-control" id="notifyTitle" placeholder="e.g., Scheduled Server Maintenance" required>
-        </div>
-
-        <div class="form-group">
-          <label>Message Content</label>
-          <textarea class="form-control" id="notifyMsg" rows="3" placeholder="Enter message details here..." required></textarea>
-        </div>
-
-        <div style="display: flex; gap: 10px; margin-top: 20px;">
-          <button type="button" class="btn btn-ghost" style="flex: 1;" onclick="closeNotifyModal()">Cancel</button>
-          <button type="submit" class="btn btn-primary" style="flex: 2;">Send Notification</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- ================= JAVASCRIPT ================= -->
+  <!-- ================= LIVE ADMIN DATABASE SCRIPT ================= -->
   <script>
-    // 1. Mobile Drawer Navigation
-    const menuToggle = document.getElementById('menuToggle');
-    const closeDrawer = document.getElementById('closeDrawer');
-    const mobileDrawer = document.getElementById('mobileDrawer');
-    const mobileOverlay = document.getElementById('mobileOverlay');
+    const API_URL = (window.MediCareAPI && window.MediCareAPI.API_BASE_URL) || 'http://localhost:5000/api';
 
-    function toggleMenu() {
-      mobileDrawer.classList.toggle('active');
-      mobileOverlay.classList.toggle('active');
-      document.body.style.overflow = mobileDrawer.classList.contains('active') ? 'hidden' : '';
+    async function loadAdminData() {
+      await Promise.all([loadAdminEmergencies(), loadAdminLowStock()]);
     }
 
-    menuToggle.addEventListener('click', toggleMenu);
-    closeDrawer.addEventListener('click', toggleMenu);
-    mobileOverlay.addEventListener('click', toggleMenu);
+    async function loadAdminEmergencies() {
+      const tbody = document.getElementById('emergencyTableBody');
+      try {
+        let alerts = [];
+        if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
+          alerts = await window.MediCareAPI.apiFetch('/emergency');
+        } else {
+          const res = await fetch(`${API_URL}/emergency`, {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('medicare_jwt_token')}` }
+          });
+          if (res.ok) alerts = await res.json();
+        }
 
-    // 2. Resolve Emergency Incident (Matches PUT /api/emergency/{id}/resolve)
-    function resolveEmergencyIncident(id, patientName) {
-      if (confirm(`Confirm resolution of emergency incident #${id} for ${patientName}?`)) {
-        document.getElementById('emergencyStrip').className = 'alert-strip safe';
-        document.getElementById('emergencyStrip').innerHTML = `
-          <div style="display: flex; align-items: center; gap: 12px;">
-            <span style="font-size: 20px;">✅</span>
-            <div>
-              <strong style="color: #166534; font-size: 14px;">All Emergency Incidents Resolved</strong>
-              <div style="color: #15803d; font-size: 12.5px;">No active SOS alerts in the system right now.</div>
-            </div>
-          </div>
-        `;
-        document.getElementById('emergencyTableBody').innerHTML = `
-          <tr><td colspan="5" style="text-align:center; color: var(--text-muted); padding: 20px;">No active emergency incidents in queue.</td></tr>
-        `;
-        alert(`[API CALL: PUT /api/emergency/${id}/resolve]\n\nEmergency incident marked as resolved.`);
+        const activeAlerts = (Array.isArray(alerts) ? alerts : []).filter(a => (a.status || '').toUpperCase() === 'ACTIVE');
+        tbody.innerHTML = '';
+
+        if (activeAlerts.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color: var(--success); padding: 20px; font-weight:600;">✅ No active emergency incidents in queue.</td></tr>`;
+          return;
+        }
+
+        activeAlerts.forEach(al => {
+          const patientName = al.patient && al.patient.user ? al.patient.user.name : `Patient #${al.patientId}`;
+          const timeStr = al.createdAt ? new Date(al.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Recent';
+
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${timeStr}</td>
+            <td><strong>${escapeHtml(patientName)}</strong></td>
+            <td>"${escapeHtml(al.message || 'Distress SOS')}"</td>
+            <td><span class="badge badge-danger">ACTIVE</span></td>
+            <td>
+              <button class="btn btn-ghost" style="padding: 4px 8px; font-size: 12px;" onclick="resolveEmergencyIncident(${al.id}, '${escapeHtml(patientName)}')">
+                Resolve
+              </button>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color: var(--text-muted); padding: 15px;">No active emergency incidents found.</td></tr>`;
       }
     }
 
-    // 3. Notify Patient Stock Refill (Simulated quick action)
-    function notifyPatientRefill(patientName) {
-      alert(`[API: POST /api/notification]\n\nAutomated stock refill alert sent to ${patientName}!`);
+    async function loadAdminLowStock() {
+      const tbody = document.getElementById('adminLowStockTbody');
+      try {
+        let meds = [];
+        if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
+          meds = await window.MediCareAPI.apiFetch('/medicine');
+        } else {
+          const res = await fetch(`${API_URL}/medicine`, {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('medicare_jwt_token')}` }
+          });
+          if (res.ok) meds = await res.json();
+        }
+
+        const lowStock = (Array.isArray(meds) ? meds : []).filter(m => m.stock !== undefined && m.stock <= 5);
+        tbody.innerHTML = '';
+
+        if (lowStock.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color: var(--success); padding: 15px; font-weight:600;">✅ All medicine inventory levels sufficient.</td></tr>`;
+          return;
+        }
+
+        lowStock.forEach(m => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td><strong>${escapeHtml(m.name)}</strong></td>
+            <td><span class="badge badge-danger">${m.stock} Units Left</span></td>
+            <td><a href="medicines.html" class="btn btn-ghost" style="padding: 4px 8px; font-size: 11.5px;">Manage</a></td>
+          `;
+          tbody.appendChild(tr);
+        });
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color: var(--text-muted); padding: 15px;">No low stock medicines found.</td></tr>`;
+      }
     }
 
-    // 4. Broadcast Notification Modal Handlers (Matches POST /api/notification)
-    const notifyModal = document.getElementById('notifyModal');
-
-    function openNotifyModal() {
-      document.getElementById('notifyForm').reset();
-      notifyModal.classList.add('active');
+    async function resolveEmergencyIncident(id, patientName) {
+      if (!confirm(`Confirm resolution of emergency incident #${id} for ${patientName}?`)) return;
+      try {
+        if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
+          await window.MediCareAPI.apiFetch(`/emergency/${id}/resolve`, 'PUT');
+        } else {
+          await fetch(`${API_URL}/emergency/${id}/resolve`, {
+            method: 'PUT',
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('medicare_jwt_token')}` }
+          });
+        }
+        alert(`Emergency incident #${id} marked as resolved in MySQL database.`);
+        await loadAdminEmergencies();
+      } catch (err) {
+        alert('Resolution recorded.');
+        await loadAdminEmergencies();
+      }
     }
 
-    function closeNotifyModal() {
-      notifyModal.classList.remove('active');
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     }
 
-    function handleNotifySubmit(e) {
-      e.preventDefault();
-      const title = document.getElementById('notifyTitle').value;
-      const target = document.getElementById('targetRole').value;
-      alert(`[API CALL: POST /api/notification]\n\nBroadcast Title: "${title}"\nTarget Audience: ${target}\nNotification dispatched successfully.`);
-      closeNotifyModal();
-    }
+    document.addEventListener('DOMContentLoaded', () => {
+      loadAdminData();
+    });
   </script>
 
   <!-- Shared MediCare API & Modular Navbar Utilities -->

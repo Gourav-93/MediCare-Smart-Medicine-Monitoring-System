@@ -446,7 +446,7 @@
 
     // Role Demo Credentials Mapping
     const demoCredentials = {
-      PATIENT: { email: 'patient@medicare.com', pass: 'Password123!' },
+      PATIENT: { email: 'gourav.patient@medicare.com', pass: 'Password123!' },
       CAREGIVER: { email: 'caregiver@medicare.com', pass: 'Caregiver123!' },
       ADMIN: { email: 'admin@medicare.com', pass: 'AdminMaster123!' }
     };
@@ -497,36 +497,91 @@
       alert(`Password reset instructions sent to ${email || 'your email'}! (Triggering POST /api/AuthController/forgot-password)`);
     }
 
-    function handleFormSubmit(e) {
+    const API_BASE = (window.MediCareAPI && window.MediCareAPI.API_BASE_URL) || 'http://localhost:5000/api';
+
+    async function handleFormSubmit(e) {
       e.preventDefault();
-      const email = document.getElementById('emailInput').value;
-      const endpoint = currentMode === 'login' ? 'POST /api/AuthController/login' : 'POST /api/AuthController/register';
+      const submitBtn = document.getElementById('submitBtn');
+      submitBtn.disabled = true;
+      submitBtn.innerText = currentMode === 'login' ? 'Signing in...' : 'Registering...';
 
-      if (window.setAuthToken) {
-        window.setAuthToken('medicare_token_' + Date.now(), { email: email, role: currentRole, name: email.split('@')[0] });
-      } else {
-        localStorage.setItem('medicare_role', currentRole);
-        localStorage.setItem('userRole', currentRole);
-        localStorage.setItem('medicare_jwt_token', 'medicare_token_' + Date.now());
-      }
+      const email = document.getElementById('emailInput').value.trim();
+      const password = document.getElementById('passwordInput').value;
+      const fullName = (document.getElementById('fullNameInput') ? document.getElementById('fullNameInput').value.trim() : '') || email.split('@')[0];
 
-      alert(`[API CALL: ${endpoint}]\n\nAuthenticated as: ${email}\nRole: ${currentRole}\nJWT Token saved to localStorage.`);
+      try {
+        if (currentMode === 'register') {
+          // 1. Call Register
+          const regRes = await fetch(`${API_BASE}/auth/register`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              name: fullName,
+              email: email,
+              password: password,
+              role: currentRole
+            })
+          });
 
-      // Check if redirect query parameter exists
-      const urlParams = new URLSearchParams(window.location.search);
-      const redirectTarget = urlParams.get('redirect');
-      if (redirectTarget && redirectTarget.endsWith('.html') && redirectTarget !== 'login.html') {
-        window.location.href = redirectTarget;
-        return;
-      }
+          if (!regRes.ok) {
+            const errData = await regRes.json().catch(() => ({}));
+            throw new Error(errData.message || 'Registration failed');
+          }
+        }
 
-      // Default role dashboards
-      if (currentRole === 'PATIENT') {
-        window.location.href = 'patient-dashboard.html';
-      } else if (currentRole === 'CAREGIVER') {
-        window.location.href = 'caregiver-dashboard.html';
-      } else {
-        window.location.href = 'admin-dashboard.html';
+        // 2. Call Login to receive real JWT Token
+        const loginRes = await fetch(`${API_BASE}/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: email,
+            password: password
+          })
+        });
+
+        if (!loginRes.ok) {
+          const errData = await loginRes.json().catch(() => ({}));
+          throw new Error(errData.message || 'Invalid email or password');
+        }
+
+        const data = await loginRes.json();
+        console.log('[MediCare Auth] Login successful:', data);
+
+        // Store authentic JWT token in localStorage
+        if (window.MediCareAPI && window.MediCareAPI.setAuthToken) {
+          window.MediCareAPI.setAuthToken(data.token, data);
+        } else {
+          localStorage.setItem('medicare_jwt_token', data.token);
+          localStorage.setItem('jwtToken', data.token);
+          localStorage.setItem('token', data.token);
+          localStorage.setItem('medicare_role', data.role || currentRole);
+          localStorage.setItem('userRole', data.role || currentRole);
+          localStorage.setItem('medicare_user', JSON.stringify(data));
+        }
+
+        // Check if redirect query parameter exists
+        const urlParams = new URLSearchParams(window.location.search);
+        const redirectTarget = urlParams.get('redirect');
+        if (redirectTarget && redirectTarget.endsWith('.html') && redirectTarget !== 'login.html') {
+          window.location.href = redirectTarget;
+          return;
+        }
+
+        // Default role dashboards
+        const role = (data.role || currentRole).toUpperCase();
+        if (role === 'PATIENT') {
+          window.location.href = 'patient-dashboard.html';
+        } else if (role === 'CAREGIVER') {
+          window.location.href = 'caregiver-dashboard.html';
+        } else {
+          window.location.href = 'admin-dashboard.html';
+        }
+      } catch (err) {
+        console.error('[MediCare Auth] Error:', err);
+        alert('Authentication Error: ' + err.message);
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerText = currentMode === 'login' ? 'Sign In to MediCare' : 'Register New Account';
       }
     }
 

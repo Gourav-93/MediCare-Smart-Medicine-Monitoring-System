@@ -54,11 +54,9 @@
         line-height: 1.5;
       }
 
-      /* Header & Mobile Navigation are handled by css/common.css & js/navbar.js */
-
       /* =========================================================
-       2. HERO BANNER
-       ========================================================= */
+        HERO BANNER
+        ========================================================= */
       .hero-section {
         max-width: 1200px;
         margin: 36px auto 28px;
@@ -107,8 +105,8 @@
       }
 
       /* =========================================================
-       3. METRICS 2x4 GRID (Like Reference Photo)
-       ========================================================= */
+        METRICS 2x4 GRID
+        ========================================================= */
       .dashboard-overview {
         max-width: 1380px;
         margin: 0 auto 40px;
@@ -190,8 +188,8 @@
       }
 
       /* =========================================================
-       4. ANALYTICS CHARTS SECTION
-       ========================================================= */
+        ANALYTICS CHARTS SECTION
+        ========================================================= */
       .charts-row {
         display: grid;
         grid-template-columns: 2fr 1fr;
@@ -208,24 +206,20 @@
         display: flex;
         flex-direction: column;
         width: 100%;
-        min-width: 0; /* Flex child overflow bug fix */
+        min-width: 0;
       }
 
       .chart-canvas-wrap {
         position: relative;
         width: 100%;
-        /* Screen width ke hisaab se height auto-adjust hogi: 
-     Mobile par 200px, Tablet par 260px, Desktop par 320px */
         height: clamp(200px, 32vw, 320px);
         max-width: 100%;
       }
 
-      /* Doughnut chart mobile par zyada bada na faile */
       .doughnut-wrap {
         height: clamp(210px, 30vw, 290px);
       }
 
-      /* Small Mobiles (320px - 480px) par Chart ki height aur padding adjust */
       @media screen and (max-width: 480px) {
         .chart-canvas-wrap {
           height: 200px;
@@ -234,18 +228,14 @@
           height: 220px;
         }
       }
-      /* =========================================================
-   MOBILE GAP & SPACING FIX (Max 767px)
-   ========================================================= */
+
       @media screen and (max-width: 767px) {
-        /* Dono charts ke beech ka gap bilkul compact karein */
         .charts-row {
           grid-template-columns: 1fr !important;
-          gap: 12px !important; /* Pehle 20px tha, ab 12px */
-          margin-bottom: 24px !important; /* Niche ka gap kam kiya */
+          gap: 12px !important;
+          margin-bottom: 24px !important;
         }
 
-        /* Chart box ki padding kam karein */
         .chart-box {
           padding: 12px !important;
           margin-bottom: 0 !important;
@@ -258,24 +248,22 @@
 
         .chart-box p {
           font-size: 11px !important;
-          margin-bottom: 8px !important; /* Text ke baad ka faltu gap kam kiya */
+          margin-bottom: 8px !important;
         }
 
-        /* Canvas height adjust taaki unnecessary height create na ho */
         .chart-canvas-wrap {
-          height: 180px !important; /* Pehle 240px-280px tha */
+          height: 180px !important;
           margin: 0 !important;
         }
 
-        /* Doughnut chart ka extra wrapper gap hatayein */
         .doughnut-wrap {
           height: 190px !important;
         }
       }
 
       /* =========================================================
-       5. 15 CORE FEATURES SHOWCASE SECTION
-       ========================================================= */
+        15 CORE FEATURES SHOWCASE SECTION
+        ========================================================= */
       .features-section {
         background: #ffffff;
         border-top: 1px solid var(--border);
@@ -375,99 +363,6 @@
         width: fit-content;
       }
 
-      /* =========================================================
-       6. INTERACTIVE MODAL (LOGIN / SIGNUP)
-       ========================================================= */
-      .auth-modal-backdrop {
-        position: fixed;
-        inset: 0;
-        background: rgba(15, 23, 42, 0.5);
-        backdrop-filter: blur(5px);
-        z-index: 300;
-        display: none;
-        align-items: center;
-        justify-content: center;
-        padding: 16px;
-      }
-
-      .auth-modal-backdrop.active {
-        display: flex;
-      }
-
-      .auth-card {
-        background: #ffffff;
-        width: 100%;
-        max-width: 420px;
-        border-radius: 16px;
-        padding: 28px;
-        box-shadow: var(--shadow-lg);
-        border: 1px solid var(--border);
-        position: relative;
-      }
-
-      .auth-modal-close {
-        position: absolute;
-        top: 18px;
-        right: 18px;
-        border: none;
-        background: #f1f5f9;
-        width: 32px;
-        height: 32px;
-        border-radius: 8px;
-        cursor: pointer;
-        font-size: 18px;
-      }
-
-      .auth-tabs {
-        display: flex;
-        background: #f1f5f9;
-        border-radius: 8px;
-        padding: 4px;
-        margin-bottom: 20px;
-      }
-
-      .auth-tab-btn {
-        flex: 1;
-        padding: 8px;
-        font-size: 13px;
-        font-weight: 600;
-        border: none;
-        border-radius: 6px;
-        background: transparent;
-        cursor: pointer;
-        color: var(--text-muted);
-      }
-
-      .auth-tab-btn.active {
-        background: #ffffff;
-        color: var(--text-main);
-        box-shadow: var(--shadow-sm);
-      }
-
-      .form-group {
-        margin-bottom: 16px;
-      }
-
-      .form-group label {
-        display: block;
-        font-size: 13px;
-        font-weight: 600;
-        margin-bottom: 6px;
-      }
-
-      .form-control {
-        width: 100%;
-        padding: 10px 12px;
-        border-radius: 8px;
-        border: 1px solid var(--border);
-        font-size: 14px;
-        outline: none;
-      }
-
-      .form-control:focus {
-        border-color: var(--primary);
-      }
-
       /* Footer */
       footer {
         max-width: 1380px;
@@ -484,9 +379,8 @@
       }
 
       /* =========================================================
-       7. RESPONSIVE MEDIA QUERIES (320px - 1366px+)
-       ========================================================= */
-      /* Small Laptops (1024px to 1365px) */
+        RESPONSIVE MEDIA QUERIES
+        ========================================================= */
       @media (max-width: 1365px) {
         .metric-grid {
           grid-template-columns: repeat(4, 1fr);
@@ -496,7 +390,6 @@
         }
       }
 
-      /* Tablets (768px to 1023px) */
       @media (max-width: 1023px) {
         .metric-grid {
           grid-template-columns: repeat(2, 1fr);
@@ -509,7 +402,6 @@
         }
       }
 
-      /* Mobiles (320px to 767px) */
       @media (max-width: 767px) {
         .metric-grid {
           grid-template-columns: 1fr;
@@ -542,15 +434,13 @@
           medical dossiers.
         </p>
         <div class="hero-cta">
-          <a href="#features" class="btn btn-primary" style="padding: 12px 24px"
-            >Explore 15 Platform Features ↓</a
-          >
-          <a
-            href="#dashboard-overview"
-            class="btn btn-ghost"
-            style="padding: 12px 24px"
-            >View Compliance Charts</a
-          >
+          <!-- Direct Login Page Link -->
+          <a href="login.html" class="btn btn-primary" style="padding: 12px 24px">
+            Login / Portal Access
+          </a>
+          <a href="#features" class="btn btn-ghost" style="padding: 12px 24px">
+            Explore 15 Platform Features ↓
+          </a>
         </div>
       </section>
 
@@ -566,7 +456,7 @@
           </div>
         </div>
 
-        <!-- 2x4 Metric Grid (Matches Reference Layout) -->
+        <!-- 2x4 Metric Grid -->
         <div class="metric-grid">
           <div class="metric-card">
             <div class="card-head">
@@ -887,80 +777,6 @@
       </section>
     </main>
 
-    <!-- ================= AUTH MODAL ================= -->
-    <div class="auth-modal-backdrop" id="authModal">
-      <div class="auth-card">
-        <button class="auth-modal-close" onclick="closeAuthModal()">
-          &times;
-        </button>
-
-        <div class="auth-tabs">
-          <button
-            class="auth-tab-btn active"
-            id="tabLogin"
-            onclick="switchAuthTab('login')"
-          >
-            Sign In
-          </button>
-          <button
-            class="auth-tab-btn"
-            id="tabRegister"
-            onclick="switchAuthTab('register')"
-          >
-            Register
-          </button>
-        </div>
-
-        <form id="authForm" onsubmit="handleAuthSubmit(event)">
-          <div class="form-group" id="nameGroup" style="display: none">
-            <label>Full Name</label>
-            <input
-              type="text"
-              class="form-control"
-              placeholder="Ramesh Kumar"
-            />
-          </div>
-
-          <div class="form-group">
-            <label>Email Address</label>
-            <input
-              type="email"
-              class="form-control"
-              placeholder="name@example.com"
-              required
-            />
-          </div>
-
-          <div class="form-group">
-            <label>Password</label>
-            <input
-              type="password"
-              class="form-control"
-              placeholder="Min 6 characters"
-              required
-            />
-          </div>
-
-          <div class="form-group" id="roleGroup" style="display: none">
-            <label>Account Role</label>
-            <select class="form-control">
-              <option value="PATIENT">PATIENT (Dawa Lene Wale)</option>
-              <option value="CAREGIVER">CAREGIVER (Dekhbhal Karne Wale)</option>
-            </select>
-          </div>
-
-          <button
-            type="submit"
-            class="btn btn-primary"
-            style="width: 100%; padding: 12px; margin-top: 8px"
-            id="authSubmitBtn"
-          >
-            Sign In
-          </button>
-        </form>
-      </div>
-    </div>
-
     <!-- Footer -->
     <footer>
       <div>
@@ -972,7 +788,7 @@
 
     <!-- ================= JAVASCRIPT ================= -->
     <script>
-      // 1. Mobile Drawer (Dynamic listeners attached safely)
+      // 1. Mobile Drawer
       function toggleMenu() {
         if (typeof window.openDrawer === "function" && typeof window.closeDrawer === "function") {
           window.toggleMenu();
@@ -995,62 +811,7 @@
         }
       }
 
-      // 3. Auth Modal Functions
-      function openAuthModal(mode) {
-        const authModal = document.getElementById("authModal");
-        if (!authModal) return;
-        authModal.classList.add("active");
-        switchAuthTab(mode);
-      }
-
-      function closeAuthModal() {
-        const authModal = document.getElementById("authModal");
-        if (authModal) authModal.classList.remove("active");
-      }
-
-      function switchAuthTab(mode) {
-        const tabLogin = document.getElementById("tabLogin");
-        const tabRegister = document.getElementById("tabRegister");
-        const nameGroup = document.getElementById("nameGroup");
-        const roleGroup = document.getElementById("roleGroup");
-        const authSubmitBtn = document.getElementById("authSubmitBtn");
-
-        if (mode === "register") {
-          if (tabRegister) tabRegister.classList.add("active");
-          if (tabLogin) tabLogin.classList.remove("active");
-          if (nameGroup) nameGroup.style.display = "block";
-          if (roleGroup) roleGroup.style.display = "block";
-          if (authSubmitBtn) authSubmitBtn.innerText = "Create Account";
-        } else {
-          if (tabLogin) tabLogin.classList.add("active");
-          if (tabRegister) tabRegister.classList.remove("active");
-          if (nameGroup) nameGroup.style.display = "none";
-          if (roleGroup) roleGroup.style.display = "none";
-          if (authSubmitBtn) authSubmitBtn.innerText = "Sign In";
-        }
-      }
-
-      function handleAuthSubmit(e) {
-        e.preventDefault();
-        const emailInput = e.target.querySelector('input[type="email"]');
-        const roleSelect = document.getElementById("roleGroup") ? document.getElementById("roleGroup").querySelector("select") : null;
-        const email = emailInput && emailInput.value ? emailInput.value : "patient@medicare.com";
-        const role = roleSelect && roleSelect.value ? roleSelect.value : "PATIENT";
-
-        if (window.setAuthToken) {
-          window.setAuthToken("medicare_token_" + Date.now(), {
-            email: email,
-            role: role,
-            name: email.split("@")[0],
-          });
-        }
-        alert(
-          `Logged in successfully as: ${email}\nRole: ${role}\n\nPortal links in header are now unlocked!`,
-        );
-        closeAuthModal();
-      }
-
-      // 4. Chart.js Graphs Initialization
+      // 3. Chart.js Graphs Initialization
       function initIndexCharts() {
         if (typeof Chart === "undefined") {
           setTimeout(initIndexCharts, 150);
@@ -1143,7 +904,6 @@
         }
       }
 
-      // Safe trigger across all document ready states
       if (document.readyState === "loading") {
         document.addEventListener("DOMContentLoaded", initIndexCharts);
       } else {

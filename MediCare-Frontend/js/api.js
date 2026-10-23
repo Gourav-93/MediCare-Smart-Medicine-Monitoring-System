@@ -9,7 +9,10 @@
   'use strict';
 
   // 1. CONFIGURATION CONSTANTS
-  const API_BASE_URL = window.MEDICARE_API_BASE_URL || 'http://localhost:5000/api';
+  const API_BASE_URL = window.MEDICARE_API_BASE_URL ||
+    (typeof window !== 'undefined' && window.location && (window.location.port === '5000' || window.location.port === '5095')
+      ? `${window.location.origin}/api`
+      : 'http://localhost:5000/api');
   const TOKEN_KEY = 'medicare_jwt_token';
   const USER_KEY = 'medicare_user';
   const ROLE_KEY = 'medicare_role';

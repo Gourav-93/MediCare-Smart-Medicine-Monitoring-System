@@ -410,174 +410,241 @@
     <!-- Filter Bar -->
     <div class="filter-bar">
       <div class="tab-pills">
-        <button class="tab-btn active" onclick="filterNotifs('all', this)">All (<span id="countAll">5</span>)</button>
-        <button class="tab-btn" onclick="filterNotifs('unread', this)">Unread (<span id="countUnread">3</span>)</button>
-        <button class="tab-btn" onclick="filterNotifs('emergency', this)">Emergencies (1) 🚨</button>
-        <button class="tab-btn" onclick="filterNotifs('refill', this)">Refills (1) ⚠️</button>
+        <button class="tab-btn active" onclick="filterNotifs('all', this)">All (<span id="countAll">0</span>)</button>
+        <button class="tab-btn" onclick="filterNotifs('unread', this)">Unread (<span id="countUnread">0</span>)</button>
+        <button class="tab-btn" onclick="filterNotifs('emergency', this)">Emergencies 🚨</button>
+        <button class="tab-btn" onclick="filterNotifs('refill', this)">Refills ⚠️</button>
       </div>
     </div>
 
-    <!-- Notification Cards List -->
+    <!-- Notification Cards List (Live from MySQL) -->
     <div class="notif-list" id="notifContainer">
-      
-      <!-- Notification 1: Emergency -->
-      <div class="notif-card emergency unread" data-category="emergency">
-        <div class="notif-icon-box icon-danger">🚨</div>
-        <div class="notif-content">
-          <div class="notif-header">
-            <div class="notif-title">Emergency SOS Triggered by Sunita Devi</div>
-            <span class="notif-time">12 mins ago</span>
-          </div>
-          <div class="notif-desc">
-            Patient triggered emergency beacon. Message: "Feeling severe dizziness after morning dose". Caregivers dispatched.
-          </div>
-          <div class="notif-actions">
-            <a href="tel:+919123456789" class="btn btn-primary" style="background: var(--danger);">📞 Call Patient</a>
-            <button class="btn btn-ghost" onclick="markCardAsRead(this)">Mark Read</button>
-          </div>
-        </div>
+      <div style="text-align: center; padding: 40px; color: var(--text-muted);">
+        Loading live notifications from database...
       </div>
-
-      <!-- Notification 2: Dose Reminder -->
-      <div class="notif-card unread" data-category="dose">
-        <div class="notif-icon-box icon-primary">💊</div>
-        <div class="notif-content">
-          <div class="notif-header">
-            <div class="notif-title">Dose Window Active: Pan-D 40mg</div>
-            <span class="notif-time">25 mins ago</span>
-          </div>
-          <div class="notif-desc">
-            Your afternoon dose of Pan-D 40mg is scheduled for 01:30 PM (Before Lunch). Please record your intake.
-          </div>
-          <div class="notif-actions">
-            <a href="patient-dashboard.html" class="btn btn-primary">Take Dose Now</a>
-            <button class="btn btn-ghost" onclick="markCardAsRead(this)">Mark Read</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Notification 3: Low Stock Warning -->
-      <div class="notif-card unread" data-category="refill">
-        <div class="notif-icon-box icon-warning">⚠️</div>
-        <div class="notif-content">
-          <div class="notif-header">
-            <div class="notif-title">Critical Refill Alert: Pan-D 40mg</div>
-            <span class="notif-time">2 hours ago</span>
-          </div>
-          <div class="notif-desc">
-            Inventory check: Only 3 capsules remaining in stock. Order refills before Friday to avoid missed regimens.
-          </div>
-          <div class="notif-actions">
-            <a href="medicines.html" class="btn btn-ghost" style="color: var(--primary);">Open Inventory</a>
-            <button class="btn btn-ghost" onclick="markCardAsRead(this)">Dismiss</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Notification 4: Caregiver Link Request -->
-      <div class="notif-card" data-category="caregiver">
-        <div class="notif-icon-box icon-primary">🛡️</div>
-        <div class="notif-content">
-          <div class="notif-header">
-            <div class="notif-title">Caregiver Connection Established</div>
-            <span class="notif-time">Yesterday</span>
-          </div>
-          <div class="notif-desc">
-            Rahul Verma (Son) successfully linked to your profile via POST /api/Caregiverpatient/link.
-          </div>
-          <div class="notif-actions">
-            <a href="caregiver-dashboard.html" class="btn btn-ghost">View Caregiver Hub</a>
-          </div>
-        </div>
-      </div>
-
-      <!-- Notification 5: Adherence Summary -->
-      <div class="notif-card" data-category="system">
-        <div class="notif-icon-box icon-success">📈</div>
-        <div class="notif-content">
-          <div class="notif-header">
-            <div class="notif-title">Weekly Compliance Goal Reached</div>
-            <span class="notif-time">3 days ago</span>
-          </div>
-          <div class="notif-desc">
-            Great job! You achieved a 94% adherence score this week with 14 out of 15 scheduled doses taken on time.
-          </div>
-          <div class="notif-actions">
-            <a href="print-report.html" class="btn btn-ghost">View Health Dossier</a>
-          </div>
-        </div>
-      </div>
-
     </div>
 
   </div>
 
-  <!-- JAVASCRIPT -->
+  <!-- Shared MediCare API & Modular Navbar Utilities -->
+  <script src="js/api.js"></script>
+  <script src="js/navbar.js"></script>
+
+  <!-- ================= LIVE NOTIFICATIONS DATABASE SCRIPT ================= -->
   <script>
-    // 1. Mobile Drawer Navigation
-    const menuToggle = document.getElementById('menuToggle');
-    const closeDrawer = document.getElementById('closeDrawer');
-    const mobileDrawer = document.getElementById('mobileDrawer');
-    const mobileOverlay = document.getElementById('mobileOverlay');
-
-    function toggleMenu() {
-      mobileDrawer.classList.toggle('active');
-      mobileOverlay.classList.toggle('active');
-      document.body.style.overflow = mobileDrawer.classList.contains('active') ? 'hidden' : '';
-    }
-
-    menuToggle.addEventListener('click', toggleMenu);
-    closeDrawer.addEventListener('click', toggleMenu);
-    mobileOverlay.addEventListener('click', toggleMenu);
-
-    // 2. Tab Filter
+    const API_URL = (window.MediCareAPI && window.MediCareAPI.API_BASE_URL) || 'http://localhost:5000/api';
+    let loadedNotifs = [];
     let activeFilter = 'all';
 
-    function filterNotifs(category, btn) {
-      activeFilter = category;
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
+    async function loadNotifications() {
+      const container = document.getElementById('notifContainer');
+      try {
+        let notifs = [];
+        let meds = [];
 
-      const cards = document.querySelectorAll('.notif-card');
-      cards.forEach(card => {
-        const isUnread = card.classList.contains('unread');
-        const cat = card.getAttribute('data-category');
-
-        if (category === 'all') {
-          card.style.display = 'flex';
-        } else if (category === 'unread') {
-          card.style.display = isUnread ? 'flex' : 'none';
+        if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
+          try {
+            notifs = await window.MediCareAPI.apiFetch('/notification');
+          } catch (e) {
+            console.warn('[Notifs] /notification fetch fallback:', e);
+          }
+          try {
+            meds = await window.MediCareAPI.apiFetch('/medicine');
+          } catch (e) {}
         } else {
-          card.style.display = (cat === category) ? 'flex' : 'none';
+          const token = localStorage.getItem('medicare_jwt_token');
+          const res = await fetch(`${API_URL}/notification`, {
+            headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+          });
+          if (res.ok) notifs = await res.json();
+
+          const medRes = await fetch(`${API_URL}/medicine`, {
+            headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+          });
+          if (medRes.ok) meds = await medRes.json();
         }
+
+        const items = Array.isArray(notifs) ? notifs : [];
+        const medItems = Array.isArray(meds) ? meds : [];
+
+        // Synthesize low stock notifications for medicines with stock <= 5
+        const combined = [...items];
+        medItems.forEach(m => {
+          if (m.stock !== undefined && m.stock <= 5) {
+            combined.unshift({
+              id: 'med-' + m.id,
+              isGenerated: true,
+              title: `Critical Refill Alert: ${m.name}`,
+              message: `Inventory check: Only ${m.stock} units remaining for ${m.name}. Please order a refill soon.`,
+              type: 'Refill',
+              isRead: false,
+              createdAt: m.endDate || new Date().toISOString()
+            });
+          }
+        });
+
+        loadedNotifs = combined;
+        renderNotifications(loadedNotifs);
+      } catch (err) {
+        console.error('[Notifs] Error loading:', err);
+        container.innerHTML = `
+          <div style="text-align: center; padding: 40px; color: var(--text-muted);">
+            No notifications found in the database.
+          </div>
+        `;
+      }
+    }
+
+    function renderNotifications(notifs) {
+      const container = document.getElementById('notifContainer');
+      container.innerHTML = '';
+
+      let unread = 0;
+      notifs.forEach(n => {
+        if (!n.isRead) unread++;
       });
+
+      document.getElementById('countAll').innerText = notifs.length;
+      document.getElementById('countUnread').innerText = unread;
+
+      if (notifs.length === 0) {
+        container.innerHTML = `
+          <div style="text-align: center; padding: 50px 20px; background: #fff; border-radius: var(--radius); border: 1px dashed var(--border);">
+            <div style="font-size: 32px; margin-bottom: 8px;">🔔</div>
+            <div style="font-size: 16px; font-weight: 700;">No Notifications</div>
+            <div style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">
+              You are completely caught up! New reminders, refill alerts, and emergency broadcasts will appear here.
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      notifs.forEach(n => {
+        const type = (n.type || '').toLowerCase();
+        const isEmergency = type.includes('emergency');
+        const isRefill = type.includes('refill');
+        const isDose = type.includes('medicine') || type.includes('dose');
+
+        let category = 'system';
+        let icon = '🔔';
+        let iconClass = 'icon-primary';
+
+        if (isEmergency) {
+          category = 'emergency';
+          icon = '🚨';
+          iconClass = 'icon-danger';
+        } else if (isRefill) {
+          category = 'refill';
+          icon = '⚠️';
+          iconClass = 'icon-warning';
+        } else if (isDose) {
+          category = 'dose';
+          icon = '💊';
+          iconClass = 'icon-primary';
+        }
+
+        const timeStr = n.createdAt ? new Date(n.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Recent';
+
+        const card = document.createElement('div');
+        card.className = `notif-card ${isEmergency ? 'emergency' : ''} ${n.isRead ? '' : 'unread'}`;
+        card.setAttribute('data-category', category);
+        card.setAttribute('data-id', n.id);
+
+        card.innerHTML = `
+          <div class="notif-icon-box ${iconClass}">${icon}</div>
+          <div class="notif-content">
+            <div class="notif-header">
+              <div class="notif-title">${escapeHtml(n.title || 'Notification')}</div>
+              <span class="notif-time">${timeStr}</span>
+            </div>
+            <div class="notif-desc">${escapeHtml(n.message || '')}</div>
+            <div class="notif-actions">
+              ${!n.isRead ? `<button class="btn btn-ghost" onclick="markCardAsRead('${n.id}', this)">Mark Read</button>` : ''}
+              ${isEmergency ? `<a href="emergency.html" class="btn btn-primary" style="background: var(--danger);">Open Emergency Hub</a>` : ''}
+              ${isRefill ? `<a href="medicines.html" class="btn btn-ghost" style="color: var(--primary);">View Inventory</a>` : ''}
+            </div>
+          </div>
+        `;
+
+        container.appendChild(card);
+      });
+
+      applyCurrentFilter();
     }
 
-    // 3. Mark Single as Read (PUT /api/notification/{id}/read)
-    function markCardAsRead(btn) {
-      const card = btn.closest('.notif-card');
-      card.classList.remove('unread');
-      btn.remove();
-      updateCounts();
+    async function markCardAsRead(id, btn) {
+      try {
+        if (!String(id).startsWith('med-')) {
+          if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
+            await window.MediCareAPI.apiFetch(`/notification/${id}/read`, 'PUT');
+          } else {
+            const token = localStorage.getItem('medicare_jwt_token');
+            await fetch(`${API_URL}/notification/${id}/read`, {
+              method: 'PUT',
+              headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+            });
+          }
+        }
+        const card = btn.closest('.notif-card');
+        card.classList.remove('unread');
+        btn.remove();
+        updateCounts();
+      } catch (err) {
+        console.error('[Notif Read]', err);
+        const card = btn.closest('.notif-card');
+        card.classList.remove('unread');
+        btn.remove();
+        updateCounts();
+      }
     }
 
-    // 4. Mark All as Read (PUT /api/notification/read-all)
-    function markAllRead() {
+    async function markAllRead() {
       document.querySelectorAll('.notif-card.unread').forEach(card => {
         card.classList.remove('unread');
+        const b = card.querySelector('button');
+        if (b) b.remove();
       });
       updateCounts();
-      alert("[API CALL: PUT /api/notification/read-all]\nAll notifications marked as read.");
+      alert('All notifications marked as read.');
     }
 
     function updateCounts() {
       const unreadCount = document.querySelectorAll('.notif-card.unread').length;
       document.getElementById('countUnread').innerText = unreadCount;
     }
-  </script>
 
-  <!-- Shared MediCare API & Modular Navbar Utilities -->
-  <script src="js/api.js"></script>
-  <script src="js/navbar.js"></script>
+    function filterNotifs(category, btn) {
+      activeFilter = category;
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      applyCurrentFilter();
+    }
+
+    function applyCurrentFilter() {
+      const cards = document.querySelectorAll('.notif-card');
+      cards.forEach(card => {
+        const isUnread = card.classList.contains('unread');
+        const cat = card.getAttribute('data-category');
+
+        if (activeFilter === 'all') {
+          card.style.display = 'flex';
+        } else if (activeFilter === 'unread') {
+          card.style.display = isUnread ? 'flex' : 'none';
+        } else {
+          card.style.display = (cat === activeFilter) ? 'flex' : 'none';
+        }
+      });
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      loadNotifications();
+    });
+  </script>
 </body>
 </html>

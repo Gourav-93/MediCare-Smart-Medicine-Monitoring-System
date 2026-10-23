@@ -962,32 +962,48 @@
 
       try {
         let result;
+        const token = localStorage.getItem('medicare_jwt_token');
+        const authHeaders = {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        };
+
         if (editingId) {
           console.log(`[MediCare API] Updating medicine ID ${editingId}:`, payload);
-          const res = await fetch(`${API_URL}/medicine/${editingId}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-          });
-          if (!res.ok) {
-            const errText = await res.text();
-            throw new Error(`HTTP ${res.status}: ${errText}`);
+          let res;
+          if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
+            result = await window.MediCareAPI.apiFetch(`/medicine/${editingId}`, 'PUT', payload);
+          } else {
+            res = await fetch(`${API_URL}/medicine/${editingId}`, {
+              method: 'PUT',
+              headers: authHeaders,
+              body: JSON.stringify(payload)
+            });
+            if (!res.ok) {
+              const errText = await res.text();
+              throw new Error(`HTTP ${res.status}: ${errText}`);
+            }
+            result = await res.json();
           }
-          result = await res.json();
-          showToast(`Medicine "${name}" updated successfully!`);
+          showToast(`Medicine "${name}" updated successfully in database!`);
         } else {
-          console.log('[MediCare API] Adding new medicine:', payload);
-          const res = await fetch(`${API_URL}/medicine`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-          });
-          if (!res.ok) {
-            const errText = await res.text();
-            throw new Error(`HTTP ${res.status}: ${errText}`);
+          console.log('[MediCare API] Adding new medicine to database:', payload);
+          let res;
+          if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
+            result = await window.MediCareAPI.apiFetch('/medicine', 'POST', payload);
+          } else {
+            res = await fetch(`${API_URL}/medicine`, {
+              method: 'POST',
+              headers: authHeaders,
+              body: JSON.stringify(payload)
+            });
+            if (!res.ok) {
+              const errText = await res.text();
+              throw new Error(`HTTP ${res.status}: ${errText}`);
+            }
+            result = await res.json();
           }
-          result = await res.json();
-          showToast(`Medicine "${name}" added successfully to database!`);
+          showToast(`Medicine "${name}" saved to MySQL database successfully!`);
         }
 
         console.log('[MediCare API] Operation successful, response:', result);
@@ -995,7 +1011,7 @@
         await loadMedicines();
       } catch (err) {
         console.error('[MediCare API] Submit failed:', err);
-        alert('Failed to save medicine: ' + err.message);
+        alert('Failed to save medicine to database: ' + err.message + '\n\nPlease ensure you are logged in.');
       } finally {
         saveBtn.disabled = false;
         saveBtn.innerText = editingId ? 'Update Medicine' : 'Save Medicine';
@@ -1034,21 +1050,29 @@
       medModal.classList.add('active');
     }
 
-    // Delete Medicine
+    // Delete Medicine (MySQL)
     async function deleteMedicine(id) {
       const med = loadedMedicines.find(m => m.id === id);
       const medName = med ? med.name : `ID ${id}`;
-      console.log(`[MediCare API] Deleting medicine ${medName} (ID: ${id})...`);
+      if (!confirm(`Are you sure you want to delete "${medName}" from database?`)) return;
+
+      console.log(`[MediCare API] Deleting medicine ${medName} (ID: ${id}) from MySQL...`);
 
       try {
-        const res = await fetch(`${API_URL}/medicine/${id}`, {
-          method: 'DELETE'
-        });
-        if (!res.ok) {
-          const errText = await res.text();
-          throw new Error(`HTTP ${res.status}: ${errText}`);
+        const token = localStorage.getItem('medicare_jwt_token');
+        if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
+          await window.MediCareAPI.apiFetch(`/medicine/${id}`, 'DELETE');
+        } else {
+          const res = await fetch(`${API_URL}/medicine/${id}`, {
+            method: 'DELETE',
+            headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+          });
+          if (!res.ok) {
+            const errText = await res.text();
+            throw new Error(`HTTP ${res.status}: ${errText}`);
+          }
         }
-        showToast(`Medicine "${medName}" deleted successfully!`);
+        showToast(`Medicine "${medName}" deleted from database successfully!`);
         await loadMedicines();
       } catch (err) {
         console.error('[MediCare API] Delete failed:', err);

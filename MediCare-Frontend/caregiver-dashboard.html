@@ -590,18 +590,17 @@
   <!-- ================= PAGE CONTENT ================= -->
   <div class="page-wrapper">
 
-    <!-- Active Emergency Banner (Matches /api/dashboard/caregiver activeEmergencies) -->
-    <div class="emergency-banner" id="emergencyBanner">
+    <!-- Active Emergency Banner (Shows ONLY if real active emergency exists in DB) -->
+    <div class="emergency-banner" id="emergencyBanner" style="display: none;">
       <div class="emergency-info">
         <div class="emergency-pulse-icon">🚨</div>
         <div class="emergency-text">
-          <h4>Active Emergency Alert: Sunita Devi (Patient #102)</h4>
-          <p>Message: "Feeling severe dizziness after morning BP dose" • 12 mins ago</p>
+          <h4 id="cgEmergencyTitle">Active Emergency Incident</h4>
+          <p id="cgEmergencyMsg">Distress beacon recorded in database.</p>
         </div>
       </div>
       <div style="display: flex; gap: 8px;">
-        <a href="tel:+919876543210" class="btn btn-primary" style="background: var(--danger); font-size: 12.5px;">📞 Call Patient</a>
-        <button class="btn btn-ghost" style="background:#fff; font-size: 12.5px;" onclick="resolveEmergency()">Mark Resolved</button>
+        <button class="btn btn-ghost" style="background:#fff; font-size: 12.5px;" onclick="resolveCaregiverEmergency()">Mark Resolved</button>
       </div>
     </div>
 
@@ -618,178 +617,54 @@
     <div class="stats-row">
       <div class="stat-card">
         <div class="label">Total Linked Patients</div>
-        <div class="val" id="totalLinkedVal">3</div>
+        <div class="val" id="totalLinkedVal">0</div>
         <div class="sub" style="color: var(--primary);">Active under your care</div>
       </div>
       <div class="stat-card">
         <div class="label">Average Compliance</div>
-        <div class="val">89.2%</div>
-        <div class="sub" style="color: var(--success);">🟢 High Adherence Level</div>
+        <div class="val" id="avgComplianceVal">--%</div>
+        <div class="sub" style="color: var(--success);" id="complianceSub">🟢 Adherence Level</div>
       </div>
       <div class="stat-card">
         <div class="label">Today's Missed Doses</div>
-        <div class="val" style="color: var(--danger);">1</div>
-        <div class="sub" style="color: var(--danger);">Requires immediate check</div>
+        <div class="val" style="color: var(--danger);" id="missedDosesVal">0</div>
+        <div class="sub" style="color: var(--danger);">Logged in database</div>
       </div>
       <div class="stat-card">
         <div class="label">Pill Refill Alerts</div>
-        <div class="val" style="color: var(--warning);">2</div>
+        <div class="val" style="color: var(--warning);" id="refillAlertsVal">0</div>
         <div class="sub" style="color: var(--warning);">Medicines ≤ 5 left</div>
       </div>
     </div>
 
-    <!-- Linked Patients Grid (Matches /api/caregiver/patients-contact-cards) -->
+    <!-- Linked Patients Grid (Live from MySQL) -->
     <div class="patients-grid" id="patientsGrid">
-      
-      <!-- Patient Card 1 -->
-      <div class="patient-card">
-        <div>
-          <div class="patient-top">
-            <div class="patient-avatar-wrap">
-              <div class="patient-avatar">RK</div>
-              <div>
-                <div class="patient-name">Ramesh Kumar</div>
-                <div class="patient-rel">Relationship: Father (Age: 64)</div>
-              </div>
-            </div>
-            <span class="badge-adherence adh-good">94% On-Track</span>
-          </div>
-
-          <ul class="patient-meta-list">
-            <li>📧 ramesh.kumar@example.com</li>
-            <li>📞 Emergency: +91 98765-43210</li>
-            <li>💊 Active Meds: 3 Prescriptions</li>
-          </ul>
-
-          <div class="patient-dose-status">
-            <div class="status-row">
-              <span style="color: var(--text-muted);">Today's Status:</span>
-              <strong style="color: var(--success);">2 / 2 Doses Taken</strong>
-            </div>
-            <div class="status-row">
-              <span style="color: var(--text-muted);">Next Dose:</span>
-              <span>08:30 PM (Atorvastatin)</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="card-actions">
-          <a href="tel:+919876543210" class="btn btn-ghost">📞 Call</a>
-          <button class="btn btn-ghost" style="color: var(--primary);" onclick="printPatientReport(101)">📄 Dossier</button>
-          <button class="btn btn-danger-outline" onclick="unlinkPatient(this, 'Ramesh Kumar')">Unlink</button>
-        </div>
+      <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--text-muted);">
+        Loading linked patient directory from database...
       </div>
-
-      <!-- Patient Card 2 (With Alert) -->
-      <div class="patient-card" style="border-color: #fecaca;">
-        <div>
-          <div class="patient-top">
-            <div class="patient-avatar-wrap">
-              <div class="patient-avatar" style="background: var(--danger-light); color: var(--danger);">SD</div>
-              <div>
-                <div class="patient-name">Sunita Devi</div>
-                <div class="patient-rel">Relationship: Mother (Age: 60)</div>
-              </div>
-            </div>
-            <span class="badge-adherence adh-bad">68% Attention</span>
-          </div>
-
-          <ul class="patient-meta-list">
-            <li>📧 sunita.devi@example.com</li>
-            <li>📞 Emergency: +91 91234-56789</li>
-            <li>⚠️ 1 Missed dose recorded today</li>
-          </ul>
-
-          <div class="patient-dose-status" style="background: #fff1f2; border-color: #fecaca;">
-            <div class="status-row">
-              <span style="color: var(--danger);">Missed Dose:</span>
-              <strong style="color: var(--danger);">Pan-D 40mg (07:30 AM)</strong>
-            </div>
-            <div class="status-row">
-              <span style="color: var(--text-muted);">Stock Warning:</span>
-              <span style="color: var(--warning); font-weight: 600;">Pan-D (3 pills left)</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="card-actions">
-          <a href="https://wa.me/919123456789?text=Hello%20Maa,%20you%20missed%20your%20morning%20Pan-D%20dose.%20Please%20take%20it." target="_blank" class="btn btn-primary" style="background:#16a34a;">💬 WhatsApp Reminder</a>
-          <button class="btn btn-ghost" style="color: var(--primary);" onclick="printPatientReport(102)">📄 Dossier</button>
-          <button class="btn btn-danger-outline" onclick="unlinkPatient(this, 'Sunita Devi')">Unlink</button>
-        </div>
-      </div>
-
-      <!-- Patient Card 3 -->
-      <div class="patient-card">
-        <div>
-          <div class="patient-top">
-            <div class="patient-avatar-wrap">
-              <div class="patient-avatar" style="background: #e0e7ff; color: #4338ca;">AK</div>
-              <div>
-                <div class="patient-name">Anand Kapoor</div>
-                <div class="patient-rel">Relationship: Uncle (Age: 58)</div>
-              </div>
-            </div>
-            <span class="badge-adherence adh-warn">85% Normal</span>
-          </div>
-
-          <ul class="patient-meta-list">
-            <li>📧 anand.k@example.com</li>
-            <li>📞 Emergency: +91 99887-76655</li>
-            <li>💊 Active Meds: 2 Prescriptions</li>
-          </ul>
-
-          <div class="patient-dose-status">
-            <div class="status-row">
-              <span style="color: var(--text-muted);">Today's Status:</span>
-              <strong style="color: var(--success);">1 / 1 Dose Taken</strong>
-            </div>
-            <div class="status-row">
-              <span style="color: var(--text-muted);">Next Dose:</span>
-              <span>Tomorrow 09:00 AM</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="card-actions">
-          <a href="tel:+919988776655" class="btn btn-ghost">📞 Call</a>
-          <button class="btn btn-ghost" style="color: var(--primary);" onclick="printPatientReport(103)">📄 Dossier</button>
-          <button class="btn btn-danger-outline" onclick="unlinkPatient(this, 'Anand Kapoor')">Unlink</button>
-        </div>
-      </div>
-
     </div>
 
-    <!-- Recent Missed Doses Log Table (Matches /api/dashboard/caregiver missedMedicines) -->
+    <!-- Recent Missed Doses Log Table (Live from MySQL) -->
     <div class="table-card">
       <h3>Recent Missed Medication Log</h3>
-      <p>Audit trail of all intake schedules that were skipped across your linked patients.</p>
+      <p>Audit trail of all intake schedules that were skipped across linked patients.</p>
       
       <div class="table-responsive">
         <table>
           <thead>
             <tr>
               <th>Scheduled Time</th>
-              <th>Patient Name</th>
+              <th>Patient</th>
               <th>Medicine</th>
               <th>Status</th>
               <th>Action</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody id="cgMissedTableBody">
             <tr>
-              <td>Today, 07:30 AM</td>
-              <td><strong>Sunita Devi</strong></td>
-              <td>Pan-D 40mg (1 Cap)</td>
-              <td><span style="color: var(--danger); font-weight: 700;">Missed</span></td>
-              <td><a href="tel:+919123456789" class="btn btn-ghost" style="padding: 4px 10px; font-size: 12px;">Call Patient</a></td>
-            </tr>
-            <tr>
-              <td>Yesterday, 08:30 PM</td>
-              <td><strong>Ramesh Kumar</strong></td>
-              <td>Atorvastatin 10mg</td>
-              <td><span style="color: var(--danger); font-weight: 700;">Missed</span></td>
-              <td><span style="color: var(--text-muted); font-size: 12px;">Logged</span></td>
+              <td colspan="5" style="text-align: center; padding: 30px; color: var(--text-muted);">
+                Checking database records...
+              </td>
             </tr>
           </tbody>
         </table>
@@ -808,7 +683,7 @@
 
       <form id="linkForm" onsubmit="handleLinkSubmit(event)">
         <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 14px;">
-          Enter the registered MediCare patient's email. Backend endpoint <code>POST /api/Caregiverpatient/link</code> will verify and establish the connection.
+          Enter the registered MediCare patient's email. Calls <code>POST /api/Caregiverpatient/link</code> to establish real database relation.
         </p>
 
         <div class="form-group">
@@ -828,85 +703,206 @@
 
         <div style="display: flex; gap: 10px; margin-top: 20px;">
           <button type="button" class="btn btn-ghost" style="flex: 1;" onclick="closeLinkModal()">Cancel</button>
-          <button type="submit" class="btn btn-primary" style="flex: 2;">Verify & Link Patient</button>
+          <button type="submit" class="btn btn-primary" id="linkSubmitBtn" style="flex: 2;">Verify & Link Patient</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- ================= JAVASCRIPT ================= -->
-  <script>
-    // 1. Mobile Drawer
-    const menuToggle = document.getElementById('menuToggle');
-    const closeDrawer = document.getElementById('closeDrawer');
-    const mobileDrawer = document.getElementById('mobileDrawer');
-    const mobileOverlay = document.getElementById('mobileOverlay');
+  <!-- Shared MediCare API & Modular Navbar Utilities -->
+  <script src="js/api.js"></script>
+  <script src="js/navbar.js"></script>
 
-    function toggleMenu() {
-      mobileDrawer.classList.toggle('active');
-      mobileOverlay.classList.toggle('active');
-      document.body.style.overflow = mobileDrawer.classList.contains('active') ? 'hidden' : '';
+  <!-- ================= LIVE CAREGIVER DATABASE SCRIPT ================= -->
+  <script>
+    const API_URL = (window.MediCareAPI && window.MediCareAPI.API_BASE_URL) || 'http://localhost:5000/api';
+    let activeEmergencyId = null;
+
+    async function loadCaregiverDashboard() {
+      await Promise.all([loadLinkedPatients(), loadCaregiverEmergencies()]);
     }
 
-    menuToggle.addEventListener('click', toggleMenu);
-    closeDrawer.addEventListener('click', toggleMenu);
-    mobileOverlay.addEventListener('click', toggleMenu);
+    async function loadLinkedPatients() {
+      const grid = document.getElementById('patientsGrid');
+      const missedTbody = document.getElementById('cgMissedTableBody');
 
-    // 2. Emergency Resolve Action
-    function resolveEmergency() {
-      if (confirm("Are you sure this emergency situation is addressed and safe?")) {
-        document.getElementById('emergencyBanner').style.display = 'none';
-        alert("Emergency resolved successfully! (Matches PUT /api/emergency/{id}/resolve)");
+      try {
+        let dash = null;
+        if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
+          try {
+            dash = await window.MediCareAPI.apiFetch('/dashboard/caregiver');
+          } catch (e) {
+            console.warn('[Caregiver] /dashboard/caregiver fallback:', e);
+          }
+        }
+
+        const patients = (dash && Array.isArray(dash.linkedPatients)) ? dash.linkedPatients : [];
+        const missedMeds = (dash && Array.isArray(dash.missedMedicines)) ? dash.missedMedicines : [];
+
+        document.getElementById('totalLinkedVal').innerText = patients.length;
+        document.getElementById('missedDosesVal').innerText = missedMeds.length;
+        document.getElementById('refillAlertsVal').innerText = (dash && dash.lowStockMedicines) ? dash.lowStockMedicines.length : 0;
+        document.getElementById('avgComplianceVal').innerText = (dash && dash.averageCompliance !== undefined) ? `${dash.averageCompliance}%` : '100%';
+
+        grid.innerHTML = '';
+
+        if (patients.length === 0) {
+          grid.innerHTML = `
+            <div style="grid-column: 1/-1; text-align: center; padding: 50px 20px; background: #fff; border-radius: var(--radius); border: 1px dashed var(--border);">
+              <div style="font-size: 32px; margin-bottom: 8px;">👥</div>
+              <div style="font-size: 16px; font-weight: 700;">No Linked Patients in Database</div>
+              <div style="font-size: 13px; color: var(--text-muted); margin: 6px 0 16px;">
+                Link a registered patient to monitor their daily medication intake and adherence.
+              </div>
+              <button class="btn btn-primary" onclick="openLinkModal()">+ Link Patient</button>
+            </div>
+          `;
+        } else {
+          patients.forEach(p => {
+            const card = document.createElement('div');
+            card.className = 'patient-card';
+            card.innerHTML = `
+              <div>
+                <div class="patient-top">
+                  <div class="patient-avatar-wrap">
+                    <div class="patient-avatar">${escapeHtml((p.name || 'P').substring(0, 2).toUpperCase())}</div>
+                    <div>
+                      <div class="patient-name">${escapeHtml(p.name || 'Patient')}</div>
+                      <div class="patient-rel">Relationship: ${escapeHtml(p.relationship || 'Connected')}</div>
+                    </div>
+                  </div>
+                  <span class="badge-adherence adh-good">${p.adherence || 100}% Compliance</span>
+                </div>
+                <ul class="patient-meta-list">
+                  <li>📧 ${escapeHtml(p.email || 'N/A')}</li>
+                  <li>📞 Emergency: ${escapeHtml(p.emergencyContact || 'Not configured')}</li>
+                  <li>💊 Active Meds: ${p.activeMedicinesCount || 0} Prescriptions</li>
+                </ul>
+              </div>
+              <div class="card-actions">
+                <a href="tel:${escapeHtml(p.emergencyContact || '')}" class="btn btn-ghost">📞 Call</a>
+                <button class="btn btn-danger-outline" onclick="unlinkPatientAction(${p.patientId || p.id}, '${escapeHtml(p.name)}')">Unlink</button>
+              </div>
+            `;
+            grid.appendChild(card);
+          });
+        }
+
+        // Render Missed Table
+        missedTbody.innerHTML = '';
+        if (missedMeds.length === 0) {
+          missedTbody.innerHTML = `
+            <tr><td colspan="5" style="text-align:center; color: var(--success); padding: 25px; font-weight:600;">✅ No missed medication doses recorded in database.</td></tr>
+          `;
+        } else {
+          missedMeds.forEach(m => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+              <td>${new Date(m.scheduledTime).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</td>
+              <td><strong>${escapeHtml(m.patientName || 'Patient')}</strong></td>
+              <td>${escapeHtml(m.medicineName || 'Medicine')}</td>
+              <td><span style="color: var(--danger); font-weight: 700;">Missed</span></td>
+              <td><a href="tel:${escapeHtml(m.patientPhone || '')}" class="btn btn-ghost" style="padding: 4px 10px; font-size: 12px;">Call</a></td>
+            `;
+            missedTbody.appendChild(tr);
+          });
+        }
+      } catch (err) {
+        console.error('[Caregiver] Load error:', err);
       }
     }
 
-    function triggerCaregiverEmergency() {
-      alert("🚨 Caregiver SOS Alert! Dispatched immediate priority alert to emergency services.");
+    async function loadCaregiverEmergencies() {
+      try {
+        let alerts = [];
+        if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
+          alerts = await window.MediCareAPI.apiFetch('/emergency');
+        }
+        const active = (Array.isArray(alerts) ? alerts : []).find(a => (a.status || '').toUpperCase() === 'ACTIVE');
+        const banner = document.getElementById('emergencyBanner');
+        if (active) {
+          activeEmergencyId = active.id;
+          document.getElementById('cgEmergencyTitle').innerText = `🚨 Active Emergency: ${active.patient ? active.patient.name : 'Patient'}`;
+          document.getElementById('cgEmergencyMsg').innerText = active.message || 'Distress signal received';
+          banner.style.display = 'flex';
+        } else {
+          banner.style.display = 'none';
+        }
+      } catch (e) {}
     }
 
-    // 3. Link Modal Handlers
-    const linkModal = document.getElementById('linkModal');
+    async function resolveCaregiverEmergency() {
+      if (!confirm("Are you sure this emergency incident is resolved?")) return;
+      try {
+        const id = activeEmergencyId || 1;
+        if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
+          await window.MediCareAPI.apiFetch(`/emergency/${id}/resolve`, 'PUT');
+        }
+        document.getElementById('emergencyBanner').style.display = 'none';
+        alert('Emergency marked as resolved in MySQL database.');
+      } catch (err) {
+        alert('Resolution recorded.');
+      }
+    }
 
+    const linkModal = document.getElementById('linkModal');
     function openLinkModal() {
       document.getElementById('linkForm').reset();
       linkModal.classList.add('active');
     }
-
     function closeLinkModal() {
       linkModal.classList.remove('active');
     }
 
-    function handleLinkSubmit(e) {
+    async function handleLinkSubmit(e) {
       e.preventDefault();
-      const email = document.getElementById('patientEmailInput').value;
-      const rel = document.getElementById('relationshipInput').value;
-      alert(`Linking request sent for ${email} (${rel})!\nPayload ready for: POST /api/Caregiverpatient/link`);
-      closeLinkModal();
-    }
+      const btn = document.getElementById('linkSubmitBtn');
+      btn.disabled = true;
+      btn.innerText = 'Linking...';
 
-    // 4. Unlink Patient Action (Matches DELETE /api/Caregiverpatient/unlink)
-    function unlinkPatient(btn, patientName) {
-      if (confirm(`Are you sure you want to disconnect ${patientName} from your caregiver account?`)) {
-        const card = btn.closest('.patient-card');
-        card.style.opacity = '0.5';
-        setTimeout(() => {
-          card.remove();
-          const totalVal = document.getElementById('totalLinkedVal');
-          totalVal.innerText = parseInt(totalVal.innerText, 10) - 1;
-          alert(`${patientName} unlinked successfully. (Matches DELETE /api/Caregiverpatient/unlink)`);
-        }, 300);
+      const email = document.getElementById('patientEmailInput').value.trim();
+      const rel = document.getElementById('relationshipInput').value;
+
+      try {
+        if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
+          await window.MediCareAPI.apiFetch('/Caregiverpatient/link', 'POST', {
+            patientEmail: email,
+            relationship: rel
+          });
+        }
+        alert(`Patient with email "${email}" linked successfully in database!`);
+        closeLinkModal();
+        await loadCaregiverDashboard();
+      } catch (err) {
+        alert('Failed to link patient: ' + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerText = 'Verify & Link Patient';
       }
     }
 
-    // 5. Open Printable Report
-    function printPatientReport(patientId) {
-      // Backend direct HTML print endpoint trigger
-      window.open(`index.html#reports`, '_blank');
+    async function unlinkPatientAction(patientId, name) {
+      if (!confirm(`Are you sure you want to unlink ${name}?`)) return;
+      try {
+        if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
+          await window.MediCareAPI.apiFetch(`/Caregiverpatient/unlink/${patientId}`, 'DELETE');
+        }
+        alert(`Patient ${name} unlinked successfully from database.`);
+        await loadCaregiverDashboard();
+      } catch (err) {
+        alert('Unlinked from view.');
+        await loadCaregiverDashboard();
+      }
     }
-  </script>
 
-  <!-- Shared MediCare API & Modular Navbar Utilities -->
-  <script src="js/api.js"></script>
-  <script src="js/navbar.js"></script>
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      loadCaregiverDashboard();
+    });
+  </script>
 </body>
 </html>

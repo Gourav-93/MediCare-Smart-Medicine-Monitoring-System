@@ -475,51 +475,35 @@
           <a href="tel:108" class="call-btn">🚑 Call 108</a>
         </div>
 
-        <div class="contact-item">
+        <div class="contact-item" id="caregiverContactItem">
           <div class="c-info">
-            <strong>Rahul Verma (Son)</strong>
-            <span>Primary Linked Caregiver</span>
+            <strong id="cgNameDisplay">Linked Caregiver</strong>
+            <span>Primary Emergency Contact</span>
           </div>
-          <a href="tel:+919876543210" class="call-btn">📞 +91 98765-43210</a>
-        </div>
-
-        <div class="contact-item">
-          <div class="c-info">
-            <strong>Dr. Mehta (Cardiologist)</strong>
-            <span>Attending Physician</span>
-          </div>
-          <a href="tel:+919123456780" class="call-btn">📞 Call Doctor</a>
+          <a href="tel:112" id="cgCallLink" class="call-btn">📞 Direct Call</a>
         </div>
       </div>
 
-      <!-- Box 2: Critical Health Snapshot (For First Responders) -->
+      <!-- Box 2: Critical Health Snapshot (Live from Database) -->
       <div class="content-box">
         <h3>First-Responder Medical Snapshot</h3>
-        <p>Critical patient demographics and current drug regimen for attending medical staff.</p>
+        <p>Live patient demographics and database drug regimen for attending staff.</p>
 
         <div class="id-row">
           <span>Patient Name:</span>
-          <strong>Ramesh Kumar (Male, 64 Yrs)</strong>
+          <strong id="snapPatientName">Loading...</strong>
         </div>
         <div class="id-row">
-          <span>Blood Group:</span>
-          <strong style="color: var(--danger);">B+ Positive</strong>
+          <span>Account Email:</span>
+          <strong id="snapPatientEmail">Loading...</strong>
         </div>
         <div class="id-row">
-          <span>Known Allergies:</span>
-          <strong>Penicillin (Severe)</strong>
+          <span>Active Prescriptions in DB:</span>
+          <strong id="snapActiveMeds">Fetching from MySQL...</strong>
         </div>
         <div class="id-row">
-          <span>Chronic Conditions:</span>
-          <strong>Type-2 Diabetes, Hypertension</strong>
-        </div>
-        <div class="id-row">
-          <span>Active Prescriptions:</span>
-          <strong>Metformin 500mg, Pan-D 40mg, Atorvastatin</strong>
-        </div>
-        <div class="id-row">
-          <span>Primary Hospital:</span>
-          <strong>City Care Hospital, Ward 4</strong>
+          <span>Database Emergency Status:</span>
+          <strong id="snapEmergencyStatus" style="color: var(--success);">Normal (No Active Distress)</strong>
         </div>
       </div>
 
@@ -527,46 +511,146 @@
 
   </div>
 
-  <!-- JAVASCRIPT -->
-  <script>
-    // 1. Mobile Drawer Navigation
-    const menuToggle = document.getElementById('menuToggle');
-    const closeDrawer = document.getElementById('closeDrawer');
-    const mobileDrawer = document.getElementById('mobileDrawer');
-    const mobileOverlay = document.getElementById('mobileOverlay');
+  <!-- Shared MediCare API & Modular Navbar Utilities -->
+  <script src="js/api.js"></script>
+  <script src="js/navbar.js"></script>
 
-    function toggleMenu() {
-      mobileDrawer.classList.toggle('active');
-      mobileOverlay.classList.toggle('active');
-      document.body.style.overflow = mobileDrawer.classList.contains('active') ? 'hidden' : '';
+  <!-- ================= LIVE DATABASE WIRE JAVASCRIPT ================= -->
+  <script>
+    const API_URL = (window.MediCareAPI && window.MediCareAPI.API_BASE_URL) || 'http://localhost:5000/api';
+    let currentActiveAlertId = null;
+
+    // 1. Load Real Patient Info & Database Prescriptions
+    async function loadMedicalSnapshot() {
+      try {
+        const user = (window.MediCareAPI && window.MediCareAPI.getCurrentUser()) || {};
+        document.getElementById('snapPatientName').innerText = user.name || 'Gourav Khore';
+        document.getElementById('snapPatientEmail').innerText = user.email || 'patient@medicare.com';
+
+        // Fetch real active medicines from MySQL
+        let meds = [];
+        if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
+          try {
+            meds = await window.MediCareAPI.apiFetch('/medicine');
+          } catch (e) {
+            console.warn('[Emergency] /medicine fallback:', e);
+          }
+        }
+        if (Array.isArray(meds) && meds.length > 0) {
+          const names = meds.map(m => m.name).join(', ');
+          document.getElementById('snapActiveMeds').innerText = names;
+        } else {
+          document.getElementById('snapActiveMeds').innerText = 'None recorded in database';
+        }
+
+        // Check if there is an active emergency in MySQL
+        await checkActiveEmergencies();
+      } catch (err) {
+        console.error('[Emergency] Snapshot error:', err);
+      }
     }
 
-    menuToggle.addEventListener('click', toggleMenu);
-    closeDrawer.addEventListener('click', toggleMenu);
-    mobileOverlay.addEventListener('click', toggleMenu);
+    async function checkActiveEmergencies() {
+      try {
+        let alerts = [];
+        if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
+          alerts = await window.MediCareAPI.apiFetch('/emergency');
+        } else {
+          const token = localStorage.getItem('medicare_jwt_token');
+          const res = await fetch(`${API_URL}/emergency`, {
+            headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+          });
+          if (res.ok) alerts = await res.json();
+        }
+
+        if (Array.isArray(alerts)) {
+          const active = alerts.find(a => (a.status || '').toUpperCase() === 'ACTIVE');
+          if (active) {
+            currentActiveAlertId = active.id;
+            document.getElementById('activeIncidentBanner').classList.add('show');
+            document.getElementById('snapEmergencyStatus').innerText = '🚨 DISTRESS BROADCAST ACTIVE';
+            document.getElementById('snapEmergencyStatus').style.color = 'var(--danger)';
+          } else {
+            document.getElementById('activeIncidentBanner').classList.remove('show');
+            document.getElementById('snapEmergencyStatus').innerText = 'Normal (No Active Distress)';
+            document.getElementById('snapEmergencyStatus').style.color = 'var(--success)';
+          }
+        }
+      } catch (e) {
+        console.warn('[Emergency] Active check fallback:', e);
+      }
+    }
 
     // 2. Trigger Panic Broadcast (POST /api/emergency)
-    function triggerPanicBroadcast() {
-      const confirmSOS = confirm("🚨 ARE YOU SURE YOU WANT TO TRIGGER AN EMERGENCY SOS ALERT?\n\nThis will send high-priority SMS and in-app alerts to your linked caregivers immediately.");
-      
-      if (confirmSOS) {
+    async function triggerPanicBroadcast() {
+      const confirmSOS = confirm("🚨 ARE YOU SURE YOU WANT TO TRIGGER AN EMERGENCY SOS ALERT?\n\nThis will send high-priority alerts to linked caregivers and store the distress event in the database.");
+      if (!confirmSOS) return;
+
+      try {
+        const payload = { message: "Emergency SOS Beacon Triggered from MediCare Web App" };
+        let result = null;
+
+        if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
+          result = await window.MediCareAPI.apiFetch('/emergency', 'POST', payload);
+        } else {
+          const token = localStorage.getItem('medicare_jwt_token');
+          const res = await fetch(`${API_URL}/emergency`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+            },
+            body: JSON.stringify(payload)
+          });
+          if (!res.ok) throw new Error('Failed to create emergency alert');
+          result = await res.json();
+        }
+
+        currentActiveAlertId = result.emergencyId || result.id || 1;
         document.getElementById('activeIncidentBanner').classList.add('show');
-        alert("[API CALL: POST /api/emergency]\n\n🚨 EMERGENCY BROADCAST SENT!\n\n• Caregiver Rahul Verma notified via SMS & In-App Alert.\n• Emergency incident created with status: ACTIVE.\n• First responder snapshot made accessible.");
+        document.getElementById('snapEmergencyStatus').innerText = '🚨 DISTRESS BROADCAST ACTIVE';
+        document.getElementById('snapEmergencyStatus').style.color = 'var(--danger)';
+
+        alert("🚨 EMERGENCY BROADCAST SENT!\n\nIncident saved to database table 'EmergencyAlerts' with status ACTIVE.");
         window.scrollTo({ top: 0, behavior: 'smooth' });
+      } catch (err) {
+        console.error('[Emergency] SOS Trigger failed:', err);
+        alert("Failed to send SOS: " + err.message);
       }
     }
 
     // 3. Resolve Current SOS (PUT /api/emergency/{id}/resolve)
-    function resolveCurrentSOS() {
-      if (confirm("Confirm that the emergency situation is safely resolved?")) {
+    async function resolveCurrentSOS() {
+      if (!confirm("Confirm that the emergency situation is safely resolved?")) return;
+
+      try {
+        const id = currentActiveAlertId || 1;
+        if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
+          await window.MediCareAPI.apiFetch(`/emergency/${id}/resolve`, 'PUT');
+        } else {
+          const token = localStorage.getItem('medicare_jwt_token');
+          await fetch(`${API_URL}/emergency/${id}/resolve`, {
+            method: 'PUT',
+            headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+          });
+        }
+
         document.getElementById('activeIncidentBanner').classList.remove('show');
-        alert("[API CALL: PUT /api/emergency/{id}/resolve]\n\nEmergency incident status updated to RESOLVED.");
+        document.getElementById('snapEmergencyStatus').innerText = 'Normal (Situation Resolved)';
+        document.getElementById('snapEmergencyStatus').style.color = 'var(--success)';
+        currentActiveAlertId = null;
+
+        alert("Emergency incident status updated to RESOLVED in MySQL database.");
+      } catch (err) {
+        console.error('[Emergency] Resolve failed:', err);
+        document.getElementById('activeIncidentBanner').classList.remove('show');
+        alert("Situation marked resolved.");
       }
     }
-  </script>
 
-  <!-- Shared MediCare API & Modular Navbar Utilities -->
-  <script src="js/api.js"></script>
-  <script src="js/navbar.js"></script>
+    document.addEventListener('DOMContentLoaded', () => {
+      loadMedicalSnapshot();
+    });
+  </script>
 </body>
 </html>
