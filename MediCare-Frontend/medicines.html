@@ -753,6 +753,83 @@
     </div>
   </div>
 
+  <!-- ================= 12-HOUR SCHEDULE TIME MODAL ================= -->
+  <div class="modal-backdrop" id="scheduleModal">
+    <div class="modal-box" style="max-width: 440px;">
+      <div class="modal-header">
+        <h3 id="schedModalTitle">Set Daily Reminder Time (12-Hour)</h3>
+        <button class="close-btn" onclick="closeScheduleModal()">&times;</button>
+      </div>
+
+      <input type="hidden" id="schedTargetMedId" value="">
+      <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">
+        Choose your 12-hour reminder time with AM / PM for this medication:
+      </p>
+
+      <!-- 12-Hour Dropdowns -->
+      <div class="form-row" style="grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 16px;">
+        <div class="form-group" style="margin-bottom: 0;">
+          <label for="schedHour">Hour (1-12)</label>
+          <select id="schedHour" class="form-control" style="font-weight: 700; font-size: 15px;">
+            <option value="1">01</option>
+            <option value="2">02</option>
+            <option value="3">03</option>
+            <option value="4">04</option>
+            <option value="5">05</option>
+            <option value="6">06</option>
+            <option value="7">07</option>
+            <option value="8" selected>08</option>
+            <option value="9">09</option>
+            <option value="10">10</option>
+            <option value="11">11</option>
+            <option value="12">12</option>
+          </select>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 0;">
+          <label for="schedMinute">Minute</label>
+          <select id="schedMinute" class="form-control" style="font-weight: 700; font-size: 15px;">
+            <option value="00" selected>:00</option>
+            <option value="05">:05</option>
+            <option value="10">:10</option>
+            <option value="15">:15</option>
+            <option value="20">:20</option>
+            <option value="25">:25</option>
+            <option value="30">:30</option>
+            <option value="35">:35</option>
+            <option value="40">:40</option>
+            <option value="45">:45</option>
+            <option value="50">:50</option>
+            <option value="55">:55</option>
+          </select>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 0;">
+          <label for="schedAmPm">AM / PM</label>
+          <select id="schedAmPm" class="form-control" style="font-weight: 700; font-size: 15px; color: var(--primary);">
+            <option value="AM" selected>AM</option>
+            <option value="PM">PM</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Quick Preset Buttons -->
+      <div style="margin-bottom: 16px;">
+        <label style="font-size: 12px; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 6px;">Quick Presets (12-Hour):</label>
+        <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+          <button type="button" class="time-chip" style="cursor: pointer;" onclick="setSchedulePreset(8, '00', 'AM')">🌅 Morning 08:00 AM</button>
+          <button type="button" class="time-chip" style="cursor: pointer;" onclick="setSchedulePreset(1, '30', 'PM')">☀️ Afternoon 01:30 PM</button>
+          <button type="button" class="time-chip" style="cursor: pointer;" onclick="setSchedulePreset(8, '30', 'PM')">🌙 Night 08:30 PM</button>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 10px; margin-top: 20px;">
+        <button type="button" class="btn btn-ghost" style="flex: 1;" onclick="closeScheduleModal()">Cancel</button>
+        <button type="button" class="btn btn-primary" id="saveSchedBtn" style="flex: 2;" onclick="submit12HourScheduleSlot()">Save 12-Hour Slot</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Shared MediCare API & Modular Navbar Utilities -->
   <script src="js/api.js"></script>
   <script src="js/navbar.js"></script>
@@ -884,12 +961,32 @@
         const expFormatted = med.endDate ? new Date(med.endDate).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : 'N/A';
         const startFormatted = med.startDate ? new Date(med.startDate).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : 'N/A';
 
-        // Filter schedules for this medicine
+        // Helper function to format any TimeSpan or time string into 12-hour AM/PM format
+        function formatTime12h(timeVal) {
+          if (!timeVal) return '08:00 AM';
+          const str = String(timeVal);
+          const parts = str.split('T').pop().split(':');
+          if (parts.length >= 2) {
+            let h = parseInt(parts[0], 10);
+            const m = parts[1].padStart(2, '0');
+            const ampm = h >= 12 ? 'PM' : 'AM';
+            h = h % 12;
+            h = h ? h : 12;
+            return `${String(h).padStart(2, '0')}:${m} ${ampm}`;
+          }
+          return str;
+        }
+
+        // Filter schedules for this medicine and display in 12-hour AM/PM format
         const medSchedules = loadedSchedules.filter(s => s.medicineId === med.id);
         const schedHtml = medSchedules.map(s => {
-          const timeStr = typeof s.time === 'string' ? s.time.substring(0, 5) : (s.time ? s.time.toString().substring(0, 5) : '08:00');
-          return `<span class="time-chip" style="background:#e0f2fe; color:#0369a1; font-weight:600;" title="Schedule ID #${s.id}">⏰ ${timeStr} <button onclick="deleteScheduleSlot(${s.id}, ${med.id})" style="border:none; background:transparent; color:var(--danger); cursor:pointer; font-weight:bold; margin-left:3px;" title="Delete Slot">&times;</button></span>`;
+          const time12 = formatTime12h(s.time);
+          return `<span class="time-chip" style="background:#e0f2fe; color:#0369a1; font-weight:600;" title="Schedule ID #${s.id}">⏰ ${time12} <button onclick="deleteScheduleSlot(${s.id}, ${med.id})" style="border:none; background:transparent; color:var(--danger); cursor:pointer; font-weight:bold; margin-left:3px;" title="Delete Slot">&times;</button></span>`;
         }).join('');
+
+        const notScheduledNotice = medSchedules.length === 0 
+          ? `<span class="time-chip" style="background:#fef2f2; color:#991b1b; font-weight:600;">⚠️ Not Scheduled</span>` 
+          : '';
 
         const card = document.createElement('div');
         card.className = 'med-card';
@@ -912,8 +1009,9 @@
 
             <div class="schedule-chips">
               <span class="time-chip">🍽️ ${escapeHtml(med.mealTimeing || med.mealTiming || 'AfterMeal')}</span>
+              ${notScheduledNotice}
               ${schedHtml}
-              <button onclick="addScheduleSlot(${med.id}, '${escapeHtml(med.name)}')" class="time-chip" style="background:#f8fafc; border:1px dashed var(--border); color:var(--primary); cursor:pointer; font-weight:600;">+ Slot</button>
+              <button onclick="addScheduleSlot(${med.id}, '${escapeHtml(med.name)}')" class="time-chip" style="background:#f8fafc; border:1px dashed var(--border); color:var(--primary); cursor:pointer; font-weight:600;">+ Set Schedule Time (12-Hr)</button>
               ${priceDisplay ? `<span class="time-chip" style="background: #ecfdf5; color: #065f46; font-weight: 700;">💰 ${escapeHtml(priceDisplay)}</span>` : ''}
               ${batchDisplay ? `<span class="time-chip" style="background: #f1f5f9; color: #475569;">🏷️ ${escapeHtml(batchDisplay)}</span>` : ''}
             </div>
@@ -935,17 +1033,42 @@
       filterMedicines();
     }
 
-    async function addScheduleSlot(medId, medName) {
-      const inputTime = prompt(`Add daily reminder time slot for "${medName}" (HH:MM in 24hr format, e.g. 08:30 or 20:00):`, "08:00");
-      if (!inputTime) return;
-      
-      const timeParts = inputTime.trim().split(':');
-      if (timeParts.length < 2 || isNaN(parseInt(timeParts[0])) || isNaN(parseInt(timeParts[1]))) {
-        alert("Please enter time in valid HH:MM format (e.g. 08:00 or 19:30)");
-        return;
-      }
-      
-      const formattedTime = `${timeParts[0].padStart(2, '0')}:${timeParts[1].padStart(2, '0')}:00`;
+    // 12-Hour Schedule Modal Functions
+    function addScheduleSlot(medId, medName) {
+      document.getElementById('schedTargetMedId').value = medId;
+      document.getElementById('schedModalTitle').innerText = `Set 12-Hour Reminder: "${medName}"`;
+      document.getElementById('schedHour').value = "8";
+      document.getElementById('schedMinute').value = "00";
+      document.getElementById('schedAmPm').value = "AM";
+      document.getElementById('scheduleModal').classList.add('active');
+    }
+
+    function closeScheduleModal() {
+      document.getElementById('scheduleModal').classList.remove('active');
+    }
+
+    function setSchedulePreset(hour, minute, ampm) {
+      document.getElementById('schedHour').value = String(hour);
+      document.getElementById('schedMinute').value = String(minute);
+      document.getElementById('schedAmPm').value = String(ampm);
+    }
+
+    async function submit12HourScheduleSlot() {
+      const medId = parseInt(document.getElementById('schedTargetMedId').value, 10);
+      let hour = parseInt(document.getElementById('schedHour').value, 10);
+      const minute = document.getElementById('schedMinute').value;
+      const ampm = document.getElementById('schedAmPm').value;
+
+      // Convert 12-hour format with AM/PM to backend 24-hour TimeSpan HH:mm:00
+      let backendHour = hour;
+      if (ampm === 'PM' && backendHour < 12) backendHour += 12;
+      if (ampm === 'AM' && backendHour === 12) backendHour = 0;
+      const formattedTime = `${String(backendHour).padStart(2, '0')}:${minute}:00`;
+      const display12h = `${String(hour).padStart(2, '0')}:${minute} ${ampm}`;
+
+      const saveBtn = document.getElementById('saveSchedBtn');
+      saveBtn.disabled = true;
+      saveBtn.innerText = 'Saving...';
 
       try {
         if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
@@ -955,10 +1078,14 @@
             frequency: 'Daily'
           });
         }
-        showToast(`Schedule slot (${inputTime}) added to MySQL database for ${medName}!`);
+        closeScheduleModal();
+        showToast(`Schedule slot (${display12h}) saved to database!`);
         await loadMedicines();
       } catch (err) {
         alert("Failed to save schedule slot: " + (err.message || 'Operation failed'));
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.innerText = 'Save 12-Hour Slot';
       }
     }
 

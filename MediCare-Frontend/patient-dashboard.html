@@ -784,40 +784,81 @@
         return;
       }
 
-      // Pending and taken doses
-      const pendingLogs = (dash && dash.pendingMedicines) ? dash.pendingMedicines : [];
-      const takenLogs = (dash && dash.takenMedicines) ? dash.takenMedicines : [];
+      // Pending, taken, and today's actual schedules from backend
+      const todaySchedules = (dash && Array.isArray(dash.todaySchedules)) ? dash.todaySchedules : [];
+      const pendingLogs = (dash && Array.isArray(dash.pendingMedicines)) ? dash.pendingMedicines : [];
+      const takenLogs = (dash && Array.isArray(dash.takenMedicines)) ? dash.takenMedicines : [];
 
       let takenCount = takenLogs.length;
-      let totalDoses = medicines.length;
+      let totalDoses = todaySchedules.length;
       document.getElementById('progressVal').innerText = `${takenCount} / ${totalDoses} Taken`;
 
-      const score = (dash && dash.adherencePercentage !== undefined) ? dash.adherencePercentage : (totalDoses > 0 ? Math.round((takenCount / totalDoses) * 100) : 100);
+      const score = (dash && dash.adherencePercentage !== undefined) 
+        ? dash.adherencePercentage 
+        : (totalDoses > 0 ? Math.round((takenCount / totalDoses) * 100) : 100);
       document.getElementById('adherenceVal').innerText = `${score}%`;
 
-      // Render cards for each active medicine in database
-      medicines.forEach((med, idx) => {
-        const isLow = med.stock <= 5;
-        const card = document.createElement('div');
-        card.className = 'dose-card';
-        card.id = `dose-card-${med.id}`;
+      // Helper function to format 24h TimeSpan / ISO string to 12h AM/PM
+      function formatTimeDisplay(timeVal) {
+        if (!timeVal) return '08:00 AM';
+        if (typeof timeVal === 'string') {
+          // Check if string contains "HH:mm:ss" or "HH:mm"
+          const parts = timeVal.split('T').pop().split(':');
+          if (parts.length >= 2) {
+            let h = parseInt(parts[0], 10);
+            const m = parts[1].padStart(2, '0');
+            const ampm = h >= 12 ? 'PM' : 'AM';
+            h = h % 12;
+            h = h ? h : 12;
+            return `${String(h).padStart(2, '0')}:${m} ${ampm}`;
+          }
+        }
+        return String(timeVal);
+      }
+
+      // If no schedules exist for today:
+      if (todaySchedules.length === 0) {
+        container.innerHTML = `
+          <div style="text-align: center; padding: 45px 20px; background: #fff; border-radius: var(--radius); border: 1px dashed var(--border);">
+            <div style="font-size: 32px; margin-bottom: 8px;">⏰</div>
+            <div style="font-size: 16px; font-weight: 700;">No Doses Scheduled for Today</div>
+            <div style="font-size: 13px; color: var(--text-muted); margin: 6px 0 16px; max-width: 480px; margin-left: auto; margin-right: auto;">
+              Medicines are not automatically scheduled. The caregiver or patient can set personalized intake times based on medical instructions.
+            </div>
+            <a href="medicines.html" class="btn btn-primary">🕒 Schedule Medicine Times</a>
+          </div>
+        `;
+        return;
+      }
+
+      // Render cards ONLY for genuinely scheduled doses configured by patient or caregiver
+      todaySchedules.forEach((sched) => {
+        const med = sched.medicine || medicines.find(m => m.id === sched.medicineId) || {
+          id: sched.medicineId,
+          name: `Medicine #${sched.medicineId}`,
+          dosage: '1 Dose',
+          stock: 0,
+          mealTiming: 'After Meal'
+        };
+
+        const displayTime = formatTimeDisplay(sched.time);
+        const meal = med.mealTiming || med.mealTimeing || 'After Meal';
 
         const isTaken = takenLogs.some(l => l.medicineId === med.id);
         const matchingPending = pendingLogs.find(l => l.medicineId === med.id);
         const logId = matchingPending ? (matchingPending.id || 0) : 0;
 
+        const card = document.createElement('div');
+        card.className = 'dose-card';
+        card.id = `dose-card-${med.id}-${sched.id}`;
+
         if (isTaken) {
           card.classList.add('taken');
         }
 
-        // Time slot display
-        const times = ['08:00 AM', '01:30 PM', '08:30 PM'];
-        const displayTime = times[idx % times.length];
-        const meal = med.mealTiming || med.mealTimeing || 'After Meal';
-
         card.innerHTML = `
           <div class="dose-left">
-            <div class="time-badge">${displayTime}</div>
+            <div class="time-badge">⏰ ${displayTime}</div>
             <div class="dose-info">
               <h4>${escapeHtml(med.name)}</h4>
               <p>${escapeHtml(med.dosage || '1 Tablet')} • ${escapeHtml(meal)} • Stock: <strong>${med.stock}</strong> left</p>
