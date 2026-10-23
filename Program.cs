@@ -93,13 +93,28 @@ builder.Services.AddHostedService<MedicineReminderBackgroundService>();
 
 var app = builder.Build();
 
-app.UseHttpsRedirection();
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 
 app.UseCors("AllowAll");
 
 app.UseAuthentication();
 
 app.UseAuthorization();
+
+// Serve MediCare-Frontend static files
+var frontendPath = Path.Combine(builder.Environment.ContentRootPath, "MediCare-Frontend");
+if (Directory.Exists(frontendPath))
+{
+    app.UseFileServer(new FileServerOptions
+    {
+        FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(frontendPath),
+        RequestPath = "",
+        EnableDefaultFiles = true
+    });
+}
 
 app.MapControllers();
 

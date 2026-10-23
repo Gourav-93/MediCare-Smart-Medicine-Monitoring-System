@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 namespace MediCare.Controllers;
 
 [ApiController]
+[Route("api/auth")]
 [Route("api/AuthController")]
 [AllowAnonymous]
 public class AuthController : ControllerBase
