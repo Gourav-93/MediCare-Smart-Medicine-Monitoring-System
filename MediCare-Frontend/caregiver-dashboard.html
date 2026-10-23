@@ -718,6 +718,8 @@
     const API_URL = (window.MediCareAPI && window.MediCareAPI.API_BASE_URL) || 'http://localhost:5000/api';
     let activeEmergencyId = null;
 
+    let currentCaregiverId = 0;
+
     async function loadCaregiverDashboard() {
       await Promise.all([loadLinkedPatients(), loadCaregiverEmergencies()]);
     }
@@ -728,21 +730,40 @@
 
       try {
         let dash = null;
+        let contactCards = [];
+
         if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
           try {
             dash = await window.MediCareAPI.apiFetch('/dashboard/caregiver');
           } catch (e) {
-            console.warn('[Caregiver] /dashboard/caregiver fallback:', e);
+            console.warn('[Caregiver] /dashboard/caregiver error:', e);
+          }
+          try {
+            contactCards = await window.MediCareAPI.apiFetch('/caregiver/patients-contact-cards');
+          } catch (e) {
+            console.warn('[Caregiver] /caregiver/patients-contact-cards fallback:', e);
           }
         }
 
-        const patients = (dash && Array.isArray(dash.linkedPatients)) ? dash.linkedPatients : [];
+        if (dash && dash.caregiver) {
+          currentCaregiverId = dash.caregiver.id || 0;
+        }
+
+        const patients = (dash && Array.isArray(dash.patients)) ? dash.patients : [];
         const missedMeds = (dash && Array.isArray(dash.missedMedicines)) ? dash.missedMedicines : [];
+        const adherenceList = (dash && Array.isArray(dash.adherence)) ? dash.adherence : [];
+
+        // Compute average adherence
+        let avgAdh = 100;
+        if (adherenceList.length > 0) {
+          const sum = adherenceList.reduce((acc, a) => acc + (a.adherencePercentage || 0), 0);
+          avgAdh = Math.round(sum / adherenceList.length);
+        }
 
         document.getElementById('totalLinkedVal').innerText = patients.length;
         document.getElementById('missedDosesVal').innerText = missedMeds.length;
-        document.getElementById('refillAlertsVal').innerText = (dash && dash.lowStockMedicines) ? dash.lowStockMedicines.length : 0;
-        document.getElementById('avgComplianceVal').innerText = (dash && dash.averageCompliance !== undefined) ? `${dash.averageCompliance}%` : '100%';
+        document.getElementById('refillAlertsVal').innerText = (dash && dash.pendingMedicines) ? dash.pendingMedicines.length : 0;
+        document.getElementById('avgComplianceVal').innerText = `${avgAdh}%`;
 
         grid.innerHTML = '';
 
@@ -759,29 +780,39 @@
           `;
         } else {
           patients.forEach(p => {
+            const pAdh = adherenceList.find(a => a.patientId === (p.patientId || p.id));
+            const cardData = Array.isArray(contactCards) ? contactCards.find(c => c.patientId === (p.patientId || p.id)) : null;
+            const adhScore = cardData ? cardData.adherenceRate : (pAdh ? pAdh.adherencePercentage : 100);
+            const pendingToday = cardData ? cardData.pendingDosesToday : 0;
+            const missedToday = cardData ? cardData.missedDosesToday : 0;
+            const pId = p.patientId || p.id;
+            const pName = p.name || 'Patient';
+            const phone = (cardData && cardData.phoneNumber) || p.emergencyContact || 'Not configured';
+
             const card = document.createElement('div');
             card.className = 'patient-card';
             card.innerHTML = `
               <div>
                 <div class="patient-top">
                   <div class="patient-avatar-wrap">
-                    <div class="patient-avatar">${escapeHtml((p.name || 'P').substring(0, 2).toUpperCase())}</div>
+                    <div class="patient-avatar">${escapeHtml(pName.substring(0, 2).toUpperCase())}</div>
                     <div>
-                      <div class="patient-name">${escapeHtml(p.name || 'Patient')}</div>
-                      <div class="patient-rel">Relationship: ${escapeHtml(p.relationship || 'Connected')}</div>
+                      <div class="patient-name">${escapeHtml(pName)}</div>
+                      <div class="patient-rel">Patient ID: #${pId}</div>
                     </div>
                   </div>
-                  <span class="badge-adherence adh-good">${p.adherence || 100}% Compliance</span>
+                  <span class="badge-adherence ${adhScore >= 80 ? 'adh-good' : 'adh-low'}">${adhScore}% Compliance</span>
                 </div>
                 <ul class="patient-meta-list">
                   <li>📧 ${escapeHtml(p.email || 'N/A')}</li>
-                  <li>📞 Emergency: ${escapeHtml(p.emergencyContact || 'Not configured')}</li>
-                  <li>💊 Active Meds: ${p.activeMedicinesCount || 0} Prescriptions</li>
+                  <li>📞 Contact: ${escapeHtml(phone)}</li>
+                  <li>⏳ Today: <strong>${pendingToday}</strong> Pending • <strong>${missedToday}</strong> Missed</li>
                 </ul>
               </div>
               <div class="card-actions">
-                <a href="tel:${escapeHtml(p.emergencyContact || '')}" class="btn btn-ghost">📞 Call</a>
-                <button class="btn btn-danger-outline" onclick="unlinkPatientAction(${p.patientId || p.id}, '${escapeHtml(p.name)}')">Unlink</button>
+                <a href="print-report.html?patientId=${pId}" class="btn btn-ghost" style="font-size: 12px;">📊 Dossier</a>
+                <a href="tel:${escapeHtml(phone)}" class="btn btn-ghost" style="font-size: 12px;">📞 Call</a>
+                <button class="btn btn-danger-outline" style="font-size: 12px;" onclick="unlinkPatientAction(${pId}, '${escapeHtml(pName)}')">Unlink</button>
               </div>
             `;
             grid.appendChild(card);
@@ -796,13 +827,16 @@
           `;
         } else {
           missedMeds.forEach(m => {
+            const medName = m.medicine ? m.medicine.name : `Medicine #${m.medicineId}`;
+            const patName = (m.patient && m.patient.user) ? m.patient.user.name : `Patient #${m.patientId}`;
+            const contact = m.patient ? m.patient.emergencyContact : '';
             const tr = document.createElement('tr');
             tr.innerHTML = `
               <td>${new Date(m.scheduledTime).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</td>
-              <td><strong>${escapeHtml(m.patientName || 'Patient')}</strong></td>
-              <td>${escapeHtml(m.medicineName || 'Medicine')}</td>
+              <td><strong>${escapeHtml(patName)}</strong></td>
+              <td>${escapeHtml(medName)}</td>
               <td><span style="color: var(--danger); font-weight: 700;">Missed</span></td>
-              <td><a href="tel:${escapeHtml(m.patientPhone || '')}" class="btn btn-ghost" style="padding: 4px 10px; font-size: 12px;">Call</a></td>
+              <td><a href="tel:${escapeHtml(contact)}" class="btn btn-ghost" style="padding: 4px 10px; font-size: 12px;">Call</a></td>
             `;
             missedTbody.appendChild(tr);
           });
@@ -822,7 +856,8 @@
         const banner = document.getElementById('emergencyBanner');
         if (active) {
           activeEmergencyId = active.id;
-          document.getElementById('cgEmergencyTitle').innerText = `🚨 Active Emergency: ${active.patient ? active.patient.name : 'Patient'}`;
+          const patientName = (active.patient && active.patient.user) ? active.patient.user.name : (active.patient ? active.patient.name : `Patient #${active.patientId}`);
+          document.getElementById('cgEmergencyTitle').innerText = `🚨 Active Emergency: ${patientName}`;
           document.getElementById('cgEmergencyMsg').innerText = active.message || 'Distress signal received';
           banner.style.display = 'flex';
         } else {
@@ -840,8 +875,10 @@
         }
         document.getElementById('emergencyBanner').style.display = 'none';
         alert('Emergency marked as resolved in MySQL database.');
+        await loadCaregiverDashboard();
       } catch (err) {
         alert('Resolution recorded.');
+        await loadCaregiverDashboard();
       }
     }
 
@@ -866,15 +903,16 @@
       try {
         if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
           await window.MediCareAPI.apiFetch('/Caregiverpatient/link', 'POST', {
+            caregiverId: currentCaregiverId || 1,
             patientEmail: email,
-            relationship: rel
+            relationType: rel
           });
         }
         alert(`Patient with email "${email}" linked successfully in database!`);
         closeLinkModal();
         await loadCaregiverDashboard();
       } catch (err) {
-        alert('Failed to link patient: ' + err.message);
+        alert('Failed to link patient: ' + (err.message || 'Verification failed'));
       } finally {
         btn.disabled = false;
         btn.innerText = 'Verify & Link Patient';
@@ -885,12 +923,13 @@
       if (!confirm(`Are you sure you want to unlink ${name}?`)) return;
       try {
         if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
-          await window.MediCareAPI.apiFetch(`/Caregiverpatient/unlink/${patientId}`, 'DELETE');
+          const cId = currentCaregiverId || 1;
+          await window.MediCareAPI.apiFetch(`/Caregiverpatient/unlink?caregiverId=${cId}&patientId=${patientId}`, 'DELETE');
         }
         alert(`Patient ${name} unlinked successfully from database.`);
         await loadCaregiverDashboard();
       } catch (err) {
-        alert('Unlinked from view.');
+        alert('Unlinked: ' + (err.message || 'Operation completed'));
         await loadCaregiverDashboard();
       }
     }

@@ -437,46 +437,46 @@
       <div class="meta-box">
         <div class="meta-item">
           <span>Patient Full Name</span>
-          <strong>Ramesh Kumar</strong>
+          <strong id="repPatientName">Loading...</strong>
         </div>
         <div class="meta-item">
           <span>Email Address</span>
-          <strong>ramesh.kumar@example.com</strong>
+          <strong id="repPatientEmail">--</strong>
         </div>
         <div class="meta-item">
           <span>Date of Birth / Age</span>
-          <strong>15-Aug-1962 (64 Yrs)</strong>
+          <strong id="repPatientDOB">--</strong>
         </div>
         <div class="meta-item">
           <span>Emergency Contact</span>
-          <strong>+91 98765-43210 (Rahul Verma - Son)</strong>
-        </div>
-        <div class="meta-item">
-          <span>Primary Caregiver</span>
-          <strong>Linked & Monitored</strong>
+          <strong id="repPatientContact">--</strong>
         </div>
         <div class="meta-item">
           <span>Clinical Dossier ID</span>
-          <strong>MED-PAT-101-2026</strong>
+          <strong id="repDossierId">--</strong>
+        </div>
+        <div class="meta-item">
+          <span>Generated On</span>
+          <strong id="repGeneratedAt">--</strong>
         </div>
       </div>
 
       <!-- 4 Compliance KPI Stats -->
       <div class="stats-summary-grid">
         <div class="stat-pill-card">
-          <div class="stat-pill-val" id="statAdherence">91.4%</div>
+          <div class="stat-pill-val" id="statAdherence">--%</div>
           <div class="stat-pill-lbl">Overall Adherence</div>
         </div>
         <div class="stat-pill-card">
-          <div class="stat-pill-val" id="statTotalDoses">60</div>
+          <div class="stat-pill-val" id="statTotalDoses">--</div>
           <div class="stat-pill-lbl">Total Doses Due</div>
         </div>
         <div class="stat-pill-card">
-          <div class="stat-pill-val" style="color: var(--success);" id="statTaken">55</div>
+          <div class="stat-pill-val" style="color: var(--success);" id="statTaken">--</div>
           <div class="stat-pill-lbl">Doses Taken</div>
         </div>
         <div class="stat-pill-card">
-          <div class="stat-pill-val" style="color: var(--danger);" id="statMissed">5</div>
+          <div class="stat-pill-val" style="color: var(--danger);" id="statMissed">--</div>
           <div class="stat-pill-lbl">Doses Missed</div>
         </div>
       </div>
@@ -489,33 +489,13 @@
             <tr>
               <th>Medicine Name</th>
               <th>Dosage Quantity</th>
+              <th>Dose Qty</th>
               <th>Current Stock</th>
-              <th>Daily Routine Slots</th>
-              <th>Instructions</th>
+              <th>Daily Scheduled Times</th>
             </tr>
           </thead>
-          <tbody>
-            <tr>
-              <td><strong>Metformin 500mg</strong></td>
-              <td>1 Tablet</td>
-              <td>24 Pills</td>
-              <td>08:00 AM, 08:30 PM</td>
-              <td>After Breakfast & Dinner</td>
-            </tr>
-            <tr>
-              <td><strong>Pan-D 40mg</strong></td>
-              <td>1 Capsule</td>
-              <td><span style="color: var(--danger); font-weight: 700;">3 Pills ⚠️</span></td>
-              <td>07:30 AM</td>
-              <td>Before Breakfast (Empty Stomach)</td>
-            </tr>
-            <tr>
-              <td><strong>Atorvastatin 10mg</strong></td>
-              <td>1 Tablet</td>
-              <td>18 Pills</td>
-              <td>08:30 PM</td>
-              <td>After Dinner</td>
-            </tr>
+          <tbody id="activeMedsTbody">
+            <tr><td colspan="5" style="text-align:center; padding: 15px; color: var(--text-muted);">Loading prescribed medications from database...</td></tr>
           </tbody>
         </table>
       </div>
@@ -589,36 +569,144 @@
 
   <!-- ================= JAVASCRIPT ================= -->
   <script>
+    const API_URL = (window.MediCareAPI && window.MediCareAPI.API_BASE_URL) || 'http://localhost:5000/api';
+    let currentEvaluationDays = 30;
+    let targetPatientId = 1;
+
     // 1. Native Print Trigger
     function triggerNativePrint() {
       window.print();
     }
 
-    // 2. Change Evaluation Period (Matches /api/report/patient/{id}/data?days={period})
-    function setPeriod(days, btn) {
-      document.querySelectorAll('.range-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
+    function openPrintableHtmlView() {
+      const url = `${API_URL}/report/patient/${targetPatientId}/print?days=${currentEvaluationDays}`;
+      window.open(url, '_blank');
+    }
 
+    // 2. Change Evaluation Period (Matches /api/report/patient/{id}/data?days={period})
+    async function setPeriod(days, btn) {
+      if (btn) {
+        document.querySelectorAll('.range-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+      }
+
+      currentEvaluationDays = days;
       document.getElementById('periodBadge').innerText = `Period: Last ${days} Days`;
       
-      // Simulate dynamic recalculation
-      if (days === 7) {
-        document.getElementById('statAdherence').innerText = "94.2%";
-        document.getElementById('statTotalDoses').innerText = "14";
-        document.getElementById('statTaken').innerText = "13";
-        document.getElementById('statMissed').innerText = "1";
-      } else if (days === 30) {
-        document.getElementById('statAdherence').innerText = "91.4%";
-        document.getElementById('statTotalDoses').innerText = "60";
-        document.getElementById('statTaken').innerText = "55";
-        document.getElementById('statMissed').innerText = "5";
-      } else {
-        document.getElementById('statAdherence').innerText = "88.0%";
-        document.getElementById('statTotalDoses').innerText = "180";
-        document.getElementById('statTaken').innerText = "158";
-        document.getElementById('statMissed').innerText = "22";
+      await loadClinicalReport(days);
+    }
+
+    async function loadClinicalReport(days = 30) {
+      try {
+        // Resolve patient ID from URL param or current session
+        const urlParams = new URLSearchParams(window.location.search);
+        const queryPid = urlParams.get('patientId') || urlParams.get('id');
+        if (queryPid) {
+          targetPatientId = parseInt(queryPid, 10);
+        } else {
+          // If logged in as patient, use patient dashboard to resolve ID
+          if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
+            try {
+              const dash = await window.MediCareAPI.apiFetch('/dashboard/patient');
+              if (dash && dash.patient) targetPatientId = dash.patient.id || 1;
+            } catch (e) {
+              targetPatientId = 1;
+            }
+          }
+        }
+
+        let report = null;
+        if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
+          try {
+            report = await window.MediCareAPI.apiFetch(`/report/patient/${targetPatientId}/data?days=${days}`);
+          } catch (e) {
+            console.warn('[Report] /report/patient fallback:', e);
+          }
+        }
+
+        if (report) {
+          // 1. Metadata
+          document.getElementById('repPatientName').innerText = report.patientName || 'Patient';
+          document.getElementById('repPatientEmail').innerText = report.patientEmail || '--';
+          const dobFormatted = report.dateOfBirth ? new Date(report.dateOfBirth).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }) : '--';
+          document.getElementById('repPatientDOB').innerText = dobFormatted;
+          document.getElementById('repPatientContact').innerText = report.emergencyContact || 'Not configured';
+          document.getElementById('repDossierId').innerText = `MED-PAT-${report.patientId}-2026`;
+          document.getElementById('repGeneratedAt').innerText = report.reportGeneratedAt ? new Date(report.reportGeneratedAt).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' }) : new Date().toLocaleString();
+          document.getElementById('genTimestamp').innerText = report.reportGeneratedAt ? new Date(report.reportGeneratedAt).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' }) : new Date().toLocaleString();
+
+          // 2. Metrics
+          document.getElementById('statAdherence').innerText = `${report.overallAdherence}%`;
+          document.getElementById('statTotalDoses').innerText = report.totalDosesRecorded;
+          document.getElementById('statTaken').innerText = report.totalTaken;
+          document.getElementById('statMissed').innerText = report.totalMissed;
+
+          // 3. Active Medicines
+          const medsTbody = document.getElementById('activeMedsTbody');
+          const meds = Array.isArray(report.activeMedicines) ? report.activeMedicines : [];
+          medsTbody.innerHTML = '';
+          if (meds.length === 0) {
+            medsTbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding: 20px; color: var(--text-muted);">No active prescribed medications found.</td></tr>`;
+          } else {
+            meds.forEach(m => {
+              const timesStr = (m.scheduledTimes && m.scheduledTimes.length > 0) ? m.scheduledTimes.join(', ') : 'None scheduled';
+              const tr = document.createElement('tr');
+              tr.innerHTML = `
+                <td><strong>${escapeHtml(m.name)}</strong></td>
+                <td>${escapeHtml(m.dosage || 'Standard')}</td>
+                <td>${m.dose || 1} Unit</td>
+                <td>${m.stock <= 5 ? `<span style="color: var(--danger); font-weight: 700;">${m.stock} Pills ⚠️</span>` : `${m.stock} Pills`}</td>
+                <td>${escapeHtml(timesStr)}</td>
+              `;
+              medsTbody.appendChild(tr);
+            });
+          }
+
+          // 4. Recent Logs
+          const logsTbody = document.getElementById('logsTableBody');
+          const logs = Array.isArray(report.recentLogs) ? report.recentLogs : [];
+          logsTbody.innerHTML = '';
+          if (logs.length === 0) {
+            logsTbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding: 20px; color: var(--text-muted);">No intake audit logs recorded for this ${days}-day evaluation window.</td></tr>`;
+          } else {
+            logs.slice(0, 40).forEach(l => {
+              const schedStr = l.scheduledTime ? new Date(l.scheduledTime).toLocaleString([], { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '-';
+              const takenStr = l.takenTime ? new Date(l.takenTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '-';
+              const status = l.status || 'Pending';
+              let badgeCls = 'status-pending';
+              let badgeTxt = '⏳ Pending';
+              if (status.toLowerCase() === 'taken') {
+                badgeCls = 'status-taken';
+                badgeTxt = '✅ Taken';
+              } else if (status.toLowerCase() === 'missed') {
+                badgeCls = 'status-missed';
+                badgeTxt = '❌ Missed';
+              }
+              const tr = document.createElement('tr');
+              tr.innerHTML = `
+                <td>${schedStr}</td>
+                <td><strong>${escapeHtml(l.medicineName)}</strong></td>
+                <td><span class="badge-status ${badgeCls}">${badgeTxt}</span></td>
+                <td>${takenStr}</td>
+                <td>Verified EF Engine</td>
+              `;
+              logsTbody.appendChild(tr);
+            });
+          }
+        }
+      } catch (err) {
+        console.error('[Report] Failed to load data:', err);
       }
     }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      loadClinicalReport(30);
+    });
   </script>
 
   <!-- Shared MediCare API & Modular Navbar Utilities -->

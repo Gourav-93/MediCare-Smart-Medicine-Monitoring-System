@@ -759,31 +759,47 @@
 
         async function loadSettings() {
             try {
-                /*
-                 * Example expected response structure:
-                 * GET /api/user/profile
-                 * GET /api/emergency/contacts
-                 * GET /api/user/notification-preferences
-                 *
-                 * Replace paths and field names to match your backend.
-                 */
+                const user = (window.MediCareAPI && window.MediCareAPI.getCurrentUser()) || {};
+                const role = (window.MediCareAPI && window.MediCareAPI.getUserRole()) || 'PATIENT';
+                
+                let profileData = {
+                    fullName: user.name || "User",
+                    email: user.email || "",
+                    phone: "",
+                    dateOfBirth: "",
+                    role: role,
+                    adherencePercentage: null,
+                    activeMedicineCount: 0
+                };
 
-                // Uncomment after confirming the actual API endpoints:
-                //
-                // const profile = await requestApi("/api/user/profile");
-                // displayProfile(profile);
-                //
-                // const contacts = await requestApi("/api/emergency/contacts");
-                // displayEmergencyContacts(contacts);
-                //
-                // const preferences = await requestApi(
-                //     "/api/user/notification-preferences"
-                // );
-                // displayNotificationPreferences(preferences);
+                if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
+                    if (role === 'PATIENT') {
+                        try {
+                            const dash = await window.MediCareAPI.apiFetch('/dashboard/patient');
+                            if (dash && dash.patient) {
+                                profileData.fullName = dash.patient.name || profileData.fullName;
+                                profileData.email = dash.patient.email || profileData.email;
+                                profileData.phone = dash.patient.emergencyContact || "";
+                                if (dash.patient.dateOfBirth) {
+                                    profileData.dateOfBirth = new Date(dash.patient.dateOfBirth).toISOString().split('T')[0];
+                                }
+                                profileData.adherencePercentage = dash.adherencePercentage;
+                                profileData.activeMedicineCount = dash.totalMedicines || (dash.medicines ? dash.medicines.length : 0);
+                            }
+                        } catch (e) {}
+                    } else if (role === 'CAREGIVER') {
+                        try {
+                            const dash = await window.MediCareAPI.apiFetch('/dashboard/caregiver');
+                            if (dash && dash.caregiver) {
+                                profileData.fullName = dash.caregiver.name || profileData.fullName;
+                                profileData.email = dash.caregiver.email || profileData.email;
+                                profileData.phone = dash.caregiver.relationship || "";
+                            }
+                        } catch (e) {}
+                    }
+                }
 
-                document.getElementById("profileName").textContent =
-                    "Profile not loaded";
-                document.getElementById("profileAvatar").textContent = "--";
+                displayProfile(profileData);
 
             } catch (error) {
                 document.getElementById("profileName").textContent =

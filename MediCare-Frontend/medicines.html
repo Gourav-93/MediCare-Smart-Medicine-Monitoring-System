@@ -803,19 +803,25 @@
       medModal.classList.remove('active');
     }
 
-    // Fetch and Render Medicines
+    let loadedSchedules = [];
+
+    // Fetch and Render Medicines & Schedules
     async function loadMedicines() {
       const grid = document.getElementById('medGrid');
       try {
-        console.log('[MediCare API] Fetching medicines from:', `${API_URL}/medicine`);
         let response;
         if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
           try {
             response = await window.MediCareAPI.apiFetch('/medicine');
           } catch (e) {
-            console.warn('[MediCare API] Authenticated fetch fallback to direct fetch:', e);
             const res = await fetch(`${API_URL}/medicine`);
             response = await res.json();
+          }
+          try {
+            const schRes = await window.MediCareAPI.apiFetch('/medicineschedule');
+            loadedSchedules = Array.isArray(schRes) ? schRes : [];
+          } catch (e) {
+            console.warn('[Medicines] Schedule fetch fallback:', e);
           }
         } else {
           const res = await fetch(`${API_URL}/medicine`);
@@ -823,7 +829,6 @@
         }
 
         loadedMedicines = Array.isArray(response) ? response : [];
-        console.log(`[MediCare API] Successfully fetched ${loadedMedicines.length} medicines:`, loadedMedicines);
         renderMedicines(loadedMedicines);
       } catch (err) {
         console.error('[MediCare API] Error loading medicines:', err);
@@ -879,6 +884,13 @@
         const expFormatted = med.endDate ? new Date(med.endDate).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : 'N/A';
         const startFormatted = med.startDate ? new Date(med.startDate).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : 'N/A';
 
+        // Filter schedules for this medicine
+        const medSchedules = loadedSchedules.filter(s => s.medicineId === med.id);
+        const schedHtml = medSchedules.map(s => {
+          const timeStr = typeof s.time === 'string' ? s.time.substring(0, 5) : (s.time ? s.time.toString().substring(0, 5) : '08:00');
+          return `<span class="time-chip" style="background:#e0f2fe; color:#0369a1; font-weight:600;" title="Schedule ID #${s.id}">⏰ ${timeStr} <button onclick="deleteScheduleSlot(${s.id}, ${med.id})" style="border:none; background:transparent; color:var(--danger); cursor:pointer; font-weight:bold; margin-left:3px;" title="Delete Slot">&times;</button></span>`;
+        }).join('');
+
         const card = document.createElement('div');
         card.className = 'med-card';
         card.id = `med-card-${med.id}`;
@@ -900,6 +912,8 @@
 
             <div class="schedule-chips">
               <span class="time-chip">🍽️ ${escapeHtml(med.mealTimeing || med.mealTiming || 'AfterMeal')}</span>
+              ${schedHtml}
+              <button onclick="addScheduleSlot(${med.id}, '${escapeHtml(med.name)}')" class="time-chip" style="background:#f8fafc; border:1px dashed var(--border); color:var(--primary); cursor:pointer; font-weight:600;">+ Slot</button>
               ${priceDisplay ? `<span class="time-chip" style="background: #ecfdf5; color: #065f46; font-weight: 700;">💰 ${escapeHtml(priceDisplay)}</span>` : ''}
               ${batchDisplay ? `<span class="time-chip" style="background: #f1f5f9; color: #475569;">🏷️ ${escapeHtml(batchDisplay)}</span>` : ''}
             </div>
@@ -919,6 +933,47 @@
       });
 
       filterMedicines();
+    }
+
+    async function addScheduleSlot(medId, medName) {
+      const inputTime = prompt(`Add daily reminder time slot for "${medName}" (HH:MM in 24hr format, e.g. 08:30 or 20:00):`, "08:00");
+      if (!inputTime) return;
+      
+      const timeParts = inputTime.trim().split(':');
+      if (timeParts.length < 2 || isNaN(parseInt(timeParts[0])) || isNaN(parseInt(timeParts[1]))) {
+        alert("Please enter time in valid HH:MM format (e.g. 08:00 or 19:30)");
+        return;
+      }
+      
+      const formattedTime = `${timeParts[0].padStart(2, '0')}:${timeParts[1].padStart(2, '0')}:00`;
+
+      try {
+        if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
+          await window.MediCareAPI.apiFetch('/medicineschedule', 'POST', {
+            medicineId: medId,
+            time: formattedTime,
+            frequency: 'Daily'
+          });
+        }
+        showToast(`Schedule slot (${inputTime}) added to MySQL database for ${medName}!`);
+        await loadMedicines();
+      } catch (err) {
+        alert("Failed to save schedule slot: " + (err.message || 'Operation failed'));
+      }
+    }
+
+    async function deleteScheduleSlot(scheduleId, medId) {
+      if (!confirm(`Delete reminder schedule slot #${scheduleId}?`)) return;
+      try {
+        if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
+          await window.MediCareAPI.apiFetch(`/medicinelog/${scheduleId}`, 'DELETE').catch(() => {});
+          await window.MediCareAPI.apiFetch(`/medicineschedule/${scheduleId}`, 'DELETE');
+        }
+        showToast(`Schedule slot removed from database.`);
+        await loadMedicines();
+      } catch (err) {
+        alert("Failed to delete schedule slot: " + (err.message || 'Operation failed'));
+      }
     }
 
     function escapeHtml(str) {

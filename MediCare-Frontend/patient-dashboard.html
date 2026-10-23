@@ -803,6 +803,9 @@
         card.id = `dose-card-${med.id}`;
 
         const isTaken = takenLogs.some(l => l.medicineId === med.id);
+        const matchingPending = pendingLogs.find(l => l.medicineId === med.id);
+        const logId = matchingPending ? (matchingPending.id || 0) : 0;
+
         if (isTaken) {
           card.classList.add('taken');
         }
@@ -824,8 +827,8 @@
             ${isTaken 
               ? `<span style="color: var(--success); font-weight: 700; font-size: 13.5px;">✅ Completed</span>`
               : `
-                <button class="btn btn-success" onclick="markMedicineTaken(${med.id}, '${escapeHtml(med.name)}')">✅ Taken</button>
-                <button class="btn btn-snooze" onclick="snoozeMedicineDose(${med.id}, '${escapeHtml(med.name)}')">⏳ Snooze 15m</button>
+                <button class="btn btn-success" onclick="markMedicineTaken(${med.id}, ${logId}, '${escapeHtml(med.name)}')">✅ Taken</button>
+                <button class="btn btn-snooze" onclick="snoozeMedicineDose(${med.id}, ${logId}, '${escapeHtml(med.name)}')">⏳ Snooze 15m</button>
               `
             }
           </div>
@@ -836,27 +839,33 @@
     }
 
     // 2. Mark Dose as Taken (Writes to MySQL MedicineLogs & decrements stock)
-    async function markMedicineTaken(medId, medName) {
+    async function markMedicineTaken(medId, logId, medName) {
       try {
         const actionArea = document.getElementById(`action-area-${medId}`);
         if (actionArea) actionArea.innerHTML = `<span style="color: var(--text-muted); font-size: 13px;">Recording...</span>`;
 
-        // Direct call to PUT /api/medicinelog/{medId}/taken
+        const pId = (dashboardData && dashboardData.patient) ? dashboardData.patient.id : 1;
+
         if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
-          await window.MediCareAPI.apiFetch(`/medicinelog/${medId}/taken`, 'PUT');
-        } else {
-          const token = localStorage.getItem('medicare_jwt_token');
-          await fetch(`${API_URL}/medicinelog/${medId}/taken`, {
-            method: 'PUT',
-            headers: token ? { 'Authorization': `Bearer ${token}` } : {}
-          });
+          if (logId && logId > 0) {
+            // Direct update on existing MedicineLog record
+            await window.MediCareAPI.apiFetch(`/medicinelog/${logId}/taken`, 'PUT');
+          } else {
+            // Record new log as Taken if no pending log entry existed yet
+            await window.MediCareAPI.apiFetch('/medicinelog', 'POST', {
+              medicineId: medId,
+              patientId: pId,
+              scheduledTime: new Date().toISOString(),
+              status: 'Taken'
+            });
+          }
         }
 
         showNotification(`Dose for "${medName}" confirmed and saved to database! Inventory stock updated.`);
         await loadPatientData();
       } catch (err) {
         console.error('[MediCare Intake] Failed:', err);
-        showNotification(`Recorded intake locally for "${medName}".`);
+        showNotification(`Recorded intake: ${err.message || 'Updated'}`);
         const card = document.getElementById(`dose-card-${medId}`);
         if (card) {
           card.classList.add('taken');
@@ -867,18 +876,30 @@
     }
 
     // 3. Snooze Dose (Writes snooze postponement to MySQL)
-    async function snoozeMedicineDose(medId, medName) {
+    async function snoozeMedicineDose(medId, logId, medName) {
       try {
-        if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
-          await window.MediCareAPI.apiFetch(`/medicinelog/${medId}/snooze?minutes=15`, 'PUT');
-        } else {
-          const token = localStorage.getItem('medicare_jwt_token');
-          await fetch(`${API_URL}/medicinelog/${medId}/snooze?minutes=15`, {
-            method: 'PUT',
-            headers: token ? { 'Authorization': `Bearer ${token}` } : {}
-          });
+        const pId = (dashboardData && dashboardData.patient) ? dashboardData.patient.id : 1;
+        let targetLogId = logId;
+
+        if (!targetLogId || targetLogId <= 0) {
+          // If no log in DB yet, create pending log first
+          if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
+            const created = await window.MediCareAPI.apiFetch('/medicinelog', 'POST', {
+              medicineId: medId,
+              patientId: pId,
+              scheduledTime: new Date().toISOString(),
+              status: 'Pending'
+            });
+            targetLogId = created.id || created.Id || 0;
+          }
         }
+
+        if (targetLogId > 0 && window.MediCareAPI && window.MediCareAPI.apiFetch) {
+          await window.MediCareAPI.apiFetch(`/medicinelog/${targetLogId}/snooze?minutes=15`, 'PUT');
+        }
+
         showNotification(`Reminder for "${medName}" snoozed by 15 minutes in database.`);
+        await loadPatientData();
       } catch (err) {
         showNotification(`Reminder for "${medName}" postponed by 15 minutes.`);
       }

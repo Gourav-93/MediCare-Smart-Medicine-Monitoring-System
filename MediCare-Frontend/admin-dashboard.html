@@ -464,15 +464,15 @@
     </div>
 
     <!-- Active Emergency Alert Strip (Matches activeEmergencyAlerts) -->
-    <div class="alert-strip" id="emergencyStrip">
+    <div class="alert-strip" id="emergencyStrip" style="display: none;">
       <div style="display: flex; align-items: center; gap: 12px;">
         <span style="font-size: 20px;">🚨</span>
         <div>
-          <strong style="color: #991b1b; font-size: 14px;">1 High-Priority Active Emergency Incident</strong>
-          <div style="color: #b91c1c; font-size: 12.5px;">Patient: Sunita Devi • Message: "Severe dizziness after dose" • 14 mins ago</div>
+          <strong style="color: #991b1b; font-size: 14px;" id="emergencyStripTitle">Active Emergency Incident</strong>
+          <div style="color: #b91c1c; font-size: 12.5px;" id="emergencyStripMsg">Critical alert detected.</div>
         </div>
       </div>
-      <button class="btn btn-primary" style="background: var(--danger); font-size: 12.5px;" onclick="resolveEmergencyIncident(12, 'Sunita Devi')">
+      <button class="btn btn-primary" id="emergencyStripBtn" style="background: var(--danger); font-size: 12.5px;" onclick="resolveEmergencyIncident(0, '')">
         Mark Incident Resolved
       </button>
     </div>
@@ -486,7 +486,7 @@
           <span class="lbl">Total Registered Users</span>
           <span>👥</span>
         </div>
-        <div class="val">1,734</div>
+        <div class="val" id="admTotalUsersVal">--</div>
         <div class="sub" style="color: var(--primary);">System wide accounts</div>
       </div>
 
@@ -496,7 +496,7 @@
           <span class="lbl">Active Patients</span>
           <span>👤</span>
         </div>
-        <div class="val">1,248</div>
+        <div class="val" id="admTotalPatientsVal">--</div>
         <div class="sub">Taking active regimens</div>
       </div>
 
@@ -506,8 +506,8 @@
           <span class="lbl">Caregivers</span>
           <span>🛡️</span>
         </div>
-        <div class="val">486</div>
-        <div class="sub">320 Connected relations</div>
+        <div class="val" id="admTotalCaregiversVal">--</div>
+        <div class="sub" id="admCaregiverRelationsSub">-- Connected relations</div>
       </div>
 
       <!-- Card 4: System Adherence -->
@@ -516,7 +516,7 @@
           <span class="lbl">System Adherence Rate</span>
           <span>📈</span>
         </div>
-        <div class="val" style="color: var(--success);">91.4%</div>
+        <div class="val" id="admOverallAdherenceVal" style="color: var(--success);">--%</div>
         <div class="sub" style="color: var(--success);">High compliance benchmark</div>
       </div>
 
@@ -526,8 +526,8 @@
           <span class="lbl">Total Doses Logged</span>
           <span>💊</span>
         </div>
-        <div class="val">36,140</div>
-        <div class="sub">32,840 Taken • 3,300 Missed</div>
+        <div class="val" id="admTotalDosesVal">--</div>
+        <div class="sub" id="admTotalDosesSub">-- Taken • -- Missed</div>
       </div>
 
       <!-- Card 6: Pending Intake -->
@@ -536,8 +536,8 @@
           <span class="lbl">Current Pending Doses</span>
           <span>⏳</span>
         </div>
-        <div class="val">142</div>
-        <div class="sub" style="color: var(--warning);">Due within 2 hours</div>
+        <div class="val" id="admPendingDosesVal">--</div>
+        <div class="sub" style="color: var(--warning);">Pending doses scheduled</div>
       </div>
 
       <!-- Card 7: Critical Low Stock -->
@@ -546,7 +546,7 @@
           <span class="lbl">Low-Stock Watchlist</span>
           <span>⚠️</span>
         </div>
-        <div class="val" style="color: var(--warning);" id="lowStockCountVal">19</div>
+        <div class="val" style="color: var(--warning);" id="lowStockCountVal">--</div>
         <div class="sub" style="color: var(--warning);">Medicines ≤ 5 pills</div>
       </div>
 
@@ -556,8 +556,8 @@
           <span class="lbl">Lifetime Emergencies</span>
           <span>🚑</span>
         </div>
-        <div class="val">14</div>
-        <div class="sub" style="color: var(--success);">13 Successfully resolved</div>
+        <div class="val" id="admEmergenciesVal">--</div>
+        <div class="sub" id="admEmergenciesSub" style="color: var(--success);">All tracked incidents</div>
       </div>
 
     </div>
@@ -621,6 +621,42 @@
 
   </div>
 
+  <!-- Notification Creation Modal (Admin Only: POST /api/notification) -->
+  <div class="mobile-overlay" id="notifyModal" style="display: none; align-items: center; justify-content: center; z-index: 300;">
+    <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 24px; width: min(450px, 92vw); box-shadow: var(--shadow-md);">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <h3 style="font-size: 17px; font-weight: 700; color: var(--text-main);">📢 Broadcast System Notification</h3>
+        <button onclick="closeNotifyModal()" style="border: none; background: transparent; font-size: 20px; cursor: pointer; color: var(--text-muted);">&times;</button>
+      </div>
+      <form id="createNotifForm" onsubmit="handleCreateNotification(event)">
+        <div style="margin-bottom: 12px;">
+          <label style="display: block; font-size: 12.5px; font-weight: 600; margin-bottom: 4px;">Target User ID (e.g. 1, 2...):</label>
+          <input type="number" id="notifUserId" required style="width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px;" value="1" />
+        </div>
+        <div style="margin-bottom: 12px;">
+          <label style="display: block; font-size: 12.5px; font-weight: 600; margin-bottom: 4px;">Title:</label>
+          <input type="text" id="notifTitle" required style="width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px;" placeholder="e.g. System Health Advisory" />
+        </div>
+        <div style="margin-bottom: 12px;">
+          <label style="display: block; font-size: 12.5px; font-weight: 600; margin-bottom: 4px;">Type:</label>
+          <select id="notifType" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px;">
+            <option value="System">System Alert</option>
+            <option value="Refill">Refill Reminder</option>
+            <option value="EmergencyAlert">Emergency Notice</option>
+          </select>
+        </div>
+        <div style="margin-bottom: 16px;">
+          <label style="display: block; font-size: 12.5px; font-weight: 600; margin-bottom: 4px;">Message Content:</label>
+          <textarea id="notifMessage" rows="3" required style="width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px;" placeholder="Write message for the patient or caregiver..."></textarea>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 8px;">
+          <button type="button" class="btn btn-ghost" onclick="closeNotifyModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="sendNotifBtn">Send Notification</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- Shared MediCare API & Modular Navbar Utilities -->
   <script src="js/api.js"></script>
   <script src="js/navbar.js"></script>
@@ -630,86 +666,134 @@
     const API_URL = (window.MediCareAPI && window.MediCareAPI.API_BASE_URL) || 'http://localhost:5000/api';
 
     async function loadAdminData() {
-      await Promise.all([loadAdminEmergencies(), loadAdminLowStock()]);
+      try {
+        let dash = null;
+        if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
+          try {
+            dash = await window.MediCareAPI.apiFetch('/dashboard/admin');
+          } catch (e) {
+            console.warn('[Admin] /dashboard/admin fallback:', e);
+          }
+        }
+
+        if (dash) {
+          // 1. Populate Metrics Cards
+          document.getElementById('admTotalUsersVal').innerText = (dash.totalUsers !== undefined) ? dash.totalUsers.toLocaleString() : '--';
+          document.getElementById('admTotalPatientsVal').innerText = (dash.totalPatients !== undefined) ? dash.totalPatients.toLocaleString() : '--';
+          document.getElementById('admTotalCaregiversVal').innerText = (dash.totalCaregivers !== undefined) ? dash.totalCaregivers.toLocaleString() : '--';
+          document.getElementById('admCaregiverRelationsSub').innerText = `${dash.caregiverPatientRelationships || 0} Connected relations`;
+          document.getElementById('admOverallAdherenceVal').innerText = `${dash.overallAdherencePercentage || 0}%`;
+          
+          document.getElementById('admTotalDosesVal').innerText = (dash.totalMedicineLogs !== undefined) ? dash.totalMedicineLogs.toLocaleString() : '--';
+          document.getElementById('admTotalDosesSub').innerText = `${(dash.totalTakenDoses || 0).toLocaleString()} Taken • ${(dash.totalMissedDoses || 0).toLocaleString()} Missed`;
+          
+          document.getElementById('admPendingDosesVal').innerText = (dash.totalPendingDoses !== undefined) ? dash.totalPendingDoses.toLocaleString() : '0';
+          
+          const lowStockCount = (dash.lowStockMedicines && Array.isArray(dash.lowStockMedicines)) ? dash.lowStockMedicines.length : 0;
+          document.getElementById('lowStockCountVal').innerText = lowStockCount;
+
+          document.getElementById('admEmergenciesVal').innerText = (dash.totalEmergencyAlerts !== undefined) ? dash.totalEmergencyAlerts.toLocaleString() : '0';
+          const resolvedCount = Math.max(0, (dash.totalEmergencyAlerts || 0) - (dash.activeEmergencyAlerts || 0));
+          document.getElementById('admEmergenciesSub').innerText = `${resolvedCount} Successfully resolved`;
+
+          // 2. Top Emergency Alert Strip
+          const emergencyStrip = document.getElementById('emergencyStrip');
+          const activeEmergencies = Array.isArray(dash.activeEmergencies) ? dash.activeEmergencies : [];
+          if (activeEmergencies.length > 0) {
+            const firstAlert = activeEmergencies[0];
+            const pName = (firstAlert.patient && firstAlert.patient.user) ? firstAlert.patient.user.name : `Patient #${firstAlert.patientId}`;
+            emergencyStrip.style.display = 'flex';
+            document.getElementById('emergencyStripTitle').innerText = `${activeEmergencies.length} High-Priority Active Emergency Incident${activeEmergencies.length > 1 ? 's' : ''}`;
+            document.getElementById('emergencyStripMsg').innerText = `Patient: ${pName} • Message: "${escapeHtml(firstAlert.message || 'Distress signal')}"`;
+            document.getElementById('emergencyStripBtn').onclick = () => resolveEmergencyIncident(firstAlert.id, pName);
+          } else {
+            emergencyStrip.style.display = 'none';
+          }
+
+          // 3. Render Emergency Table
+          renderAdminEmergencies(activeEmergencies);
+
+          // 4. Render Low Stock Table
+          renderAdminLowStock(dash.lowStockMedicines || []);
+        } else {
+          // Fallback if /dashboard/admin is unreachable
+          await Promise.all([loadAdminEmergencies(), loadAdminLowStock()]);
+        }
+      } catch (err) {
+        console.error('[Admin] Error loading dashboard:', err);
+      }
+    }
+
+    function renderAdminEmergencies(activeAlerts) {
+      const tbody = document.getElementById('emergencyTableBody');
+      tbody.innerHTML = '';
+
+      if (!activeAlerts || activeAlerts.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color: var(--success); padding: 20px; font-weight:600;">✅ No active emergency incidents in queue.</td></tr>`;
+        return;
+      }
+
+      activeAlerts.forEach(al => {
+        const patientName = al.patient && al.patient.user ? al.patient.user.name : `Patient #${al.patientId}`;
+        const timeStr = al.createdAt ? new Date(al.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Recent';
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${timeStr}</td>
+          <td><strong>${escapeHtml(patientName)}</strong></td>
+          <td>"${escapeHtml(al.message || 'Distress SOS')}"</td>
+          <td><span class="badge badge-danger">ACTIVE</span></td>
+          <td>
+            <button class="btn btn-ghost" style="padding: 4px 8px; font-size: 12px;" onclick="resolveEmergencyIncident(${al.id}, '${escapeHtml(patientName)}')">
+              Resolve
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function renderAdminLowStock(lowStock) {
+      const tbody = document.getElementById('adminLowStockTbody');
+      tbody.innerHTML = '';
+
+      if (!lowStock || lowStock.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color: var(--success); padding: 15px; font-weight:600;">✅ All medicine inventory levels sufficient.</td></tr>`;
+        return;
+      }
+
+      lowStock.forEach(m => {
+        const patientName = (m.patient && m.patient.user) ? ` (${m.patient.user.name})` : '';
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><strong>${escapeHtml(m.name)}</strong>${escapeHtml(patientName)}</td>
+          <td><span class="badge badge-danger">${m.stock} Units Left</span></td>
+          <td><a href="medicines.html" class="btn btn-ghost" style="padding: 4px 8px; font-size: 11.5px;">Manage</a></td>
+        `;
+        tbody.appendChild(tr);
+      });
     }
 
     async function loadAdminEmergencies() {
-      const tbody = document.getElementById('emergencyTableBody');
       try {
         let alerts = [];
         if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
           alerts = await window.MediCareAPI.apiFetch('/emergency');
-        } else {
-          const res = await fetch(`${API_URL}/emergency`, {
-            headers: { 'Authorization': `Bearer ${localStorage.getItem('medicare_jwt_token')}` }
-          });
-          if (res.ok) alerts = await res.json();
         }
-
         const activeAlerts = (Array.isArray(alerts) ? alerts : []).filter(a => (a.status || '').toUpperCase() === 'ACTIVE');
-        tbody.innerHTML = '';
-
-        if (activeAlerts.length === 0) {
-          tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color: var(--success); padding: 20px; font-weight:600;">✅ No active emergency incidents in queue.</td></tr>`;
-          return;
-        }
-
-        activeAlerts.forEach(al => {
-          const patientName = al.patient && al.patient.user ? al.patient.user.name : `Patient #${al.patientId}`;
-          const timeStr = al.createdAt ? new Date(al.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Recent';
-
-          const tr = document.createElement('tr');
-          tr.innerHTML = `
-            <td>${timeStr}</td>
-            <td><strong>${escapeHtml(patientName)}</strong></td>
-            <td>"${escapeHtml(al.message || 'Distress SOS')}"</td>
-            <td><span class="badge badge-danger">ACTIVE</span></td>
-            <td>
-              <button class="btn btn-ghost" style="padding: 4px 8px; font-size: 12px;" onclick="resolveEmergencyIncident(${al.id}, '${escapeHtml(patientName)}')">
-                Resolve
-              </button>
-            </td>
-          `;
-          tbody.appendChild(tr);
-        });
-      } catch (err) {
-        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color: var(--text-muted); padding: 15px;">No active emergency incidents found.</td></tr>`;
-      }
+        renderAdminEmergencies(activeAlerts);
+      } catch (err) {}
     }
 
     async function loadAdminLowStock() {
-      const tbody = document.getElementById('adminLowStockTbody');
       try {
         let meds = [];
         if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
           meds = await window.MediCareAPI.apiFetch('/medicine');
-        } else {
-          const res = await fetch(`${API_URL}/medicine`, {
-            headers: { 'Authorization': `Bearer ${localStorage.getItem('medicare_jwt_token')}` }
-          });
-          if (res.ok) meds = await res.json();
         }
-
         const lowStock = (Array.isArray(meds) ? meds : []).filter(m => m.stock !== undefined && m.stock <= 5);
-        tbody.innerHTML = '';
-
-        if (lowStock.length === 0) {
-          tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color: var(--success); padding: 15px; font-weight:600;">✅ All medicine inventory levels sufficient.</td></tr>`;
-          return;
-        }
-
-        lowStock.forEach(m => {
-          const tr = document.createElement('tr');
-          tr.innerHTML = `
-            <td><strong>${escapeHtml(m.name)}</strong></td>
-            <td><span class="badge badge-danger">${m.stock} Units Left</span></td>
-            <td><a href="medicines.html" class="btn btn-ghost" style="padding: 4px 8px; font-size: 11.5px;">Manage</a></td>
-          `;
-          tbody.appendChild(tr);
-        });
-      } catch (err) {
-        tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color: var(--text-muted); padding: 15px;">No low stock medicines found.</td></tr>`;
-      }
+        renderAdminLowStock(lowStock);
+      } catch (err) {}
     }
 
     async function resolveEmergencyIncident(id, patientName) {
@@ -717,17 +801,58 @@
       try {
         if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
           await window.MediCareAPI.apiFetch(`/emergency/${id}/resolve`, 'PUT');
-        } else {
-          await fetch(`${API_URL}/emergency/${id}/resolve`, {
-            method: 'PUT',
-            headers: { 'Authorization': `Bearer ${localStorage.getItem('medicare_jwt_token')}` }
-          });
         }
         alert(`Emergency incident #${id} marked as resolved in MySQL database.`);
-        await loadAdminEmergencies();
+        await loadAdminData();
       } catch (err) {
-        alert('Resolution recorded.');
-        await loadAdminEmergencies();
+        alert('Resolution recorded: ' + (err.message || 'Updated'));
+        await loadAdminData();
+      }
+    }
+
+    // Modal for Admin Notification Creation (POST /api/notification)
+    function openNotifyModal() {
+      const modal = document.getElementById('notifyModal');
+      modal.style.display = 'flex';
+      modal.classList.add('active');
+    }
+
+    function closeNotifyModal() {
+      const modal = document.getElementById('notifyModal');
+      modal.style.display = 'none';
+      modal.classList.remove('active');
+    }
+
+    async function handleCreateNotification(e) {
+      e.preventDefault();
+      const sendBtn = document.getElementById('sendNotifBtn');
+      sendBtn.disabled = true;
+      sendBtn.innerText = 'Sending...';
+
+      const userId = parseInt(document.getElementById('notifUserId').value, 10) || 1;
+      const title = document.getElementById('notifTitle').value.trim();
+      const message = document.getElementById('notifMessage').value.trim();
+      const type = document.getElementById('notifType').value;
+
+      try {
+        if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
+          await window.MediCareAPI.apiFetch('/notification', 'POST', {
+            userId: userId,
+            title: title,
+            message: message,
+            type: type,
+            isRead: false,
+            createdAt: new Date().toISOString()
+          });
+        }
+        alert(`System notification successfully broadcasted to user #${userId}!`);
+        closeNotifyModal();
+        document.getElementById('createNotifForm').reset();
+      } catch (err) {
+        alert('Failed to send notification: ' + (err.message || 'Check user permissions'));
+      } finally {
+        sendBtn.disabled = false;
+        sendBtn.innerText = 'Send Notification';
       }
     }
 

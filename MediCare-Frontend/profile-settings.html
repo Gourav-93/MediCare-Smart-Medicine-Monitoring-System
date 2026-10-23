@@ -391,7 +391,7 @@
     }
   </style>
 </head>
-<body>
+<body>J
 
   <!-- ================= MODULAR GLOBAL HEADER ================= -->
   <header id="global-header"></header>
@@ -583,20 +583,29 @@
     closeDrawer.addEventListener('click', toggleMenu);
     mobileOverlay.addEventListener('click', toggleMenu);
 
+    // Populate authenticated user info
+    document.addEventListener('DOMContentLoaded', () => {
+      const user = (window.MediCareAPI && window.MediCareAPI.getCurrentUser()) || {};
+      const nameInput = document.querySelector('input[type="text"]');
+      const emailInput = document.querySelector('input[type="email"]');
+      if (nameInput && user.name) nameInput.value = user.name;
+      if (emailInput && user.email) emailInput.value = user.email;
+    });
+
     // Form Submissions
     function saveProfile(e) {
       e.preventDefault();
-      alert("[API: PUT /api/patient/profile]\nProfile updated successfully!");
+      alert("Missing Backend Endpoint: PUT /api/user/profile is not implemented in the ASP.NET Core backend. Personal details cannot be updated until the controller is added.");
     }
 
     function saveEmergency(e) {
       e.preventDefault();
-      alert("[API: PUT /api/patient/emergency-contacts]\nEmergency routing details saved!");
+      alert("Missing Backend Endpoint: PUT /api/emergency/contacts is not implemented in the ASP.NET Core backend. Contacts cannot be updated until the controller is added.");
     }
 
     function updatePassword(e) {
       e.preventDefault();
-      alert("[API: POST /api/AuthController/change-password]\nPassword updated successfully!");
+      alert("Missing Backend Endpoint: POST /api/auth/change-password is not implemented in the ASP.NET Core backend. Password update endpoint is pending.");
     }
   </script>
 

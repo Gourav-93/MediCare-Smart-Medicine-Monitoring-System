@@ -523,7 +523,7 @@
       messagesContainer.scrollTop = messagesContainer.scrollHeight;
     }
 
-    function handleSend(e) {
+    async function handleSend(e) {
       e.preventDefault();
       const text = userInput.value.trim();
       if (!text) return;
@@ -531,34 +531,71 @@
       appendMessage(text, true);
       userInput.value = '';
 
-      // Simulated Response mapping to POST /api/chat/ask
-      setTimeout(() => {
-        generateAiResponse(text);
-      }, 600);
+      await requestAiReply(text);
     }
 
-    function sendQuickPrompt(promptText) {
+    async function sendQuickPrompt(promptText) {
       appendMessage(promptText, true);
-      setTimeout(() => {
-        generateAiResponse(promptText);
-      }, 600);
+      await requestAiReply(promptText);
     }
 
-    function generateAiResponse(query) {
-      const q = query.toLowerCase();
-      let reply = "Aapki request receive hui hai. Apni dawaiyan schedule ke hisaab se samay par lene se adherence behtar rehti hai.";
+    async function requestAiReply(query) {
+      // Append temporary typing indicator
+      const typingId = 'typing-' + Date.now();
+      const typingRow = document.createElement('div');
+      typingRow.className = 'msg-row msg-bot';
+      typingRow.id = typingId;
+      typingRow.innerHTML = `
+        <div>
+          <div class="msg-bubble" style="color: var(--text-muted); font-style: italic;">
+            🤖 Consulting MediCare AI engine...
+          </div>
+        </div>
+      `;
+      messagesContainer.appendChild(typingRow);
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
 
-      if (q.includes("pan-d")) {
-        reply = "Pan-D 40mg ko hamesha subah subah khali pet (bhojan se lagbhag 30 minute pehle) ek glass paani ke sath lein. Isse acidity aur gas se rahat milti hai.";
-      } else if (q.includes("missed") || q.includes("miss")) {
-        reply = "Agar aapki koi dose miss ho gayi hai aur agle dose ka samay paas nahi hai, toh use le sakte hain. Lekin kabhi bhi ek sath do goli (double dose) mat lijiye.";
-      } else if (q.includes("atorvastatin") || q.includes("food")) {
-        reply = "Atorvastatin cholesterol kam karne ke liye raat ko dinner ke baad li jaati hai. Iske sath grapefruit ya uska juice lene se bachein kyunki yeh dawa ke absorption ko prabhavit karta hai.";
-      } else if (q.includes("aaj") || q.includes("routine")) {
-        reply = "Aapke schedule ke hisaab se: Subah 8:00 AM Metformin (Taken), Dopehar 1:30 PM Pan-D (Pending), aur Raat 8:30 PM Atorvastatin due hai.";
+      try {
+        let reply = '';
+        let suggestions = [];
+
+        if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
+          const res = await window.MediCareAPI.apiFetch('/chat/ask', 'POST', {
+            message: query
+          });
+          reply = res.reply || 'No response returned from health assistant.';
+          suggestions = res.quickSuggestions || [];
+        } else {
+          reply = 'MediCare API connection offline. Please login and check backend server status.';
+        }
+
+        // Remove typing indicator and append real message
+        const typingEl = document.getElementById(typingId);
+        if (typingEl) typingEl.remove();
+
+        appendMessage(reply, false);
+
+        // Update Quick Suggestions if provided by Gemini / AiChatService
+        if (Array.isArray(suggestions) && suggestions.length > 0) {
+          const container = document.querySelector('.quick-prompts');
+          if (container) {
+            container.innerHTML = suggestions.map(s => 
+              `<button class="prompt-chip" onclick="sendQuickPrompt('${escapeHtml(s)}')">💡 ${escapeHtml(s)}</button>`
+            ).join('');
+          }
+        }
+      } catch (err) {
+        console.error('[AI Chat] Error:', err);
+        const typingEl = document.getElementById(typingId);
+        if (typingEl) typingEl.remove();
+
+        appendMessage(`⚠️ Could not reach AI service: ${err.message || 'Please check backend server'}.`, false);
       }
+    }
 
-      appendMessage(reply, false);
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     }
 
     function clearChat() {

@@ -444,19 +444,23 @@
     async function loadHistoryLogs() {
       const tbody = document.getElementById('historyTableBody');
       try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const queryPid = urlParams.get('patientId') || urlParams.get('id');
+        const endpoint = queryPid ? `/medicinelog/patient/${queryPid}/history` : '/medicinelog';
+
         let logs = [];
         if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
           try {
-            logs = await window.MediCareAPI.apiFetch('/medicinelog');
+            logs = await window.MediCareAPI.apiFetch(endpoint);
           } catch (e) {
-            console.warn('[History] /medicinelog fallback:', e);
-            const res = await fetch(`${API_URL}/medicinelog`, {
+            console.warn('[History] fetch fallback:', e);
+            const res = await fetch(`${API_URL}${endpoint}`, {
               headers: { 'Authorization': `Bearer ${localStorage.getItem('medicare_jwt_token')}` }
             });
             if (res.ok) logs = await res.json();
           }
         } else {
-          const res = await fetch(`${API_URL}/medicinelog`, {
+          const res = await fetch(`${API_URL}${endpoint}`, {
             headers: { 'Authorization': `Bearer ${localStorage.getItem('medicare_jwt_token')}` }
           });
           if (res.ok) logs = await res.json();

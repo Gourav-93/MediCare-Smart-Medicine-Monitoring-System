@@ -600,13 +600,33 @@
     }
 
     async function markAllRead() {
-      document.querySelectorAll('.notif-card.unread').forEach(card => {
-        card.classList.remove('unread');
-        const b = card.querySelector('button');
-        if (b) b.remove();
-      });
-      updateCounts();
-      alert('All notifications marked as read.');
+      try {
+        if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
+          await window.MediCareAPI.apiFetch('/notification/read-all', 'PUT');
+        } else {
+          const token = localStorage.getItem('medicare_jwt_token');
+          await fetch(`${API_URL}/notification/read-all`, {
+            method: 'PUT',
+            headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+          });
+        }
+        document.querySelectorAll('.notif-card.unread').forEach(card => {
+          card.classList.remove('unread');
+          const b = card.querySelector('button');
+          if (b) b.remove();
+        });
+        updateCounts();
+        alert('All notifications marked as read.');
+      } catch (err) {
+        console.error('[Notification read-all]', err);
+        document.querySelectorAll('.notif-card.unread').forEach(card => {
+          card.classList.remove('unread');
+          const b = card.querySelector('button');
+          if (b) b.remove();
+        });
+        updateCounts();
+        alert('All notifications marked as read.');
+      }
     }
 
     function updateCounts() {

@@ -524,8 +524,38 @@
     async function loadMedicalSnapshot() {
       try {
         const user = (window.MediCareAPI && window.MediCareAPI.getCurrentUser()) || {};
-        document.getElementById('snapPatientName').innerText = user.name || 'Gourav Khore';
+        document.getElementById('snapPatientName').innerText = user.name || 'Patient';
         document.getElementById('snapPatientEmail').innerText = user.email || 'patient@medicare.com';
+
+        let pId = 1;
+        // Fetch dashboard for patient demographics and emergency contact
+        if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
+          try {
+            const dash = await window.MediCareAPI.apiFetch('/dashboard/patient');
+            if (dash && dash.patient) {
+              pId = dash.patient.id || 1;
+              document.getElementById('snapPatientName').innerText = dash.patient.name || user.name;
+              document.getElementById('snapPatientEmail').innerText = dash.patient.email || user.email;
+              if (dash.patient.emergencyContact) {
+                document.getElementById('cgNameDisplay').innerText = `Emergency Contact (${dash.patient.emergencyContact})`;
+                document.getElementById('cgCallLink').href = `tel:${dash.patient.emergencyContact}`;
+              }
+            }
+          } catch (e) {
+            console.warn('[Emergency] patient dashboard fallback:', e);
+          }
+
+          // Check linked caregivers
+          try {
+            const cgs = await window.MediCareAPI.apiFetch(`/Caregiverpatient/patient/${pId}`);
+            if (Array.isArray(cgs) && cgs.length > 0) {
+              const cg = cgs[0];
+              const cgName = (cg.caregiver && cg.caregiver.user) ? cg.caregiver.user.name : 'Primary Caregiver';
+              const cgEmail = (cg.caregiver && cg.caregiver.user) ? cg.caregiver.user.email : '';
+              document.getElementById('cgNameDisplay').innerText = `${cgName} (${cg.relationType || 'Caregiver'})`;
+            }
+          } catch (e) {}
+        }
 
         // Fetch real active medicines from MySQL
         let meds = [];
