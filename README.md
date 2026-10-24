@@ -104,7 +104,7 @@ The application distinguishes Admin, Patient, and Caregiver roles. Authenticated
 
 ### Patient management
 Patient profile data is stored separately from the general user account. The patient profile can contain patient-specific information such as date of birth and emergency contact details.
-
+heiqfhiehfiehfi
 ### Caregiver management
 Caregiver profile data is associated with a user account. A caregiver can be connected to one or more patients through the caregiver-patient relationship.
 
