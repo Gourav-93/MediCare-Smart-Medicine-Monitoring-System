@@ -143,6 +143,17 @@ public class MedicineLogService : IMedicineLogService
         if (log.Status == "Taken")
             throw new InvalidOperationException("Taken medicine cannot be snoozed.");
 
+        if (log.Status == "Missed")
+            throw new InvalidOperationException("Missed medicine cannot be snoozed. The 15-minute intake window has expired.");
+
+        var baseTime = log.OriginalScheduledTime ?? log.ScheduledTime;
+        if (log.Status != "Snoozed" && DateTime.Now >= baseTime.AddMinutes(15))
+        {
+            log.Status = "Missed";
+            await _context.SaveChangesAsync();
+            throw new InvalidOperationException("The 15-minute snooze window has expired. This dose is marked as Missed.");
+        }
+
         if (log.SnoozeCount >= 2)
             throw new InvalidOperationException("Maximum snooze limit (2 times) reached for this dose.");
 

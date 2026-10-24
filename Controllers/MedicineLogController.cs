@@ -72,10 +72,29 @@ public class MedicineLogController : ControllerBase
         return false;
     }
 
+    private async Task AutoMarkOverdueMissedAsync()
+    {
+        var now = DateTime.Now;
+        var overdue = await _context.MedicineLogs
+            .Where(l => (l.Status == "Pending" || l.Status == "Snoozed") && l.ScheduledTime.AddMinutes(15) <= now)
+            .ToListAsync();
+
+        if (overdue.Any())
+        {
+            foreach (var l in overdue)
+            {
+                l.Status = "Missed";
+            }
+            await _context.SaveChangesAsync();
+        }
+    }
+
     // GET: api/medicinelog
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
+        await AutoMarkOverdueMissedAsync();
+
         var role = GetCurrentRole();
         var userId = GetCurrentUserId();
 
@@ -116,10 +135,13 @@ public class MedicineLogController : ControllerBase
 
             var logs = await _context.MedicineLogs
                 .Include(l => l.Medicine)
+                .Include(l => l.Patient)
+                    .ThenInclude(p => p.User)
                 .Where(l =>
                     _context.CaregiverPatients.Any(cp =>
                         cp.CaregiverId == caregiver.Id &&
                         cp.PatientId == l.PatientId))
+                .OrderByDescending(l => l.ScheduledTime)
                 .ToListAsync();
 
             return Ok(logs);
@@ -179,11 +201,9 @@ public class MedicineLogController : ControllerBase
 
     // PUT: api/medicinelog/{id}/taken
     [HttpPut("{id}/taken")]
-    [Authorize(Roles = "PATIENT")]
+    [Authorize(Roles = "PATIENT,CAREGIVER,ADMIN")]
     public async Task<IActionResult> MarkAsTaken(int id)
     {
-        var userId = GetCurrentUserId();
-
         var log = await _context.MedicineLogs
             .Include(l => l.Patient)
             .FirstOrDefaultAsync(l => l.Id == id);
@@ -191,8 +211,7 @@ public class MedicineLogController : ControllerBase
         if (log == null)
             return NotFound("Medicine log not found.");
 
-        // Patient can mark only their own medicine as taken
-        if (log.Patient.UserId != userId)
+        if (!await CanAccessPatientAsync(log.PatientId))
             return Forbid();
 
         var result = await _service.MarkAsTakenAsync(id);
@@ -212,16 +231,17 @@ public class MedicineLogController : ControllerBase
         if (!await CanAccessPatientAsync(patientId))
             return Forbid();
 
+        await AutoMarkOverdueMissedAsync();
+
         var history = await _service.GetPatientHistoryAsync(patientId, filter);
         return Ok(history);
     }
 
     // PUT: api/medicinelog/{id}/snooze
     [HttpPut("{id}/snooze")]
+    [Authorize(Roles = "PATIENT,CAREGIVER,ADMIN")]
     public async Task<IActionResult> SnoozeMedicine(int id, [FromQuery] int minutes = 15)
     {
-        var userId = GetCurrentUserId();
-
         var log = await _context.MedicineLogs
             .Include(l => l.Patient)
             .FirstOrDefaultAsync(l => l.Id == id);
@@ -229,7 +249,7 @@ public class MedicineLogController : ControllerBase
         if (log == null)
             return NotFound("Medicine log record not found.");
 
-        if (log.Patient.UserId != userId)
+        if (!await CanAccessPatientAsync(log.PatientId))
             return Forbid();
 
         try

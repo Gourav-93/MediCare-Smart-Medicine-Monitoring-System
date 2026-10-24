@@ -102,6 +102,8 @@ public class CaregiverDashboardController : ControllerBase
 
         var todaySchedules = await _context.MedicineSchedules
             .Include(schedule => schedule.Medicine)
+                .ThenInclude(m => m.Patient)
+                    .ThenInclude(p => p.User)
             .Where(schedule =>
                 patientIds.Contains(schedule.Medicine.PatientId) &&
                 schedule.Medicine.StartDate.Date <= today &&
@@ -135,6 +137,7 @@ public class CaregiverDashboardController : ControllerBase
                     MedicineId = schedule.MedicineId,
                     Medicine = schedule.Medicine,
                     PatientId = schedule.Medicine.PatientId,
+                    Patient = schedule.Medicine.Patient,
                     ScheduledTime = scheduledTime,
                     Status = "Pending"
                 });
@@ -197,6 +200,16 @@ public class CaregiverDashboardController : ControllerBase
                 n.UserId == userId &&
                 !n.IsRead);
 
+        // Recent intake activity logs across linked patients
+        var recentLogs = await _context.MedicineLogs
+            .Include(log => log.Medicine)
+            .Include(log => log.Patient)
+                .ThenInclude(p => p.User)
+            .Where(log => patientIds.Contains(log.PatientId))
+            .OrderByDescending(log => log.ScheduledTime)
+            .Take(30)
+            .ToListAsync();
+
         // Final dashboard response
         var dashboard = new CaregiverDashboardDto
         {
@@ -206,6 +219,7 @@ public class CaregiverDashboardController : ControllerBase
             MissedMedicines = missedMedicines,
             TodaySchedules = todaySchedules,
             PendingMedicines = pendingMedicines,
+            RecentLogs = recentLogs,
             Adherence = adherence,
             UnreadNotifications = unreadNotifications
         };

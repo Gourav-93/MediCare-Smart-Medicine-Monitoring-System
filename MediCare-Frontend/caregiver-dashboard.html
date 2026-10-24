@@ -644,6 +644,40 @@
       </div>
     </div>
 
+    <!-- Live Patient Medication Activity & Today's Schedules (Live from MySQL) -->
+    <div class="table-card" style="margin-bottom: 25px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; flex-wrap: wrap; gap: 10px;">
+        <div>
+          <h3 style="font-size: 18px; font-weight: 700; color: var(--text-main);">Live Medication Schedule & Intake Activity</h3>
+          <p style="font-size: 13px; color: var(--text-muted); margin: 0;">Today's scheduled doses, confirmations, and real-time intake statuses across all linked patients.</p>
+        </div>
+        <button class="btn btn-ghost" onclick="loadCaregiverDashboard()" style="border-color: var(--border); font-size: 12.5px;">🔄 Refresh Activity</button>
+      </div>
+      
+      <div class="table-responsive">
+        <table>
+          <thead>
+            <tr>
+              <th>Scheduled Time</th>
+              <th>Patient</th>
+              <th>Medicine Name</th>
+              <th>Dosage</th>
+              <th>Status</th>
+              <th>Actual Time Taken</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="cgActivityTableBody">
+            <tr>
+              <td colspan="7" style="text-align: center; padding: 30px; color: var(--text-muted);">
+                Loading live medication activity from database...
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
     <!-- Recent Missed Doses Log Table (Live from MySQL) -->
     <div class="table-card">
       <h3>Recent Missed Medication Log</h3>
@@ -780,13 +814,20 @@
           `;
         } else {
           patients.forEach(p => {
-            const pAdh = adherenceList.find(a => a.patientId === (p.patientId || p.id));
-            const cardData = Array.isArray(contactCards) ? contactCards.find(c => c.patientId === (p.patientId || p.id)) : null;
-            const adhScore = cardData ? cardData.adherenceRate : (pAdh ? pAdh.adherencePercentage : 100);
-            const pendingToday = cardData ? cardData.pendingDosesToday : 0;
-            const missedToday = cardData ? cardData.missedDosesToday : 0;
             const pId = p.patientId || p.id;
             const pName = p.name || 'Patient';
+            const pAdh = adherenceList.find(a => a.patientId === pId);
+            const cardData = Array.isArray(contactCards) ? contactCards.find(c => c.patientId === pId) : null;
+            const adhScore = cardData ? cardData.adherenceRate : (pAdh ? pAdh.adherencePercentage : 100);
+
+            // Compute accurate live pending and missed counts
+            const pPending = (dash && Array.isArray(dash.pendingMedicines)) 
+              ? dash.pendingMedicines.filter(m => (m.patientId === pId || (m.medicine && m.medicine.patientId === pId))).length 
+              : (cardData ? cardData.pendingDosesToday : 0);
+            const pMissed = (dash && Array.isArray(dash.missedMedicines)) 
+              ? dash.missedMedicines.filter(m => (m.patientId === pId || (m.medicine && m.medicine.patientId === pId))).length 
+              : (cardData ? cardData.missedDosesToday : 0);
+
             const phone = (cardData && cardData.phoneNumber) || p.emergencyContact || 'Not configured';
 
             const card = document.createElement('div');
@@ -806,10 +847,11 @@
                 <ul class="patient-meta-list">
                   <li>📧 ${escapeHtml(p.email || 'N/A')}</li>
                   <li>📞 Contact: ${escapeHtml(phone)}</li>
-                  <li>⏳ Today: <strong>${pendingToday}</strong> Pending • <strong>${missedToday}</strong> Missed</li>
+                  <li>⏳ Today: <strong>${pPending}</strong> Pending • <strong>${pMissed}</strong> Missed</li>
                 </ul>
               </div>
               <div class="card-actions">
+                <a href="history.html?patientId=${pId}" class="btn btn-primary" style="font-size: 12px; font-weight: 700;">📋 View History</a>
                 <a href="print-report.html?patientId=${pId}" class="btn btn-ghost" style="font-size: 12px;">📊 Dossier</a>
                 <a href="tel:${escapeHtml(phone)}" class="btn btn-ghost" style="font-size: 12px;">📞 Call</a>
                 <button class="btn btn-danger-outline" style="font-size: 12px;" onclick="unlinkPatientAction(${pId}, '${escapeHtml(pName)}')">Unlink</button>
@@ -817,6 +859,71 @@
             `;
             grid.appendChild(card);
           });
+        }
+
+        // Render Live Medication Schedule & Intake Activity Table
+        const actTbody = document.getElementById('cgActivityTableBody');
+        if (actTbody) {
+          actTbody.innerHTML = '';
+          const recentLogs = (dash && Array.isArray(dash.recentLogs)) ? dash.recentLogs : [];
+          const pendingMeds = (dash && Array.isArray(dash.pendingMedicines)) ? dash.pendingMedicines : [];
+
+          // Merge pending doses and completed logs
+          const allActivity = [...pendingMeds, ...recentLogs];
+
+          if (allActivity.length === 0) {
+            actTbody.innerHTML = `
+              <tr><td colspan="7" style="text-align:center; color: var(--text-muted); padding: 30px;">No medication schedules or intake logs found for linked patients.</td></tr>
+            `;
+          } else {
+            allActivity.forEach(item => {
+              const medName = item.medicine ? item.medicine.name : `Medicine #${item.medicineId}`;
+              const dosage = item.medicine ? (item.medicine.dosage || '1 Dose') : '1 Dose';
+              const pItem = patients.find(pat => (pat.patientId || pat.id) === item.patientId) || (item.patient ? (item.patient.user || item.patient) : null);
+              const patName = pItem ? (pItem.name || pItem.Name || `Patient #${item.patientId}`) : `Patient #${item.patientId}`;
+              
+              const schedTime = item.scheduledTime ? new Date(item.scheduledTime).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '-';
+              const takenTime = item.takenTime ? new Date(item.takenTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '-';
+              
+              const schedD = item.scheduledTime ? new Date(item.scheduledTime) : null;
+              const past15 = schedD && (Date.now() > (schedD.getTime() + 15 * 60 * 1000));
+
+              let st = (item.status || 'Pending').toLowerCase();
+              if (st !== 'taken' && past15) {
+                st = 'missed';
+              }
+
+              let badgeColor = '#d97706';
+              let badgeBg = '#fef3c7';
+              let badgeLabel = '⏳ Pending';
+
+              if (st === 'taken') {
+                badgeColor = '#16a34a';
+                badgeBg = '#dcfce7';
+                badgeLabel = '✅ Taken';
+              } else if (st === 'missed') {
+                badgeColor = '#dc2626';
+                badgeBg = '#fee2e2';
+                badgeLabel = '❌ Missed';
+              } else if (st === 'snoozed') {
+                badgeColor = '#d97706';
+                badgeBg = '#fef3c7';
+                badgeLabel = '⏳ Snoozed';
+              }
+
+              const tr = document.createElement('tr');
+              tr.innerHTML = `
+                <td><strong>${schedTime}</strong></td>
+                <td><span style="font-weight: 700; color: var(--primary);">${escapeHtml(patName)}</span></td>
+                <td>${escapeHtml(medName)}</td>
+                <td>${escapeHtml(dosage)}</td>
+                <td><span style="background: ${badgeBg}; color: ${badgeColor}; font-weight: 700; font-size: 12px; padding: 4px 10px; border-radius: 6px;">${badgeLabel}</span></td>
+                <td>${takenTime}</td>
+                <td><a href="history.html?patientId=${item.patientId}" class="btn btn-ghost" style="padding: 4px 10px; font-size: 11.5px; font-weight: 600;">📋 Audit Trail</a></td>
+              `;
+              actTbody.appendChild(tr);
+            });
+          }
         }
 
         // Render Missed Table

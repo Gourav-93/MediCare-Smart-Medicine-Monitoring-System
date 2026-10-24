@@ -121,8 +121,9 @@ public class MedicineReminderBackgroundService : BackgroundService
                     await TrySendReminderEmailAsync(context, emailService, schedule, medicine, scheduledTime, stoppingToken);
                 }
 
-                // Check Missed (5 minutes grace period)
-                if (log != null && log.Status == "Pending" && now >= scheduledTime.AddMinutes(5))
+                // Check Missed (15 minutes grace period from scheduled or snoozed time)
+                var effectiveDoseTime = log != null && log.Status == "Snoozed" ? log.ScheduledTime : scheduledTime;
+                if (log != null && (log.Status == "Pending" || log.Status == "Snoozed") && now >= effectiveDoseTime.AddMinutes(15))
                 {
                     log.Status = "Missed";
                     await context.SaveChangesAsync(stoppingToken);

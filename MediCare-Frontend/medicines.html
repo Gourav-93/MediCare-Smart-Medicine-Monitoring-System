@@ -988,6 +988,8 @@
           ? `<span class="time-chip" style="background:#fef2f2; color:#991b1b; font-weight:600;">⚠️ Not Scheduled</span>` 
           : '';
 
+        const isScheduled = medSchedules.length > 0;
+
         const card = document.createElement('div');
         card.className = 'med-card';
         card.id = `med-card-${med.id}`;
@@ -1022,6 +1024,15 @@
           </div>
 
           <div class="med-actions">
+            ${isScheduled ? `
+              <button class="btn btn-success" id="take-btn-${med.id}" onclick="quickTakeDose(${med.id}, '${escapeHtml(med.name)}', ${med.patientId || 1}, ${med.stock})" style="background: var(--success); color: #fff; font-weight: 700; border-radius: 8px;">
+                💊 Take Dose
+              </button>
+            ` : `
+              <button class="btn btn-ghost" style="opacity: 0.55; cursor: not-allowed; border: 1px dashed var(--border); font-size: 12px; color: var(--text-muted); background: #f8fafc;" title="Please schedule an intake reminder time first before taking dose" disabled>
+                🔒 Schedule First to Take
+              </button>
+            `}
             <button class="btn btn-ghost" id="edit-btn-${med.id}" onclick="editMed(${med.id})">✏️ Edit</button>
             <button class="btn btn-danger" id="delete-btn-${med.id}" onclick="deleteMedicine(${med.id})">🗑️ Delete</button>
           </div>
@@ -1031,6 +1042,48 @@
       });
 
       filterMedicines();
+    }
+
+    // Quick Intake Confirmation from Prescriptions Page (Only enabled when scheduled)
+    async function quickTakeDose(medId, medName, patientId, currentStock) {
+      const btn = document.getElementById(`take-btn-${medId}`);
+      if (btn) {
+        btn.disabled = true;
+        btn.innerText = '⏳ Recording...';
+      }
+
+      try {
+        const user = window.MediCareAPI ? window.MediCareAPI.getCurrentUser() : null;
+        const pId = patientId || (user && user.patientId ? user.patientId : 1);
+
+        if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
+          await window.MediCareAPI.apiFetch('/medicinelog', 'POST', {
+            medicineId: medId,
+            patientId: pId,
+            scheduledTime: new Date().toISOString(),
+            status: 'Taken'
+          });
+        }
+
+        if (btn) {
+          const nowStr = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+          btn.outerHTML = `
+            <span class="badge-taken-done" style="background:#dcfce7; color:#16a34a; font-weight:700; font-size:12.5px; padding:7px 12px; border-radius:8px; display:inline-flex; align-items:center; gap:5px; border:1px solid #bbf7d0;">
+              ✅ Taken (${nowStr})
+            </span>
+          `;
+        }
+
+        showToast(`✅ Confirmed: 1 Dose of "${medName}" taken! Inventory updated & recorded in History.`);
+        setTimeout(() => { loadMedicines(); }, 1500);
+      } catch (err) {
+        console.error('[Quick Take] Failed:', err);
+        alert('Failed to log intake: ' + (err.message || 'Operation failed'));
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = `💊 Take Dose`;
+        }
+      }
     }
 
     // 12-Hour Schedule Modal Functions

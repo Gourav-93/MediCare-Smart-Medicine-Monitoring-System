@@ -16,6 +16,8 @@ public class CaregiverDashboardDto
 
     public List<MedicineLog> PendingMedicines { get; set; } = new();
 
+    public List<MedicineLog> RecentLogs { get; set; } = new();
+
     public List<PatientAdherenceDto> Adherence { get; set; } = new();
 
     public int UnreadNotifications { get; set; }
