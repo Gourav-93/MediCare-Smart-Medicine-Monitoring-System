@@ -1,9 +1,16 @@
 namespace mediCare.DTOs;
 
+public class ChatMessageDto
+{
+    public string Role { get; set; } = string.Empty; // "user" or "model"
+    public string Content { get; set; } = string.Empty;
+}
+
 public class ChatRequestDto
 {
     public string Message { get; set; } = string.Empty;
     public int? TargetPatientId { get; set; }
+    public List<ChatMessageDto>? History { get; set; }
 }
 
 public class ChatResponseDto
