@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using MediCare.Data;
 using MediCare.DTOs;
+using MediCare.Models;
 using MediCare.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -14,13 +15,16 @@ namespace MediCare.Controllers;
 public class MedicineScheduleController : ControllerBase
 {
     private readonly IMedicineScheduleService _service;
+    private readonly IMedicineLogService _medicineLogService;
     private readonly AppDbContext _context;
 
     public MedicineScheduleController(
         IMedicineScheduleService service,
+        IMedicineLogService medicineLogService,
         AppDbContext context)
     {
         _service = service;
+        _medicineLogService = medicineLogService;
         _context = context;
     }
 
@@ -73,6 +77,305 @@ public class MedicineScheduleController : ControllerBase
         }
 
         return false;
+    }
+
+    // GET: api/medicineschedule/today
+    [HttpGet("today")]
+    public async Task<IActionResult> GetTodaySchedules([FromQuery] int? patientId = null)
+    {
+        var role = GetCurrentRole();
+        var userId = GetCurrentUserId();
+
+        int targetPatientId = 0;
+
+        if (role == "PATIENT")
+        {
+            var patient = await _context.Patients.FirstOrDefaultAsync(p => p.UserId == userId);
+            if (patient == null) return NotFound("Patient profile not found.");
+            targetPatientId = patient.Id;
+        }
+        else if (role == "CAREGIVER")
+        {
+            var caregiver = await _context.Caregivers.FirstOrDefaultAsync(c => c.UserId == userId);
+            if (caregiver == null) return NotFound("Caregiver profile not found.");
+
+            if (patientId.HasValue && patientId.Value > 0)
+            {
+                var isLinked = await _context.CaregiverPatients
+                    .AnyAsync(cp => cp.CaregiverId == caregiver.Id && cp.PatientId == patientId.Value);
+                if (!isLinked) return Forbid();
+                targetPatientId = patientId.Value;
+            }
+            else
+            {
+                var firstLinked = await _context.CaregiverPatients
+                    .Where(cp => cp.CaregiverId == caregiver.Id)
+                    .Select(cp => cp.PatientId)
+                    .FirstOrDefaultAsync();
+                targetPatientId = firstLinked;
+            }
+        }
+        else if (role == "ADMIN")
+        {
+            if (patientId.HasValue && patientId.Value > 0)
+            {
+                targetPatientId = patientId.Value;
+            }
+            else
+            {
+                var first = await _context.Patients.Select(p => p.Id).FirstOrDefaultAsync();
+                targetPatientId = first;
+            }
+        }
+
+        if (targetPatientId <= 0)
+        {
+            return Ok(new List<object>());
+        }
+
+        // Auto mark overdue logs as missed
+        var now = DateTime.Now;
+        var today = now.Date;
+
+        var overdueLogs = await _context.MedicineLogs
+            .Where(l => l.PatientId == targetPatientId &&
+                        (l.Status == "Pending" || l.Status == "Snoozed") &&
+                        l.ScheduledTime.AddMinutes(15) <= now)
+            .ToListAsync();
+
+        if (overdueLogs.Any())
+        {
+            foreach (var ol in overdueLogs)
+            {
+                ol.Status = "Missed";
+            }
+            await _context.SaveChangesAsync();
+        }
+
+        // Fetch patient medicines and schedules
+        var schedules = await _context.MedicineSchedules
+            .Include(s => s.Medicine)
+            .Where(s => s.Medicine.PatientId == targetPatientId &&
+                        s.Medicine.StartDate.Date <= today &&
+                        s.Medicine.EndDate.Date >= today)
+            .OrderBy(s => s.Time)
+            .ToListAsync();
+
+        // Fetch today's logs for this patient
+        var todayLogs = await _context.MedicineLogs
+            .Where(l => l.PatientId == targetPatientId &&
+                        (l.ScheduledTime.Date == today || (l.OriginalScheduledTime.HasValue && l.OriginalScheduledTime.Value.Date == today)))
+            .ToListAsync();
+
+        var result = new List<object>();
+
+        foreach (var s in schedules)
+        {
+            var scheduledDateTime = today.Add(s.Time);
+
+            // Match log for this schedule occurrence
+            var log = todayLogs.FirstOrDefault(l =>
+                l.MedicineId == s.MedicineId &&
+                ((l.OriginalScheduledTime.HasValue && l.OriginalScheduledTime.Value == scheduledDateTime) ||
+                 l.ScheduledTime == scheduledDateTime ||
+                 (l.Status == "Snoozed" && l.OriginalScheduledTime.HasValue && l.OriginalScheduledTime.Value == scheduledDateTime) ||
+                 (Math.Abs((l.ScheduledTime - scheduledDateTime).TotalMinutes) < 1)));
+
+            string computedStatus = "Upcoming";
+            DateTime displayScheduledTime = scheduledDateTime;
+            int snoozeCount = 0;
+            DateTime? takenTime = null;
+            int? logId = null;
+
+            if (log != null)
+            {
+                logId = log.Id;
+                snoozeCount = log.SnoozeCount;
+                takenTime = log.TakenTime;
+                displayScheduledTime = log.ScheduledTime;
+
+                if (log.Status == "Taken")
+                {
+                    computedStatus = "Taken";
+                }
+                else if (log.Status == "Missed")
+                {
+                    computedStatus = "Missed";
+                }
+                else if (log.Status == "Snoozed")
+                {
+                    computedStatus = "Snoozed";
+                }
+                else
+                {
+                    if (now > log.ScheduledTime.AddMinutes(15))
+                        computedStatus = "Missed";
+                    else
+                        computedStatus = "Upcoming";
+                }
+            }
+            else
+            {
+                if (now > scheduledDateTime.AddMinutes(15))
+                {
+                    computedStatus = "Missed";
+                }
+                else
+                {
+                    computedStatus = "Upcoming";
+                }
+            }
+
+            bool canTake = computedStatus != "Taken" && computedStatus != "Missed";
+            bool canSnooze = computedStatus != "Taken" && computedStatus != "Missed" && snoozeCount < 2 && (now <= (log != null ? log.ScheduledTime.AddMinutes(15) : scheduledDateTime.AddMinutes(15)));
+
+            result.Add(new
+            {
+                scheduleId = s.Id,
+                medicineId = s.MedicineId,
+                medicineName = s.Medicine.Name,
+                dosage = s.Medicine.Dosage,
+                dose = s.Medicine.Dose,
+                stock = s.Medicine.Stock,
+                startDate = s.Medicine.StartDate,
+                endDate = s.Medicine.EndDate,
+                mealTiming = s.Medicine.MealTimeing,
+                frequency = s.Frequency,
+                time = s.Time,
+                scheduledTime = displayScheduledTime,
+                originalScheduledTime = scheduledDateTime,
+                status = computedStatus,
+                logId = logId,
+                takenTime = takenTime,
+                snoozeCount = snoozeCount,
+                patientId = targetPatientId,
+                canTake = canTake,
+                canSnooze = canSnooze
+            });
+        }
+
+        return Ok(result);
+    }
+
+    // POST: api/medicineschedule/{id}/take
+    [HttpPost("{id}/take")]
+    public async Task<IActionResult> TakeDose(int id)
+    {
+        var schedule = await _context.MedicineSchedules
+            .Include(s => s.Medicine)
+            .FirstOrDefaultAsync(s => s.Id == id);
+
+        if (schedule == null)
+            return NotFound("Schedule not found.");
+
+        if (!await CanAccessPatientAsync(schedule.Medicine.PatientId))
+            return Forbid();
+
+        var today = DateTime.Today;
+        var scheduledTime = today.Add(schedule.Time);
+
+        // Find existing log for today
+        var candidateLogs = await _context.MedicineLogs
+            .Where(l => l.MedicineId == schedule.MedicineId &&
+                        l.PatientId == schedule.Medicine.PatientId &&
+                        (l.ScheduledTime.Date == today || (l.OriginalScheduledTime.HasValue && l.OriginalScheduledTime.Value.Date == today)))
+            .ToListAsync();
+
+        var log = candidateLogs.FirstOrDefault(l =>
+            (l.OriginalScheduledTime.HasValue && l.OriginalScheduledTime.Value == scheduledTime) ||
+            l.ScheduledTime == scheduledTime ||
+            Math.Abs((l.ScheduledTime - scheduledTime).TotalMinutes) < 2);
+
+        if (log == null)
+        {
+            log = new MedicineLog
+            {
+                MedicineId = schedule.MedicineId,
+                PatientId = schedule.Medicine.PatientId,
+                ScheduledTime = scheduledTime,
+                OriginalScheduledTime = scheduledTime,
+                Status = "Pending"
+            };
+            _context.MedicineLogs.Add(log);
+            await _context.SaveChangesAsync();
+        }
+
+        if (log.Status == "Taken")
+        {
+            return Ok(new { message = "Dose has already been marked as Taken.", log, stock = schedule.Medicine.Stock });
+        }
+
+        var updated = await _medicineLogService.MarkAsTakenAsync(log.Id);
+
+        // Refresh stock
+        var currentMed = await _context.Medicines.FindAsync(schedule.MedicineId);
+
+        return Ok(new
+        {
+            message = $"Dose of {schedule.Medicine.Name} marked as Taken.",
+            log = updated,
+            stock = currentMed?.Stock ?? 0
+        });
+    }
+
+    // POST: api/medicineschedule/{id}/snooze
+    [HttpPost("{id}/snooze")]
+    public async Task<IActionResult> SnoozeDose(int id, [FromQuery] int minutes = 15)
+    {
+        var schedule = await _context.MedicineSchedules
+            .Include(s => s.Medicine)
+            .FirstOrDefaultAsync(s => s.Id == id);
+
+        if (schedule == null)
+            return NotFound("Schedule not found.");
+
+        if (!await CanAccessPatientAsync(schedule.Medicine.PatientId))
+            return Forbid();
+
+        var today = DateTime.Today;
+        var scheduledTime = today.Add(schedule.Time);
+
+        // Find existing log for today
+        var candidateLogs = await _context.MedicineLogs
+            .Where(l => l.MedicineId == schedule.MedicineId &&
+                        l.PatientId == schedule.Medicine.PatientId &&
+                        (l.ScheduledTime.Date == today || (l.OriginalScheduledTime.HasValue && l.OriginalScheduledTime.Value.Date == today)))
+            .ToListAsync();
+
+        var log = candidateLogs.FirstOrDefault(l =>
+            (l.OriginalScheduledTime.HasValue && l.OriginalScheduledTime.Value == scheduledTime) ||
+            l.ScheduledTime == scheduledTime ||
+            Math.Abs((l.ScheduledTime - scheduledTime).TotalMinutes) < 2);
+
+        if (log == null)
+        {
+            log = new MedicineLog
+            {
+                MedicineId = schedule.MedicineId,
+                PatientId = schedule.Medicine.PatientId,
+                ScheduledTime = scheduledTime,
+                OriginalScheduledTime = scheduledTime,
+                Status = "Pending"
+            };
+            _context.MedicineLogs.Add(log);
+            await _context.SaveChangesAsync();
+        }
+
+        try
+        {
+            var updated = await _medicineLogService.SnoozeAsync(log.Id, minutes);
+            return Ok(new
+            {
+                message = $"Dose of {schedule.Medicine.Name} snoozed by {minutes} minutes.",
+                log = updated,
+                newScheduledTime = updated?.ScheduledTime,
+                snoozeCount = updated?.SnoozeCount
+            });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
 
     // GET: api/Medicineschedule
