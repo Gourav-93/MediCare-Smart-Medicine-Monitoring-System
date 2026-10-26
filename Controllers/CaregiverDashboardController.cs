@@ -105,6 +105,7 @@ public class CaregiverDashboardController : ControllerBase
                 .ThenInclude(m => m.Patient)
                     .ThenInclude(p => p.User)
             .Where(schedule =>
+                !schedule.Medicine.IsDeleted &&
                 patientIds.Contains(schedule.Medicine.PatientId) &&
                 schedule.Medicine.StartDate.Date <= today &&
                 schedule.Medicine.EndDate.Date >= today)
