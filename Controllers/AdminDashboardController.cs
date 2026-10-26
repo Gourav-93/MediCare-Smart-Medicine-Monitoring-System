@@ -24,7 +24,7 @@ public class AdminDashboardController : ControllerBase
         var totalUsers = await _context.Users.CountAsync();
         var totalPatients = await _context.Patients.CountAsync();
         var totalCaregivers = await _context.Caregivers.CountAsync();
-        var totalMedicines = await _context.Medicines.CountAsync();
+        var totalMedicines = await _context.Medicines.CountAsync(m => !m.IsDeleted);
         var totalMedicineLogs = await _context.MedicineLogs.CountAsync();
         var totalTakenDoses = await _context.MedicineLogs.CountAsync(log => log.Status == "Taken");
         var totalMissedDoses = await _context.MedicineLogs.CountAsync(log => log.Status == "Missed");
@@ -57,7 +57,7 @@ public class AdminDashboardController : ControllerBase
             await _context.Medicines
                 .Include(m => m.Patient)
                 .ThenInclude(p => p.User)
-                .Where(m => m.Stock <= 5)
+                .Where(m => !m.IsDeleted && m.Stock <= 5)
                 .OrderBy(m => m.Stock)
                 .ToListAsync();
 
