@@ -69,6 +69,7 @@ public class MedicineReminderBackgroundService : BackgroundService
         var today = now.Date;
 
         var medicines = await context.Medicines
+            .Where(m => !m.IsDeleted)
             .Include(m => m.MedicineSchedules)
             .Include(m => m.Patient)
                 .ThenInclude(p => p.User)
@@ -111,7 +112,10 @@ public class MedicineReminderBackgroundService : BackgroundService
                             MedicineId = medicine.Id,
                             PatientId = medicine.PatientId,
                             ScheduledTime = scheduledTime,
-                            Status = "Pending"
+                            Status = "Pending",
+                            MedicineName = medicine.Name,
+                            Dosage = medicine.Dosage,
+                            MealTiming = medicine.MealTimeing
                         };
 
                         context.MedicineLogs.Add(log);
