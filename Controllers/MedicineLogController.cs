@@ -176,8 +176,8 @@ public class MedicineLogController : ControllerBase
         var medicine = await _context.Medicines
             .FirstOrDefaultAsync(m => m.Id == dto.MedicineId);
 
-        if (medicine == null)
-            return NotFound("Medicine not found.");
+        if (medicine == null || medicine.IsDeleted)
+            return NotFound("Medicine not found or has been deleted.");
 
         // Medicine must belong to the same patient
         if (medicine.PatientId != dto.PatientId)
