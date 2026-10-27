@@ -40,22 +40,23 @@ public class PatientDashboardController : ControllerBase
         if (patient == null)
             return NotFound("Patient profile not found.");
 
-        // Get all medicines
+        // Get active medicines (exclude soft-deleted)
         var medicines = await _context.Medicines
-            .Where(m => m.PatientId == patient.Id)
+            .Where(m => m.PatientId == patient.Id && !m.IsDeleted)
             .OrderBy(m => m.Name)
             .ToListAsync();
 
-        // Total medicines
+        // Total active medicines
         var totalMedicines = medicines.Count;
 
         // Today's date
         var today = DateTime.Today;
 
-        // Today's schedules
+        // Today's schedules (exclude soft-deleted)
         var todaySchedules = await _context.MedicineSchedules
             .Include(s => s.Medicine)
             .Where(s =>
+                !s.Medicine.IsDeleted &&
                 s.Medicine.PatientId == patient.Id &&
                 s.Medicine.StartDate.Date <= today &&
                 s.Medicine.EndDate.Date >= today)
