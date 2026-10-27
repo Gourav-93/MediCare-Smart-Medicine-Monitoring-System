@@ -152,10 +152,11 @@ public class MedicineScheduleController : ControllerBase
             await _context.SaveChangesAsync();
         }
 
-        // Fetch patient medicines and schedules
+        // Fetch patient medicines and schedules (excluding soft-deleted)
         var schedules = await _context.MedicineSchedules
             .Include(s => s.Medicine)
-            .Where(s => s.Medicine.PatientId == targetPatientId &&
+            .Where(s => !s.Medicine.IsDeleted &&
+                        s.Medicine.PatientId == targetPatientId &&
                         s.Medicine.StartDate.Date <= today &&
                         s.Medicine.EndDate.Date >= today)
             .OrderBy(s => s.Time)
@@ -268,6 +269,9 @@ public class MedicineScheduleController : ControllerBase
         if (schedule == null)
             return NotFound("Schedule not found.");
 
+        if (schedule.Medicine.IsDeleted)
+            return BadRequest("Cannot record dose for a deleted medicine.");
+
         if (!await CanAccessPatientAsync(schedule.Medicine.PatientId))
             return Forbid();
 
@@ -294,7 +298,10 @@ public class MedicineScheduleController : ControllerBase
                 PatientId = schedule.Medicine.PatientId,
                 ScheduledTime = scheduledTime,
                 OriginalScheduledTime = scheduledTime,
-                Status = "Pending"
+                Status = "Pending",
+                MedicineName = schedule.Medicine.Name,
+                Dosage = schedule.Medicine.Dosage,
+                MealTiming = schedule.Medicine.MealTimeing
             };
             _context.MedicineLogs.Add(log);
             await _context.SaveChangesAsync();
@@ -329,6 +336,9 @@ public class MedicineScheduleController : ControllerBase
         if (schedule == null)
             return NotFound("Schedule not found.");
 
+        if (schedule.Medicine.IsDeleted)
+            return BadRequest("Cannot snooze dose for a deleted medicine.");
+
         if (!await CanAccessPatientAsync(schedule.Medicine.PatientId))
             return Forbid();
 
@@ -355,7 +365,10 @@ public class MedicineScheduleController : ControllerBase
                 PatientId = schedule.Medicine.PatientId,
                 ScheduledTime = scheduledTime,
                 OriginalScheduledTime = scheduledTime,
-                Status = "Pending"
+                Status = "Pending",
+                MedicineName = schedule.Medicine.Name,
+                Dosage = schedule.Medicine.Dosage,
+                MealTiming = schedule.Medicine.MealTimeing
             };
             _context.MedicineLogs.Add(log);
             await _context.SaveChangesAsync();
@@ -389,6 +402,7 @@ public class MedicineScheduleController : ControllerBase
         {
             var allSchedules = await _context.MedicineSchedules
                 .Include(s => s.Medicine)
+                .Where(s => !s.Medicine.IsDeleted)
                 .ToListAsync();
 
             return Ok(allSchedules);
@@ -404,7 +418,7 @@ public class MedicineScheduleController : ControllerBase
 
             var schedules = await _context.MedicineSchedules
                 .Include(s => s.Medicine)
-                .Where(s => s.Medicine.PatientId == patient.Id)
+                .Where(s => !s.Medicine.IsDeleted && s.Medicine.PatientId == patient.Id)
                 .ToListAsync();
 
             return Ok(schedules);
@@ -420,7 +434,7 @@ public class MedicineScheduleController : ControllerBase
 
             var schedules = await _context.MedicineSchedules
                 .Include(s => s.Medicine)
-                .Where(s =>
+                .Where(s => !s.Medicine.IsDeleted &&
                     _context.CaregiverPatients.Any(cp =>
                         cp.CaregiverId == caregiver.Id &&
                         cp.PatientId == s.Medicine.PatientId))
@@ -440,7 +454,7 @@ public class MedicineScheduleController : ControllerBase
             .Include(s => s.Medicine)
             .FirstOrDefaultAsync(s => s.Id == id);
 
-        if (schedule == null)
+        if (schedule == null || schedule.Medicine.IsDeleted)
             return NotFound("Schedule not found.");
 
         if (!await CanAccessPatientAsync(schedule.Medicine.PatientId))
@@ -456,8 +470,8 @@ public class MedicineScheduleController : ControllerBase
         var medicine = await _context.Medicines
             .FirstOrDefaultAsync(m => m.Id == dto.MedicineId);
 
-        if (medicine == null)
-            return NotFound("Medicine not found.");
+        if (medicine == null || medicine.IsDeleted)
+            return BadRequest("Cannot create a schedule for a deleted or non-existent medicine.");
 
         if (!await CanAccessPatientAsync(medicine.PatientId))
             return Forbid();
@@ -483,7 +497,7 @@ public class MedicineScheduleController : ControllerBase
             .Include(s => s.Medicine)
             .FirstOrDefaultAsync(s => s.Id == id);
 
-        if (existingSchedule == null)
+        if (existingSchedule == null || existingSchedule.Medicine.IsDeleted)
             return NotFound("Schedule not found.");
 
         // Check access to existing medicine
@@ -494,8 +508,8 @@ public class MedicineScheduleController : ControllerBase
         var newMedicine = await _context.Medicines
             .FirstOrDefaultAsync(m => m.Id == dto.MedicineId);
 
-        if (newMedicine == null)
-            return NotFound("Medicine not found.");
+        if (newMedicine == null || newMedicine.IsDeleted)
+            return BadRequest("Cannot link schedule to a deleted or non-existent medicine.");
 
         // Prevent moving schedule to another unauthorized patient
         if (!await CanAccessPatientAsync(newMedicine.PatientId))
