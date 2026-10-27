@@ -236,4 +236,164 @@ public class EmergencyController : ControllerBase
             resolvedAt = emergency.ResolvedAt
         });
     }
+
+    // GET: api/emergency/contacts
+    [HttpGet("contacts")]
+    public async Task<IActionResult> GetEmergencyContacts([FromQuery] int? patientId)
+    {
+        var userId = GetCurrentUserId();
+        var role = GetCurrentRole();
+
+        if (role == "PATIENT")
+        {
+            var patient = await _context.Patients
+                .Include(p => p.User)
+                .FirstOrDefaultAsync(p => p.UserId == userId);
+
+            if (patient == null)
+                return NotFound(new { message = "Patient profile not found." });
+
+            var caregiverLink = await _context.CaregiverPatients
+                .Include(cp => cp.Caregiver)
+                    .ThenInclude(c => c.User)
+                .FirstOrDefaultAsync(cp => cp.PatientId == patient.Id);
+
+            return Ok(new EmergencyContactsDto
+            {
+                EmergencyPhone = patient.EmergencyContact ?? string.Empty,
+                ContactName = caregiverLink?.Caregiver?.User?.Name ?? string.Empty,
+                Relationship = caregiverLink?.RelationType ?? caregiverLink?.Caregiver?.Relationship ?? string.Empty
+            });
+        }
+
+        if (role == "CAREGIVER")
+        {
+            var caregiver = await _context.Caregivers
+                .Include(c => c.User)
+                .FirstOrDefaultAsync(c => c.UserId == userId);
+
+            if (caregiver == null)
+                return Forbid();
+
+            var linkQuery = _context.CaregiverPatients
+                .Include(cp => cp.Patient)
+                .Where(cp => cp.CaregiverId == caregiver.Id);
+
+            if (patientId.HasValue)
+            {
+                linkQuery = linkQuery.Where(cp => cp.PatientId == patientId.Value);
+            }
+
+            var link = await linkQuery.FirstOrDefaultAsync();
+            if (link == null)
+                return NotFound(new { message = "No linked patient found for caregiver." });
+
+            return Ok(new EmergencyContactsDto
+            {
+                EmergencyPhone = link.Patient.EmergencyContact ?? string.Empty,
+                ContactName = caregiver.User.Name,
+                Relationship = link.RelationType
+            });
+        }
+
+        if (role == "ADMIN")
+        {
+            if (!patientId.HasValue)
+                return BadRequest(new { message = "PatientId parameter is required for Admin." });
+
+            var patient = await _context.Patients.FindAsync(patientId.Value);
+            if (patient == null)
+                return NotFound(new { message = "Patient not found." });
+
+            return Ok(new EmergencyContactsDto
+            {
+                EmergencyPhone = patient.EmergencyContact ?? string.Empty,
+                ContactName = string.Empty,
+                Relationship = string.Empty
+            });
+        }
+
+        return Forbid();
+    }
+
+    // PUT: api/emergency/contacts
+    [HttpPut("contacts")]
+    public async Task<IActionResult> UpdateEmergencyContacts([FromBody] EmergencyContactsDto dto, [FromQuery] int? patientId)
+    {
+        if (dto == null || string.IsNullOrWhiteSpace(dto.EmergencyPhone))
+            return BadRequest(new { message = "Emergency phone number is required." });
+
+        var userId = GetCurrentUserId();
+        var role = GetCurrentRole();
+
+        if (role == "PATIENT")
+        {
+            var patient = await _context.Patients
+                .FirstOrDefaultAsync(p => p.UserId == userId);
+
+            if (patient == null)
+                return NotFound(new { message = "Patient profile not found." });
+
+            patient.EmergencyContact = (dto.EmergencyPhone ?? string.Empty).Trim();
+            await _context.SaveChangesAsync();
+
+            return Ok(new
+            {
+                message = "Emergency contact updated successfully.",
+                emergencyPhone = patient.EmergencyContact
+            });
+        }
+
+        if (role == "CAREGIVER")
+        {
+            var caregiver = await _context.Caregivers
+                .FirstOrDefaultAsync(c => c.UserId == userId);
+
+            if (caregiver == null)
+                return Forbid();
+
+            var linkQuery = _context.CaregiverPatients
+                .Include(cp => cp.Patient)
+                .Where(cp => cp.CaregiverId == caregiver.Id);
+
+            if (patientId.HasValue)
+            {
+                linkQuery = linkQuery.Where(cp => cp.PatientId == patientId.Value);
+            }
+
+            var link = await linkQuery.FirstOrDefaultAsync();
+            if (link == null)
+                return Forbid();
+
+            link.Patient.EmergencyContact = (dto.EmergencyPhone ?? string.Empty).Trim();
+            await _context.SaveChangesAsync();
+
+            return Ok(new
+            {
+                message = "Emergency contact updated successfully for patient.",
+                emergencyPhone = link.Patient.EmergencyContact
+            });
+        }
+
+        if (role == "ADMIN")
+        {
+            if (!patientId.HasValue)
+                return BadRequest(new { message = "PatientId parameter is required for Admin." });
+
+            var patient = await _context.Patients.FindAsync(patientId.Value);
+            if (patient == null)
+                return NotFound(new { message = "Patient not found." });
+
+            patient.EmergencyContact = (dto.EmergencyPhone ?? string.Empty).Trim();
+            await _context.SaveChangesAsync();
+
+            return Ok(new
+            {
+                message = "Emergency contact updated successfully.",
+                emergencyPhone = patient.EmergencyContact
+            });
+        }
+
+        return Forbid();
+    }
 }
