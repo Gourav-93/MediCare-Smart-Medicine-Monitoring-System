@@ -73,10 +73,14 @@ public class MedicineReminderBackgroundService : BackgroundService
             .Include(m => m.MedicineSchedules)
             .Include(m => m.Patient)
                 .ThenInclude(p => p.User)
+                    .ThenInclude(u => u.NotificationPreference)
             .ToListAsync(stoppingToken);
 
         foreach (var medicine in medicines)
         {
+            // Check Low Stock & Refill Alerts for each medicine
+            await CheckLowStockAndRefillAlertsAsync(context, medicine, stoppingToken);
+
             if (medicine.StartDate.Date > today ||
                 medicine.EndDate.Date < today)
             {
@@ -146,14 +150,45 @@ public class MedicineReminderBackgroundService : BackgroundService
 
     private async Task TrySendReminderEmailAsync(AppDbContext context, IEmailService emailService, MedicineSchedule schedule, Medicine medicine, DateTime scheduledTime, CancellationToken stoppingToken)
     {
+        if (medicine.Patient?.User == null) return;
         var recipientEmail = medicine.Patient.User.Email;
         if (string.IsNullOrWhiteSpace(recipientEmail)) return;
+
+        var patientUserId = medicine.Patient.UserId;
+        var patientName = medicine.Patient.User.Name;
 
         var deliveryLog = await context.EmailDeliveryLogs.FirstOrDefaultAsync(
             l => l.MedicineScheduleId == schedule.Id && l.ScheduledOccurrence == scheduledTime && l.NotificationType == "Reminder" && l.RecipientEmail == recipientEmail, stoppingToken);
         
-        if (deliveryLog != null && (deliveryLog.Status == "Sent" || deliveryLog.RetryCount >= 3))
+        if (deliveryLog != null && (deliveryLog.Status == "Sent" || deliveryLog.Status == "Suppressed" || deliveryLog.RetryCount >= 3))
             return;
+
+        // Feature 1: Respect saved DoseReminders preference
+        var userPref = await context.UserNotificationPreferences
+            .AsNoTracking()
+            .FirstOrDefaultAsync(p => p.UserId == patientUserId, stoppingToken);
+
+        if (userPref != null && !userPref.DoseReminders)
+        {
+            if (deliveryLog == null)
+            {
+                deliveryLog = new EmailDeliveryLog
+                {
+                    MedicineScheduleId = schedule.Id,
+                    ScheduledOccurrence = scheduledTime,
+                    NotificationType = "Reminder",
+                    RecipientEmail = recipientEmail,
+                    Status = "Suppressed"
+                };
+                context.EmailDeliveryLogs.Add(deliveryLog);
+            }
+            else
+            {
+                deliveryLog.Status = "Suppressed";
+            }
+            await context.SaveChangesAsync(stoppingToken);
+            return;
+        }
 
         if (deliveryLog == null)
         {
@@ -169,7 +204,7 @@ public class MedicineReminderBackgroundService : BackgroundService
             
             var patientNotification = new Notification
             {
-                UserId = medicine.Patient.UserId,
+                UserId = patientUserId,
                 Title = "Medicine Reminder",
                 Message = $"Time to take {medicine.Name}.",
                 Type = "MedicineReminder",
@@ -186,7 +221,7 @@ public class MedicineReminderBackgroundService : BackgroundService
             await emailService.SendEmailAsync(
                 recipientEmail,
                 "MediCare - Upcoming Medicine Reminder",
-                $"Hello {medicine.Patient.User.Name},\n\n" +
+                $"Hello {patientName},\n\n" +
                 $"This is a reminder from MediCare that it is almost time to take your medicine.\n" +
                 $"Medicine: {medicine.Name}\n" +
                 $"Scheduled Time: {scheduledTime:t}\n" +
@@ -214,14 +249,45 @@ public class MedicineReminderBackgroundService : BackgroundService
 
     private async Task TrySendMissedEmailAsync(AppDbContext context, IEmailService emailService, MedicineSchedule schedule, Medicine medicine, DateTime scheduledTime, CancellationToken stoppingToken)
     {
+        if (medicine.Patient?.User == null) return;
         var recipientEmail = medicine.Patient.User.Email;
         if (string.IsNullOrWhiteSpace(recipientEmail)) return;
+
+        var patientUserId = medicine.Patient.UserId;
+        var patientName = medicine.Patient.User.Name;
 
         var deliveryLog = await context.EmailDeliveryLogs.FirstOrDefaultAsync(
             l => l.MedicineScheduleId == schedule.Id && l.ScheduledOccurrence == scheduledTime && l.NotificationType == "Missed" && l.RecipientEmail == recipientEmail, stoppingToken);
         
-        if (deliveryLog != null && (deliveryLog.Status == "Sent" || deliveryLog.RetryCount >= 3))
+        if (deliveryLog != null && (deliveryLog.Status == "Sent" || deliveryLog.Status == "Suppressed" || deliveryLog.RetryCount >= 3))
             return;
+
+        // Feature 1: Respect saved DoseReminders preference for patient missed dose alerts
+        var userPref = await context.UserNotificationPreferences
+            .AsNoTracking()
+            .FirstOrDefaultAsync(p => p.UserId == patientUserId, stoppingToken);
+
+        if (userPref != null && !userPref.DoseReminders)
+        {
+            if (deliveryLog == null)
+            {
+                deliveryLog = new EmailDeliveryLog
+                {
+                    MedicineScheduleId = schedule.Id,
+                    ScheduledOccurrence = scheduledTime,
+                    NotificationType = "Missed",
+                    RecipientEmail = recipientEmail,
+                    Status = "Suppressed"
+                };
+                context.EmailDeliveryLogs.Add(deliveryLog);
+            }
+            else
+            {
+                deliveryLog.Status = "Suppressed";
+            }
+            await context.SaveChangesAsync(stoppingToken);
+            return;
+        }
 
         if (deliveryLog == null)
         {
@@ -237,7 +303,7 @@ public class MedicineReminderBackgroundService : BackgroundService
             
             var patientNotification = new Notification
             {
-                UserId = medicine.Patient.UserId,
+                UserId = patientUserId,
                 Title = "Medicine Missed",
                 Message = $"You missed your {medicine.Name} dose.",
                 Type = "MedicineMissed",
@@ -254,7 +320,7 @@ public class MedicineReminderBackgroundService : BackgroundService
             await emailService.SendEmailAsync(
                 recipientEmail,
                 "MediCare - Missed Medicine Alert",
-                $"Hello {medicine.Patient.User.Name},\n\n" +
+                $"Hello {patientName},\n\n" +
                 $"Our MediCare system noticed that you have not recorded taking the following scheduled medicine.\n" +
                 $"Medicine: {medicine.Name}\n" +
                 $"Scheduled Time: {scheduledTime:t}\n" +
@@ -282,22 +348,65 @@ public class MedicineReminderBackgroundService : BackgroundService
 
     private async Task TrySendCaregiverAlertAsync(AppDbContext context, IEmailService emailService, MedicineSchedule schedule, Medicine medicine, DateTime scheduledTime, CancellationToken stoppingToken)
     {
+        if (medicine.Patient?.User == null) return;
+        var patientUserId = medicine.Patient.UserId;
+        var patientName = medicine.Patient.User.Name;
+
+        // Feature 2: Authorized, linked caregivers only
         var caregivers = await context.CaregiverPatients
             .Include(cp => cp.Caregiver)
                 .ThenInclude(c => c.User)
+                    .ThenInclude(u => u.NotificationPreference)
             .Where(cp => cp.PatientId == medicine.PatientId)
             .ToListAsync(stoppingToken);
 
+        var patientPref = await context.UserNotificationPreferences
+            .AsNoTracking()
+            .FirstOrDefaultAsync(p => p.UserId == patientUserId, stoppingToken);
+
         foreach (var caregiverPatient in caregivers)
         {
+            if (caregiverPatient.Caregiver?.User == null) continue;
+
             var caregiverEmail = caregiverPatient.Caregiver.User.Email;
             if (string.IsNullOrWhiteSpace(caregiverEmail)) continue;
+
+            var caregiverUserId = caregiverPatient.Caregiver.UserId;
+            var caregiverName = caregiverPatient.Caregiver.User.Name;
 
             var cgDeliveryLog = await context.EmailDeliveryLogs.FirstOrDefaultAsync(
                 l => l.MedicineScheduleId == schedule.Id && l.ScheduledOccurrence == scheduledTime && l.NotificationType == "CaregiverAlert30Min" && l.RecipientEmail == caregiverEmail, stoppingToken);
 
-            if (cgDeliveryLog != null && (cgDeliveryLog.Status == "Sent" || cgDeliveryLog.RetryCount >= 3))
+            // Prevent duplicate caregiver alerts
+            if (cgDeliveryLog != null && (cgDeliveryLog.Status == "Sent" || cgDeliveryLog.Status == "Suppressed" || cgDeliveryLog.RetryCount >= 3))
                 continue;
+
+            var cgPref = await context.UserNotificationPreferences
+                .AsNoTracking()
+                .FirstOrDefaultAsync(p => p.UserId == caregiverUserId, stoppingToken);
+
+            // Feature 2: Respect saved CaregiverAlerts preference (suppress if disabled by patient or caregiver)
+            if ((patientPref != null && !patientPref.CaregiverAlerts) || (cgPref != null && !cgPref.CaregiverAlerts))
+            {
+                if (cgDeliveryLog == null)
+                {
+                    cgDeliveryLog = new EmailDeliveryLog
+                    {
+                        MedicineScheduleId = schedule.Id,
+                        ScheduledOccurrence = scheduledTime,
+                        NotificationType = "CaregiverAlert30Min",
+                        RecipientEmail = caregiverEmail,
+                        Status = "Suppressed"
+                    };
+                    context.EmailDeliveryLogs.Add(cgDeliveryLog);
+                }
+                else
+                {
+                    cgDeliveryLog.Status = "Suppressed";
+                }
+                await context.SaveChangesAsync(stoppingToken);
+                continue;
+            }
 
             if (cgDeliveryLog == null)
             {
@@ -311,16 +420,27 @@ public class MedicineReminderBackgroundService : BackgroundService
                 };
                 context.EmailDeliveryLogs.Add(cgDeliveryLog);
                 
-                var caregiverNotification = new Notification
+                // Prevent duplicate in-app notification
+                bool alreadyNotified = await context.Notifications.AnyAsync(n =>
+                    n.UserId == caregiverUserId &&
+                    n.Type == "CaregiverMedicineAlert30Min" &&
+                    n.Message.Contains(medicine.Name) &&
+                    n.CreatedAt >= scheduledTime.AddMinutes(-5) &&
+                    n.CreatedAt <= scheduledTime.AddMinutes(120), stoppingToken);
+
+                if (!alreadyNotified)
                 {
-                    UserId = caregiverPatient.Caregiver.UserId,
-                    Title = "Patient Medicine Alert",
-                    Message = $"The patient {medicine.Patient.User.Name} missed {medicine.Name} for 30 minutes.",
-                    Type = "CaregiverMedicineAlert30Min",
-                    IsRead = false,
-                    CreatedAt = DateTime.Now
-                };
-                context.Notifications.Add(caregiverNotification);
+                    var caregiverNotification = new Notification
+                    {
+                        UserId = caregiverUserId,
+                        Title = "Patient Medicine Alert",
+                        Message = $"The patient {patientName} missed {medicine.Name} for 30 minutes.",
+                        Type = "CaregiverMedicineAlert30Min",
+                        IsRead = false,
+                        CreatedAt = DateTime.Now
+                    };
+                    context.Notifications.Add(caregiverNotification);
+                }
 
                 await context.SaveChangesAsync(stoppingToken);
             }
@@ -330,10 +450,10 @@ public class MedicineReminderBackgroundService : BackgroundService
                 await emailService.SendEmailAsync(
                     caregiverEmail,
                     "MediCare - Patient Medicine Alert",
-                    $"Hello {caregiverPatient.Caregiver.User.Name},\n\n" +
+                    $"Hello {caregiverName},\n\n" +
                     $"This is an important medicine alert from MediCare.\n\n" +
                     $"The following patient has not recorded taking their scheduled medicine within 30 minutes of the scheduled time.\n\n" +
-                    $"Patient: {medicine.Patient.User.Name}\n" +
+                    $"Patient: {patientName}\n" +
                     $"Medicine: {medicine.Name}\n" +
                     $"Scheduled Time: {scheduledTime:g}\n" +
                     $"Status: Missed\n\n" +
@@ -357,5 +477,168 @@ public class MedicineReminderBackgroundService : BackgroundService
                 await context.SaveChangesAsync(stoppingToken);
             }
         }
+    }
+
+    // Feature 3: Low-Stock Alerts & Feature 4: Refill Alerts
+    public static async Task CheckLowStockAndRefillAlertsAsync(
+        AppDbContext context,
+        Medicine medicine,
+        CancellationToken stoppingToken = default)
+    {
+        // Enforce existing threshold of 5
+        if (medicine == null || medicine.IsDeleted || medicine.Stock > 5)
+            return;
+
+        var today = DateTime.Today;
+
+        if (medicine.Patient == null)
+        {
+            await context.Entry(medicine).Reference(m => m.Patient).LoadAsync(stoppingToken);
+        }
+        if (medicine.Patient != null && medicine.Patient.User == null)
+        {
+            await context.Entry(medicine.Patient).Reference(p => p.User).LoadAsync(stoppingToken);
+        }
+
+        if (medicine.Patient?.User == null)
+            return;
+
+        var patientUserId = medicine.Patient.UserId;
+        var patientName = medicine.Patient.User.Name;
+
+        var patientPref = await context.UserNotificationPreferences
+            .AsNoTracking()
+            .FirstOrDefaultAsync(p => p.UserId == patientUserId, stoppingToken);
+
+        // Feature 3: Respect saved LowStockAlerts preference for patient
+        bool patientLowStockEnabled = patientPref == null || patientPref.LowStockAlerts;
+        if (patientLowStockEnabled)
+        {
+            // Prevent duplicate alert for this medicine today
+            bool patientAlreadyNotified = await context.Notifications.AnyAsync(n =>
+                n.UserId == patientUserId &&
+                n.Type == "Low Stock" &&
+                n.Message.Contains(medicine.Name) &&
+                n.CreatedAt >= today, stoppingToken);
+
+            if (!patientAlreadyNotified)
+            {
+                var patientNotification = new Notification
+                {
+                    UserId = patientUserId,
+                    Title = "Low Medicine Stock",
+                    Message = $"{medicine.Name} stock is low ({medicine.Stock} left). Please refill.",
+                    Type = "Low Stock",
+                    IsRead = false,
+                    CreatedAt = DateTime.Now
+                };
+                context.Notifications.Add(patientNotification);
+            }
+        }
+
+        // Feature 3: Notify authorized, linked caregivers
+        var caregivers = await context.CaregiverPatients
+            .Include(cp => cp.Caregiver)
+                .ThenInclude(c => c.User)
+            .Where(cp => cp.PatientId == medicine.PatientId)
+            .ToListAsync(stoppingToken);
+
+        foreach (var cp in caregivers)
+        {
+            if (cp.Caregiver?.User == null) continue;
+
+            var cgUserId = cp.Caregiver.UserId;
+            var cgPref = await context.UserNotificationPreferences
+                .AsNoTracking()
+                .FirstOrDefaultAsync(p => p.UserId == cgUserId, stoppingToken);
+
+            bool cgLowStockEnabled = cgPref == null || cgPref.LowStockAlerts;
+            if (cgLowStockEnabled)
+            {
+                // Prevent duplicate low stock alert to caregiver today
+                bool cgAlreadyNotified = await context.Notifications.AnyAsync(n =>
+                    n.UserId == cgUserId &&
+                    n.Type == "Low Stock" &&
+                    n.Message.Contains(medicine.Name) &&
+                    n.CreatedAt >= today, stoppingToken);
+
+                if (!cgAlreadyNotified)
+                {
+                    var cgNotification = new Notification
+                    {
+                        UserId = cgUserId,
+                        Title = "Patient Medicine Low Stock Alert",
+                        Message = $"Medicine '{medicine.Name}' for patient {patientName} is running low ({medicine.Stock} doses remaining).",
+                        Type = "Low Stock",
+                        IsRead = false,
+                        CreatedAt = DateTime.Now
+                    };
+                    context.Notifications.Add(cgNotification);
+                }
+            }
+        }
+
+        // Feature 4: Respect saved RefillAlerts preference for patient
+        bool patientRefillEnabled = patientPref == null || patientPref.RefillAlerts;
+        if (patientRefillEnabled)
+        {
+            // Prevent duplicate refill alert today
+            bool refillAlreadyNotified = await context.Notifications.AnyAsync(n =>
+                n.UserId == patientUserId &&
+                n.Type == "Refill" &&
+                n.Message.Contains(medicine.Name) &&
+                n.CreatedAt >= today, stoppingToken);
+
+            if (!refillAlreadyNotified)
+            {
+                var refillNotification = new Notification
+                {
+                    UserId = patientUserId,
+                    Title = $"Critical Refill Alert: {medicine.Name}",
+                    Message = $"Inventory check: Only {medicine.Stock} units remaining for {medicine.Name}. Please order a refill soon.",
+                    Type = "Refill",
+                    IsRead = false,
+                    CreatedAt = DateTime.Now
+                };
+                context.Notifications.Add(refillNotification);
+            }
+        }
+
+        // Feature 4: Refill alerts for linked caregivers if preference enabled
+        foreach (var cp in caregivers)
+        {
+            if (cp.Caregiver?.User == null) continue;
+
+            var cgUserId = cp.Caregiver.UserId;
+            var cgPref = await context.UserNotificationPreferences
+                .AsNoTracking()
+                .FirstOrDefaultAsync(p => p.UserId == cgUserId, stoppingToken);
+
+            bool cgRefillEnabled = cgPref == null || cgPref.RefillAlerts;
+            if (cgRefillEnabled)
+            {
+                bool cgRefillNotified = await context.Notifications.AnyAsync(n =>
+                    n.UserId == cgUserId &&
+                    n.Type == "Refill" &&
+                    n.Message.Contains(medicine.Name) &&
+                    n.CreatedAt >= today, stoppingToken);
+
+                if (!cgRefillNotified)
+                {
+                    var cgRefillNotification = new Notification
+                    {
+                        UserId = cgUserId,
+                        Title = $"Patient Refill Alert: {medicine.Name}",
+                        Message = $"Refill needed: Only {medicine.Stock} units remaining for {medicine.Name} (Patient: {patientName}).",
+                        Type = "Refill",
+                        IsRead = false,
+                        CreatedAt = DateTime.Now
+                    };
+                    context.Notifications.Add(cgRefillNotification);
+                }
+            }
+        }
+
+        await context.SaveChangesAsync(stoppingToken);
     }
 }
