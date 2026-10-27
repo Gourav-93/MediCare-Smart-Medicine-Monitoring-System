@@ -22,7 +22,8 @@ public class ReportController : ControllerBase
 
     private int GetCurrentUserId()
     {
-        return int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        var claim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        return int.TryParse(claim, out var id) ? id : 0;
     }
 
     private string GetCurrentRole()
@@ -71,7 +72,7 @@ public class ReportController : ControllerBase
 
         var medicines = await _context.Medicines
             .Include(m => m.MedicineSchedules)
-            .Where(m => m.PatientId == patientId)
+            .Where(m => m.PatientId == patientId && !m.IsDeleted)
             .ToListAsync();
 
         var logs = await _context.MedicineLogs
@@ -107,7 +108,7 @@ public class ReportController : ControllerBase
             }).ToList(),
             RecentLogs = logs.Select(l => new LogItemSummaryDto
             {
-                MedicineName = l.Medicine.Name,
+                MedicineName = !string.IsNullOrEmpty(l.MedicineName) ? l.MedicineName : (l.Medicine != null ? l.Medicine.Name : "Medicine"),
                 ScheduledTime = l.ScheduledTime,
                 TakenTime = l.TakenTime,
                 Status = l.Status
@@ -120,9 +121,11 @@ public class ReportController : ControllerBase
     // GET: api/report/patient/{patientId}/print
     // Returns browser printable HTML formatted document (Print to PDF)
     [HttpGet("patient/{patientId}/print")]
-    [AllowAnonymous] // Frontend window.open ya direct print view ke liye
     public async Task<IActionResult> GetPrintableReportHtml(int patientId, [FromQuery] int days = 30)
     {
+        if (!await CanAccessPatientAsync(patientId))
+            return Forbid();
+
         var patient = await _context.Patients
             .Include(p => p.User)
             .FirstOrDefaultAsync(p => p.Id == patientId);
@@ -134,7 +137,7 @@ public class ReportController : ControllerBase
 
         var medicines = await _context.Medicines
             .Include(m => m.MedicineSchedules)
-            .Where(m => m.PatientId == patientId)
+            .Where(m => m.PatientId == patientId && !m.IsDeleted)
             .ToListAsync();
 
         var logs = await _context.MedicineLogs
@@ -231,9 +234,10 @@ public class ReportController : ControllerBase
         {
             var cls = l.Status == "Taken" ? "status-taken" : (l.Status == "Missed" ? "status-missed" : "status-pending");
             var takenStr = l.TakenTime.HasValue ? l.TakenTime.Value.ToString("dd MMM yyyy, hh:mm tt") : "-";
+            var medName = !string.IsNullOrEmpty(l.MedicineName) ? l.MedicineName : (l.Medicine != null ? l.Medicine.Name : "Medicine");
             sb.Append($@"<tr>
                 <td>{l.ScheduledTime:dd MMM yyyy, hh:mm tt}</td>
-                <td><strong>{l.Medicine.Name}</strong></td>
+                <td><strong>{medName}</strong></td>
                 <td class='{cls}'>{l.Status}</td>
                 <td>{takenStr}</td>
             </tr>");
