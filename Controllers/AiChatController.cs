@@ -20,7 +20,8 @@ public class AiChatController : ControllerBase
 
     private int GetCurrentUserId()
     {
-        return int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        var claim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        return int.TryParse(claim, out var id) && id > 0 ? id : 0;
     }
 
     private string GetCurrentRole()
@@ -38,6 +39,11 @@ public class AiChatController : ControllerBase
         }
 
         var userId = GetCurrentUserId();
+        if (userId <= 0)
+        {
+            return Unauthorized();
+        }
+
         var role = GetCurrentRole();
 
         var response = await _aiChatService.ProcessQueryAsync(userId, role, request);
