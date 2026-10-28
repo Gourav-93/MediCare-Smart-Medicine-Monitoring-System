@@ -77,7 +77,8 @@ public class AuthController : ControllerBase
         {
             Name = dto.Name.Trim(),
             Email = email,
-            Role = role
+            Role = role,
+            PhoneNumber = dto.PhoneNumber?.Trim() ?? string.Empty
         };
 
         user.PasswordHash =
@@ -96,7 +97,7 @@ public class AuthController : ControllerBase
             {
                 UserId = user.Id,
                 DateOfBirth = DateTime.Today,
-                EmergencyContact = ""
+                EmergencyContact = dto.PhoneNumber?.Trim() ?? string.Empty
             };
             _context.Patients.Add(patient);
             await _context.SaveChangesAsync();
@@ -112,10 +113,19 @@ public class AuthController : ControllerBase
             await _context.SaveChangesAsync();
         }
 
+        var token = _jwtService.GenerateToken(
+            user.Id,
+            user.Email,
+            user.Role
+        );
+
         return Ok(new
         {
             message = "User registered successfully.",
+            token = token,
             userId = user.Id,
+            name = user.Name,
+            email = user.Email,
             role = user.Role
         });
     }
