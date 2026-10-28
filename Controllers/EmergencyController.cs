@@ -27,9 +27,8 @@ public class EmergencyController : ControllerBase
 
     private int GetCurrentUserId()
     {
-        return int.Parse(
-            User.FindFirstValue(ClaimTypes.NameIdentifier)!
-        );
+        var claim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        return int.TryParse(claim, out var id) && id > 0 ? id : 0;
     }
 
     private string GetCurrentRole()
@@ -47,6 +46,8 @@ public class EmergencyController : ControllerBase
             return BadRequest("Emergency message is required.");
 
         var userId = GetCurrentUserId();
+        if (userId <= 0)
+            return Unauthorized();
 
         var patient = await _context.Patients
             .Include(p => p.User)
@@ -137,6 +138,9 @@ public class EmergencyController : ControllerBase
         var userId = GetCurrentUserId();
         var role = GetCurrentRole();
 
+        if (userId <= 0 && role != "ADMIN")
+            return Unauthorized();
+
         if (role == "PATIENT")
         {
             var patient = await _context.Patients
@@ -191,6 +195,9 @@ public class EmergencyController : ControllerBase
         var userId = GetCurrentUserId();
         var role = GetCurrentRole();
 
+        if (userId <= 0 && role != "ADMIN")
+            return Unauthorized();
+
         var emergency = await _context.EmergencyAlerts
             .Include(e => e.Patient)
             .FirstOrDefaultAsync(e => e.Id == id);
@@ -243,6 +250,9 @@ public class EmergencyController : ControllerBase
     {
         var userId = GetCurrentUserId();
         var role = GetCurrentRole();
+
+        if (userId <= 0 && role != "ADMIN")
+            return Unauthorized();
 
         if (role == "PATIENT")
         {
@@ -325,6 +335,9 @@ public class EmergencyController : ControllerBase
 
         var userId = GetCurrentUserId();
         var role = GetCurrentRole();
+
+        if (userId <= 0 && role != "ADMIN")
+            return Unauthorized();
 
         if (role == "PATIENT")
         {
