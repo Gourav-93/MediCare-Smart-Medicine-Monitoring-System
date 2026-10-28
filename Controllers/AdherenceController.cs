@@ -25,9 +25,8 @@ public class AdherenceController : ControllerBase
 
     private int GetCurrentUserId()
     {
-        return int.Parse(
-            User.FindFirstValue(ClaimTypes.NameIdentifier)!
-        );
+        var claim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        return int.TryParse(claim, out var id) && id > 0 ? id : 0;
     }
 
     private string GetCurrentRole()
@@ -40,6 +39,9 @@ public class AdherenceController : ControllerBase
     {
         var userId = GetCurrentUserId();
         var role = GetCurrentRole();
+
+        if (userId <= 0 && role != "ADMIN")
+            return Unauthorized();
 
         // ADMIN can access any existing patient
         if (role == "ADMIN")
@@ -105,6 +107,9 @@ public class AdherenceController : ControllerBase
     {
         var userId = GetCurrentUserId();
         var role = GetCurrentRole();
+
+        if (userId <= 0 && role != "ADMIN")
+            return Unauthorized();
 
         // Security check: Role ke hisab se validation
         if (role == "PATIENT")
