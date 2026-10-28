@@ -22,10 +22,9 @@ public class CaregiverController : ControllerBase
     public async Task<IActionResult> GetLinkedPatientsWithContact()
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (string.IsNullOrEmpty(userIdClaim))
+        if (!int.TryParse(userIdClaim, out var currentUserId) || currentUserId <= 0)
             return Unauthorized();
 
-        var currentUserId = int.Parse(userIdClaim);
         var result = await _caregiverService.GetLinkedPatientsCardsAsync(currentUserId);
 
         return Ok(result);
