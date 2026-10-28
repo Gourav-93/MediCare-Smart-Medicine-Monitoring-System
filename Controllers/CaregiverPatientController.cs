@@ -42,51 +42,142 @@ public class CaregiverPatientController : ControllerBase
     }
 
     [HttpPost("link")]
-    [Authorize(Roles = "ADMIN,CAREGIVER")]
+    [Authorize(Roles = "ADMIN,CAREGIVER,PATIENT")]
     public async Task<IActionResult> LinkPatient(
         CaregiverPatientDto dto)
     {
-        if (dto.CaregiverId <= 0)
-        {
-            return BadRequest("Valid caregiverId is required.");
-        }
-
-        if (dto.PatientId <= 0 && string.IsNullOrWhiteSpace(dto.PatientEmail))
-        {
-            return BadRequest("Either PatientId or PatientEmail is required.");
-        }
-
         var role = GetCurrentRole();
         var currentUserId = GetCurrentUserId();
 
-        var caregiver = await _context.Caregivers
-            .FirstOrDefaultAsync(c => c.Id == dto.CaregiverId);
-
-        if (caregiver == null)
+        if (currentUserId <= 0)
         {
-            return NotFound("Caregiver not found.");
+            return Unauthorized();
         }
 
-        // Caregiver can only link himself.
-        if (role == "CAREGIVER" &&
-            caregiver.UserId != currentUserId)
+        if (role == "CAREGIVER")
         {
-            return Forbid();
-        }
+            var caregiver = await _context.Caregivers
+                .FirstOrDefaultAsync(c => c.UserId == currentUserId);
 
-        if (dto.PatientId <= 0 && !string.IsNullOrWhiteSpace(dto.PatientEmail))
-        {
-            var pUser = await _context.Users.FirstOrDefaultAsync(u => u.Email.ToLower() == dto.PatientEmail.ToLower() && u.Role == "PATIENT");
-            if (pUser == null) 
+            if (caregiver == null)
             {
-                return NotFound("Patient with that email not found.");
+                return NotFound(new { message = "Caregiver profile not found." });
             }
-            var pat = await _context.Patients.FirstOrDefaultAsync(p => p.UserId == pUser.Id);
-            if (pat == null)
+
+            dto.CaregiverId = caregiver.Id;
+
+            // Resolve Patient by Email if PatientId is not provided
+            if (dto.PatientId <= 0 && !string.IsNullOrWhiteSpace(dto.PatientEmail))
+            {
+                var pUser = await _context.Users
+                    .FirstOrDefaultAsync(u => u.Email.ToLower() == dto.PatientEmail.Trim().ToLower() && u.Role == "PATIENT");
+
+                if (pUser == null)
+                {
+                    return NotFound(new { message = $"No registered Patient found with email '{dto.PatientEmail}'." });
+                }
+
+                var pat = await _context.Patients
+                    .FirstOrDefaultAsync(p => p.UserId == pUser.Id);
+
+                if (pat == null)
+                {
+                    return NotFound(new { message = "Patient profile record not found." });
+                }
+
+                dto.PatientId = pat.Id;
+            }
+
+            if (dto.PatientId <= 0)
+            {
+                return BadRequest(new { message = "Valid PatientId or PatientEmail is required." });
+            }
+        }
+        else if (role == "PATIENT")
+        {
+            var patient = await _context.Patients
+                .FirstOrDefaultAsync(p => p.UserId == currentUserId);
+
+            if (patient == null)
             {
                 return NotFound("Patient profile not found.");
             }
-            dto.PatientId = pat.Id;
+
+            // Ensure patient can only link for their own profile
+            if (dto.PatientId > 0 && dto.PatientId != patient.Id)
+            {
+                return Forbid();
+            }
+
+            dto.PatientId = patient.Id;
+
+            // Resolve Caregiver by Email if CaregiverId is not provided
+            if (dto.CaregiverId <= 0 && !string.IsNullOrWhiteSpace(dto.CaregiverEmail))
+            {
+                var cgUser = await _context.Users
+                    .FirstOrDefaultAsync(u => u.Email.ToLower() == dto.CaregiverEmail.ToLower() && u.Role == "CAREGIVER");
+
+                if (cgUser == null)
+                {
+                    return NotFound("Caregiver with that email not found.");
+                }
+
+                var cg = await _context.Caregivers
+                    .FirstOrDefaultAsync(c => c.UserId == cgUser.Id);
+
+                if (cg == null)
+                {
+                    return NotFound("Caregiver profile not found.");
+                }
+
+                dto.CaregiverId = cg.Id;
+            }
+
+            if (dto.CaregiverId <= 0)
+            {
+                return BadRequest("Valid CaregiverId or CaregiverEmail is required.");
+            }
+        }
+        else if (role == "ADMIN")
+        {
+            if (dto.CaregiverId <= 0)
+            {
+                return BadRequest("Valid caregiverId is required.");
+            }
+
+            if (dto.PatientId <= 0 && string.IsNullOrWhiteSpace(dto.PatientEmail))
+            {
+                return BadRequest("Either PatientId or PatientEmail is required.");
+            }
+
+            if (dto.PatientId <= 0 && !string.IsNullOrWhiteSpace(dto.PatientEmail))
+            {
+                var pUser = await _context.Users
+                    .FirstOrDefaultAsync(u => u.Email.ToLower() == dto.PatientEmail.ToLower() && u.Role == "PATIENT");
+
+                if (pUser == null)
+                {
+                    return NotFound("Patient with that email not found.");
+                }
+
+                var pat = await _context.Patients
+                    .FirstOrDefaultAsync(p => p.UserId == pUser.Id);
+
+                if (pat == null)
+                {
+                    return NotFound("Patient profile not found.");
+                }
+
+                dto.PatientId = pat.Id;
+            }
+        }
+
+        var caregiverExists = await _context.Caregivers
+            .AnyAsync(c => c.Id == dto.CaregiverId);
+
+        if (!caregiverExists)
+        {
+            return NotFound("Caregiver not found.");
         }
 
         var patientExists = await _context.Patients
@@ -208,7 +299,7 @@ public class CaregiverPatientController : ControllerBase
     }
 
     [HttpDelete("unlink")]
-    [Authorize(Roles = "ADMIN,CAREGIVER")]
+    [Authorize(Roles = "ADMIN,CAREGIVER,PATIENT")]
     public async Task<IActionResult> UnlinkPatient(
         int caregiverId,
         int patientId)
@@ -221,6 +312,11 @@ public class CaregiverPatientController : ControllerBase
         var role = GetCurrentRole();
         var currentUserId = GetCurrentUserId();
 
+        if (currentUserId <= 0)
+        {
+            return Unauthorized();
+        }
+
         var caregiver = await _context.Caregivers
             .FirstOrDefaultAsync(c => c.Id == caregiverId);
 
@@ -229,9 +325,24 @@ public class CaregiverPatientController : ControllerBase
             return NotFound("Caregiver not found.");
         }
 
-        // Caregiver can only unlink his own relationship.
+        var patient = await _context.Patients
+            .FirstOrDefaultAsync(p => p.Id == patientId);
+
+        if (patient == null)
+        {
+            return NotFound("Patient not found.");
+        }
+
+        // Caregiver can only unlink their own relationship.
         if (role == "CAREGIVER" &&
             caregiver.UserId != currentUserId)
+        {
+            return Forbid();
+        }
+
+        // Patient can only unlink their own relationship.
+        if (role == "PATIENT" &&
+            patient.UserId != currentUserId)
         {
             return Forbid();
         }
