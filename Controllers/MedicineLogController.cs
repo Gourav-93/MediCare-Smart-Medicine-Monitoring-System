@@ -26,9 +26,8 @@ public class MedicineLogController : ControllerBase
 
     private int GetCurrentUserId()
     {
-        return int.Parse(
-            User.FindFirstValue(ClaimTypes.NameIdentifier)!
-        );
+        var claim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        return int.TryParse(claim, out var id) && id > 0 ? id : 0;
     }
 
     private string GetCurrentRole()
@@ -40,6 +39,9 @@ public class MedicineLogController : ControllerBase
     {
         var userId = GetCurrentUserId();
         var role = GetCurrentRole();
+
+        if (userId <= 0 && role != "ADMIN")
+            return false;
 
         if (role == "ADMIN")
         {
@@ -97,6 +99,9 @@ public class MedicineLogController : ControllerBase
 
         var role = GetCurrentRole();
         var userId = GetCurrentUserId();
+
+        if (userId <= 0 && role != "ADMIN")
+            return Unauthorized();
 
         if (role == "ADMIN")
         {
