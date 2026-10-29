@@ -298,6 +298,62 @@ public class CaregiverPatientController : ControllerBase
         return Ok(caregivers);
     }
 
+    // =========================================================
+    // GET MY CAREGIVERS (READ-ONLY FOR PATIENT)
+    // Uses logged-in patient identity from validated JWT claim.
+    // Does not trust client-supplied patientId.
+    // Returns only safe, read-only profile fields for linked caregivers.
+    // =========================================================
+    [HttpGet("my-caregivers")]
+    [Authorize(Roles = "PATIENT,ADMIN")]
+    public async Task<IActionResult> GetMyCaregivers()
+    {
+        var currentUserId = GetCurrentUserId();
+
+        if (currentUserId <= 0)
+        {
+            return Unauthorized();
+        }
+
+        var patient = await _context.Patients
+            .FirstOrDefaultAsync(p => p.UserId == currentUserId);
+
+        if (patient == null)
+        {
+            return NotFound(new { message = "Patient profile record not found." });
+        }
+
+        var links = await _context.CaregiverPatients
+            .Include(cp => cp.Caregiver)
+                .ThenInclude(c => c.User)
+            .Where(cp => cp.PatientId == patient.Id)
+            .OrderByDescending(cp => cp.IsPrimary)
+            .ThenByDescending(cp => cp.CreatedAt)
+            .ToListAsync();
+
+        var dtos = links.Where(cp => cp.Caregiver?.User != null).Select(cp => new PatientLinkedCaregiverDto
+        {
+            CaregiverPatientId = cp.Id,
+            CaregiverId = cp.CaregiverId,
+            UserId = cp.Caregiver.UserId,
+            FullName = cp.Caregiver.User.Name,
+            Email = cp.Caregiver.User.Email,
+            PhoneNumber = cp.Caregiver.User.PhoneNumber ?? string.Empty,
+            Gender = cp.Caregiver.User.Gender,
+            Address = cp.Caregiver.User.Address,
+            City = cp.Caregiver.User.City,
+            ProfilePhotoUrl = cp.Caregiver.User.ProfilePhotoUrl,
+            Relationship = cp.Caregiver.Relationship ?? string.Empty,
+            RelationType = string.IsNullOrWhiteSpace(cp.RelationType) ? (cp.Caregiver.Relationship ?? "Family Caregiver") : cp.RelationType,
+            PreferredContactMethod = cp.Caregiver.PreferredContactMethod ?? "Phone / Email",
+            CaregivingNotes = cp.CaregivingNotes,
+            IsPrimary = cp.IsPrimary,
+            LinkedSince = cp.CreatedAt
+        }).ToList();
+
+        return Ok(dtos);
+    }
+
     [HttpDelete("unlink")]
     [Authorize(Roles = "ADMIN,CAREGIVER,PATIENT")]
     public async Task<IActionResult> UnlinkPatient(
