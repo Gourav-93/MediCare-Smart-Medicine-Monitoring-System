@@ -26,9 +26,8 @@ public class NotificationController : ControllerBase
 
     private int GetCurrentUserId()
     {
-        return int.Parse(
-            User.FindFirstValue(ClaimTypes.NameIdentifier)!
-        );
+        var claim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        return int.TryParse(claim, out var id) && id > 0 ? id : 0;
     }
 
     private string GetCurrentRole()
@@ -42,6 +41,9 @@ public class NotificationController : ControllerBase
     {
         var userId = GetCurrentUserId();
         var role = GetCurrentRole();
+
+        if (userId <= 0 && role != "ADMIN")
+            return Unauthorized();
 
         if (role == "ADMIN")
         {
@@ -57,6 +59,29 @@ public class NotificationController : ControllerBase
         return Ok(notifications);
     }
 
+    // GET: api/notification/unread-count
+    [HttpGet("unread-count")]
+    public async Task<IActionResult> GetUnreadCount()
+    {
+        var userId = GetCurrentUserId();
+        var role = GetCurrentRole();
+
+        if (userId <= 0 && role != "ADMIN")
+            return Unauthorized();
+
+        int count;
+        if (role == "ADMIN")
+        {
+            count = await _context.Notifications.CountAsync(n => !n.IsRead);
+        }
+        else
+        {
+            count = await _context.Notifications.CountAsync(n => n.UserId == userId && !n.IsRead);
+        }
+
+        return Ok(new { unreadCount = count });
+    }
+
     // GET: api/notification/{id}
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(int id)
@@ -69,6 +94,9 @@ public class NotificationController : ControllerBase
 
         var userId = GetCurrentUserId();
         var role = GetCurrentRole();
+
+        if (userId <= 0 && role != "ADMIN")
+            return Unauthorized();
 
         if (role != "ADMIN" && notification.UserId != userId)
             return Forbid();
@@ -107,6 +135,9 @@ public class NotificationController : ControllerBase
         var userId = GetCurrentUserId();
         var role = GetCurrentRole();
 
+        if (userId <= 0 && role != "ADMIN")
+            return Unauthorized();
+
         if (role != "ADMIN" && notification.UserId != userId)
             return Forbid();
 
@@ -123,6 +154,8 @@ public class NotificationController : ControllerBase
     public async Task<IActionResult> MarkAllAsRead()
     {
         var userId = GetCurrentUserId();
+        if (userId <= 0)
+            return Unauthorized();
 
         await _service.MarkAllAsReadAsync(userId);
 
