@@ -30,9 +30,8 @@ public class MedicineScheduleController : ControllerBase
 
     private int GetCurrentUserId()
     {
-        return int.Parse(
-            User.FindFirstValue(ClaimTypes.NameIdentifier)!
-        );
+        var claim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        return int.TryParse(claim, out var id) && id > 0 ? id : 0;
     }
 
     private string GetCurrentRole()
@@ -44,6 +43,9 @@ public class MedicineScheduleController : ControllerBase
     {
         var userId = GetCurrentUserId();
         var role = GetCurrentRole();
+
+        if (userId <= 0 && role != "ADMIN")
+            return false;
 
         // ADMIN can access all patients
         if (role == "ADMIN")
@@ -85,6 +87,9 @@ public class MedicineScheduleController : ControllerBase
     {
         var role = GetCurrentRole();
         var userId = GetCurrentUserId();
+
+        if (userId <= 0 && role != "ADMIN")
+            return Unauthorized();
 
         int targetPatientId = 0;
 
@@ -397,6 +402,9 @@ public class MedicineScheduleController : ControllerBase
     {
         var role = GetCurrentRole();
         var userId = GetCurrentUserId();
+
+        if (userId <= 0 && role != "ADMIN")
+            return Unauthorized();
 
         if (role == "ADMIN")
         {
