@@ -181,11 +181,12 @@ public class MedicineScheduleController : ControllerBase
 
             // Match log for this schedule occurrence
             var log = todayLogs.FirstOrDefault(l =>
-                l.MedicineId == s.MedicineId &&
+                (l.ScheduleId.HasValue && l.ScheduleId.Value == s.Id) ||
+                (l.MedicineId == s.MedicineId &&
                 ((l.OriginalScheduledTime.HasValue && l.OriginalScheduledTime.Value == scheduledDateTime) ||
                  l.ScheduledTime == scheduledDateTime ||
                  (l.Status == "Snoozed" && l.OriginalScheduledTime.HasValue && l.OriginalScheduledTime.Value == scheduledDateTime) ||
-                 (Math.Abs((l.ScheduledTime - scheduledDateTime).TotalMinutes) < 1)));
+                 (Math.Abs((l.ScheduledTime - scheduledDateTime).TotalMinutes) < 1))));
 
             string computedStatus = "Upcoming";
             DateTime displayScheduledTime = scheduledDateTime;
@@ -291,6 +292,7 @@ public class MedicineScheduleController : ControllerBase
             .ToListAsync();
 
         var log = candidateLogs.FirstOrDefault(l =>
+            (l.ScheduleId.HasValue && l.ScheduleId.Value == schedule.Id) ||
             (l.OriginalScheduledTime.HasValue && l.OriginalScheduledTime.Value == scheduledTime) ||
             l.ScheduledTime == scheduledTime ||
             Math.Abs((l.ScheduledTime - scheduledTime).TotalMinutes) < 2);
@@ -301,6 +303,7 @@ public class MedicineScheduleController : ControllerBase
             {
                 MedicineId = schedule.MedicineId,
                 PatientId = schedule.Medicine.PatientId,
+                ScheduleId = schedule.Id,
                 ScheduledTime = scheduledTime,
                 OriginalScheduledTime = scheduledTime,
                 Status = "Pending",
@@ -309,6 +312,11 @@ public class MedicineScheduleController : ControllerBase
                 MealTiming = schedule.Medicine.MealTimeing
             };
             _context.MedicineLogs.Add(log);
+            await _context.SaveChangesAsync();
+        }
+        else if (!log.ScheduleId.HasValue)
+        {
+            log.ScheduleId = schedule.Id;
             await _context.SaveChangesAsync();
         }
 
@@ -358,6 +366,7 @@ public class MedicineScheduleController : ControllerBase
             .ToListAsync();
 
         var log = candidateLogs.FirstOrDefault(l =>
+            (l.ScheduleId.HasValue && l.ScheduleId.Value == schedule.Id) ||
             (l.OriginalScheduledTime.HasValue && l.OriginalScheduledTime.Value == scheduledTime) ||
             l.ScheduledTime == scheduledTime ||
             Math.Abs((l.ScheduledTime - scheduledTime).TotalMinutes) < 2);
@@ -368,6 +377,7 @@ public class MedicineScheduleController : ControllerBase
             {
                 MedicineId = schedule.MedicineId,
                 PatientId = schedule.Medicine.PatientId,
+                ScheduleId = schedule.Id,
                 ScheduledTime = scheduledTime,
                 OriginalScheduledTime = scheduledTime,
                 Status = "Pending",
@@ -376,6 +386,11 @@ public class MedicineScheduleController : ControllerBase
                 MealTiming = schedule.Medicine.MealTimeing
             };
             _context.MedicineLogs.Add(log);
+            await _context.SaveChangesAsync();
+        }
+        else if (!log.ScheduleId.HasValue)
+        {
+            log.ScheduleId = schedule.Id;
             await _context.SaveChangesAsync();
         }
 
