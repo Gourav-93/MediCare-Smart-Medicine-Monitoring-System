@@ -98,10 +98,27 @@ public class CaregiverDashboardController : ControllerBase
             .Take(20)
             .ToListAsync();
 
-        // Today's medicine schedules
-        var today = DateTime.Today;
+        // Today's date and time
+        var now = DateTime.Now;
+        var today = now.Date;
 
-        var todaySchedules = await _context.MedicineSchedules
+        // Auto mark overdue pending or snoozed logs for linked patients as Missed
+        var overdueLogs = await _context.MedicineLogs
+            .Where(l => patientIds.Contains(l.PatientId) &&
+                        (l.Status == "Pending" || l.Status == "Snoozed") &&
+                        l.ScheduledTime.AddMinutes(15) <= now)
+            .ToListAsync();
+
+        if (overdueLogs.Any())
+        {
+            foreach (var ol in overdueLogs)
+            {
+                ol.Status = "Missed";
+            }
+            await _context.SaveChangesAsync();
+        }
+
+        var todayAllSchedules = await _context.MedicineSchedules
             .Include(schedule => schedule.Medicine)
                 .ThenInclude(m => m.Patient)
                     .ThenInclude(p => p.User)
@@ -120,19 +137,85 @@ public class CaregiverDashboardController : ControllerBase
                 .ThenInclude(p => p.User)
             .Where(log =>
                 patientIds.Contains(log.PatientId) &&
-                log.ScheduledTime.Date == today)
+                (log.ScheduledTime.Date == today || (log.OriginalScheduledTime.HasValue && log.OriginalScheduledTime.Value.Date == today)))
             .ToListAsync();
 
-        var pendingMedicines = new List<MedicineLog>();
+        // Auto-create Missed logs for past schedules with no log
+        bool hasNewMissedCg = false;
+        foreach (var s in todayAllSchedules)
+        {
+            var scheduledTime = today.Add(s.Time);
+            var log = todaysLogs.FirstOrDefault(l =>
+                (l.ScheduleId.HasValue && l.ScheduleId.Value == s.Id) ||
+                (l.MedicineId == s.MedicineId &&
+                 ((l.OriginalScheduledTime.HasValue && l.OriginalScheduledTime.Value == scheduledTime) ||
+                  l.ScheduledTime == scheduledTime ||
+                  (l.Status == "Snoozed" && l.OriginalScheduledTime.HasValue && l.OriginalScheduledTime.Value == scheduledTime) ||
+                  Math.Abs((l.ScheduledTime - scheduledTime).TotalMinutes) < 2)));
 
-        foreach (var schedule in todaySchedules)
+            if (log != null && !log.ScheduleId.HasValue)
+            {
+                log.ScheduleId = s.Id;
+                hasNewMissedCg = true;
+            }
+
+            if (log == null && now > scheduledTime.AddMinutes(15))
+            {
+                log = new MedicineLog
+                {
+                    MedicineId = s.MedicineId,
+                    Medicine = s.Medicine,
+                    PatientId = s.Medicine.PatientId,
+                    Patient = s.Medicine.Patient,
+                    ScheduleId = s.Id,
+                    ScheduledTime = scheduledTime,
+                    OriginalScheduledTime = scheduledTime,
+                    Status = "Missed",
+                    MedicineName = s.Medicine.Name,
+                    Dosage = s.Medicine.Dosage,
+                    MealTiming = s.Medicine.MealTimeing
+                };
+                _context.MedicineLogs.Add(log);
+                todaysLogs.Add(log);
+                hasNewMissedCg = true;
+            }
+        }
+
+        if (hasNewMissedCg)
+        {
+            await _context.SaveChangesAsync();
+        }
+
+        var pendingMedicines = new List<MedicineLog>();
+        var pendingSchedules = new List<MedicineSchedule>();
+
+        foreach (var schedule in todayAllSchedules)
         {
             var scheduledTime = today.Add(schedule.Time);
             var log = todaysLogs.FirstOrDefault(l =>
-                l.MedicineId == schedule.MedicineId &&
-                l.ScheduledTime == scheduledTime);
+                (l.ScheduleId.HasValue && l.ScheduleId.Value == schedule.Id) ||
+                (l.MedicineId == schedule.MedicineId &&
+                 ((l.OriginalScheduledTime.HasValue && l.OriginalScheduledTime.Value == scheduledTime) ||
+                  l.ScheduledTime == scheduledTime ||
+                  (l.Status == "Snoozed" && l.OriginalScheduledTime.HasValue && l.OriginalScheduledTime.Value == scheduledTime) ||
+                  Math.Abs((l.ScheduledTime - scheduledTime).TotalMinutes) < 2)));
 
-            if (log == null)
+            if (log != null && (string.Equals(log.Status, "Taken", StringComparison.OrdinalIgnoreCase) ||
+                               string.Equals(log.Status, "Missed", StringComparison.OrdinalIgnoreCase)))
+            {
+                // Completed or missed doses are excluded from pending dashboard section
+                continue;
+            }
+
+            pendingSchedules.Add(schedule);
+
+            if (log != null)
+            {
+                if (!log.ScheduleId.HasValue)
+                    log.ScheduleId = schedule.Id;
+                pendingMedicines.Add(log);
+            }
+            else
             {
                 pendingMedicines.Add(new MedicineLog
                 {
@@ -140,13 +223,14 @@ public class CaregiverDashboardController : ControllerBase
                     Medicine = schedule.Medicine,
                     PatientId = schedule.Medicine.PatientId,
                     Patient = schedule.Medicine.Patient,
+                    ScheduleId = schedule.Id,
                     ScheduledTime = scheduledTime,
-                    Status = "Pending"
+                    OriginalScheduledTime = scheduledTime,
+                    Status = "Pending",
+                    MedicineName = schedule.Medicine.Name,
+                    Dosage = schedule.Medicine.Dosage,
+                    MealTiming = schedule.Medicine.MealTimeing
                 });
-            }
-            else if (log.Status == "Pending")
-            {
-                pendingMedicines.Add(log);
             }
         }
 
@@ -219,7 +303,7 @@ public class CaregiverDashboardController : ControllerBase
             Patients = patients,
             ActiveEmergencies = activeEmergencies,
             MissedMedicines = missedMedicines,
-            TodaySchedules = todaySchedules,
+            TodaySchedules = pendingSchedules,
             PendingMedicines = pendingMedicines,
             RecentLogs = recentLogs,
             Adherence = adherence,
