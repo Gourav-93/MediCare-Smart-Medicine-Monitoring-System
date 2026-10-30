@@ -1,3 +1,4 @@
+using System;
 using System.Security.Claims;
 using MediCare.Data;
 using MediCare.DTOs;
@@ -29,6 +30,16 @@ public class UserController : ControllerBase
     {
         var claim = User.FindFirstValue(ClaimTypes.NameIdentifier);
         return int.TryParse(claim, out var id) ? id : 0;
+    }
+
+    private static int? CalculateAge(DateTime? dob)
+    {
+        if (!dob.HasValue || dob.Value == DateTime.MinValue) return null;
+        var today = DateTime.Today;
+        if (dob.Value.Date > today) return null;
+        var age = today.Year - dob.Value.Year;
+        if (dob.Value.Date > today.AddYears(-age)) age--;
+        return age >= 0 ? age : 0;
     }
 
     // GET: api/user/profile
@@ -79,6 +90,11 @@ public class UserController : ControllerBase
                 : (user.Patient?.EmergencyContact ?? string.Empty),
             Role = user.Role,
             DateOfBirth = user.Patient?.DateOfBirth,
+            Age = CalculateAge(user.Patient?.DateOfBirth),
+            Gender = user.Gender,
+            Address = user.Address,
+            City = user.City,
+            ProfilePhotoUrl = user.ProfilePhotoUrl,
             BloodGroup = user.Patient?.BloodGroup ?? string.Empty,
             EmergencyContact = user.Patient?.EmergencyContact ?? string.Empty,
             Relationship = user.Caregiver?.Relationship ?? string.Empty,
@@ -114,6 +130,9 @@ public class UserController : ControllerBase
         {
             user.PhoneNumber = dto.PhoneNumber.Trim();
         }
+        if (dto.Gender != null) user.Gender = dto.Gender.Trim();
+        if (dto.Address != null) user.Address = dto.Address.Trim();
+        if (dto.City != null) user.City = dto.City.Trim();
 
         // Update role-specific entity fields
         if (user.Patient != null)
@@ -149,6 +168,11 @@ public class UserController : ControllerBase
                 PhoneNumber = user.PhoneNumber,
                 Role = user.Role,
                 DateOfBirth = user.Patient?.DateOfBirth,
+                Age = CalculateAge(user.Patient?.DateOfBirth),
+                Gender = user.Gender,
+                Address = user.Address,
+                City = user.City,
+                ProfilePhotoUrl = user.ProfilePhotoUrl,
                 BloodGroup = user.Patient?.BloodGroup ?? string.Empty,
                 EmergencyContact = user.Patient?.EmergencyContact ?? string.Empty,
                 Relationship = user.Caregiver?.Relationship ?? string.Empty
@@ -177,6 +201,10 @@ public class UserController : ControllerBase
                 CaregiverAlerts = true,
                 RefillAlerts = true,
                 LowStockAlerts = true,
+                EmailNotifications = true,
+                InAppNotifications = true,
+                EmergencyAlerts = true,
+                MissedDoseAlerts = true,
                 UpdatedAt = DateTime.UtcNow
             };
             _context.UserNotificationPreferences.Add(pref);
@@ -189,7 +217,11 @@ public class UserController : ControllerBase
             WhatsAppReminders = pref.WhatsAppReminders,
             CaregiverAlerts = pref.CaregiverAlerts,
             RefillAlerts = pref.RefillAlerts,
-            LowStockAlerts = pref.LowStockAlerts
+            LowStockAlerts = pref.LowStockAlerts,
+            EmailNotifications = pref.EmailNotifications,
+            InAppNotifications = pref.InAppNotifications,
+            EmergencyAlerts = pref.EmergencyAlerts,
+            MissedDoseAlerts = pref.MissedDoseAlerts
         };
 
         return Ok(dto);
@@ -220,6 +252,10 @@ public class UserController : ControllerBase
         pref.CaregiverAlerts = dto.CaregiverAlerts;
         pref.RefillAlerts = dto.RefillAlerts;
         pref.LowStockAlerts = dto.LowStockAlerts;
+        pref.EmailNotifications = dto.EmailNotifications;
+        pref.InAppNotifications = dto.InAppNotifications;
+        pref.EmergencyAlerts = dto.EmergencyAlerts;
+        pref.MissedDoseAlerts = dto.MissedDoseAlerts;
         pref.UpdatedAt = DateTime.UtcNow;
 
         await _context.SaveChangesAsync();
