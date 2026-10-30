@@ -102,8 +102,9 @@ public class MedicineReminderBackgroundService : BackgroundService
 
                 var log = await context.MedicineLogs
                     .FirstOrDefaultAsync(
-                        x => x.MedicineId == medicine.Id &&
-                             x.ScheduledTime == scheduledTime,
+                        x => (x.ScheduleId.HasValue && x.ScheduleId.Value == schedule.Id && (x.ScheduledTime.Date == today || (x.OriginalScheduledTime.HasValue && x.OriginalScheduledTime.Value.Date == today))) ||
+                             (x.MedicineId == medicine.Id &&
+                              (x.ScheduledTime == scheduledTime || (x.OriginalScheduledTime.HasValue && x.OriginalScheduledTime.Value == scheduledTime))),
                         stoppingToken);
 
                 // Check Reminder (2 minutes before scheduled time up to 15 minutes after, only while pending)
@@ -115,7 +116,9 @@ public class MedicineReminderBackgroundService : BackgroundService
                         {
                             MedicineId = medicine.Id,
                             PatientId = medicine.PatientId,
+                            ScheduleId = schedule.Id,
                             ScheduledTime = scheduledTime,
+                            OriginalScheduledTime = scheduledTime,
                             Status = "Pending",
                             MedicineName = medicine.Name,
                             Dosage = medicine.Dosage,
