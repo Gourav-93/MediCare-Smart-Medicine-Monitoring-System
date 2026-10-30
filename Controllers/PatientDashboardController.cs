@@ -22,15 +22,16 @@ public class PatientDashboardController : ControllerBase
 
     private int GetCurrentUserId()
     {
-        return int.Parse(
-            User.FindFirstValue(ClaimTypes.NameIdentifier)!
-        );
+        var claim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        return int.TryParse(claim, out var id) && id > 0 ? id : 0;
     }
 
     [HttpGet]
     public async Task<IActionResult> GetDashboard()
     {
         var userId = GetCurrentUserId();
+        if (userId <= 0)
+            return Unauthorized();
 
         // Find patient profile
         var patient = await _context.Patients
@@ -49,11 +50,28 @@ public class PatientDashboardController : ControllerBase
         // Total active medicines
         var totalMedicines = medicines.Count;
 
-        // Today's date
-        var today = DateTime.Today;
+        // Today's date and time
+        var now = DateTime.Now;
+        var today = now.Date;
 
-        // Today's schedules (exclude soft-deleted)
-        var todaySchedules = await _context.MedicineSchedules
+        // Auto-mark overdue pending or snoozed logs for this patient as Missed
+        var overdueLogs = await _context.MedicineLogs
+            .Where(l => l.PatientId == patient.Id &&
+                        (l.Status == "Pending" || l.Status == "Snoozed") &&
+                        l.ScheduledTime.AddMinutes(15) <= now)
+            .ToListAsync();
+
+        if (overdueLogs.Any())
+        {
+            foreach (var ol in overdueLogs)
+            {
+                ol.Status = "Missed";
+            }
+            await _context.SaveChangesAsync();
+        }
+
+        // Today's active schedules (exclude soft-deleted)
+        var todayAllSchedules = await _context.MedicineSchedules
             .Include(s => s.Medicine)
             .Where(s =>
                 !s.Medicine.IsDeleted &&
@@ -63,43 +81,117 @@ public class PatientDashboardController : ControllerBase
             .OrderBy(s => s.Time)
             .ToListAsync();
 
-        // Today's medicine logs for pending calculation
+        // Today's medicine logs for this patient
         var todaysLogs = await _context.MedicineLogs
             .Include(log => log.Medicine)
             .Where(log =>
                 log.PatientId == patient.Id &&
-                log.ScheduledTime.Date == today)
+                (log.ScheduledTime.Date == today || (log.OriginalScheduledTime.HasValue && log.OriginalScheduledTime.Value.Date == today)))
             .ToListAsync();
 
-        var pendingMedicines = new List<MedicineLog>();
+        // Auto-create Missed logs for past schedules with no log
+        bool hasNewMissed = false;
+        foreach (var s in todayAllSchedules)
+        {
+            var scheduledTime = today.Add(s.Time);
+            var log = todaysLogs.FirstOrDefault(l =>
+                (l.ScheduleId.HasValue && l.ScheduleId.Value == s.Id) ||
+                (l.MedicineId == s.MedicineId &&
+                 ((l.OriginalScheduledTime.HasValue && l.OriginalScheduledTime.Value == scheduledTime) ||
+                  l.ScheduledTime == scheduledTime ||
+                  (l.Status == "Snoozed" && l.OriginalScheduledTime.HasValue && l.OriginalScheduledTime.Value == scheduledTime) ||
+                  Math.Abs((l.ScheduledTime - scheduledTime).TotalMinutes) < 2)));
 
-        foreach (var schedule in todaySchedules)
+            if (log != null && !log.ScheduleId.HasValue)
+            {
+                log.ScheduleId = s.Id;
+                hasNewMissed = true;
+            }
+
+            if (log == null && now > scheduledTime.AddMinutes(15))
+            {
+                log = new MedicineLog
+                {
+                    MedicineId = s.MedicineId,
+                    Medicine = s.Medicine,
+                    PatientId = patient.Id,
+                    ScheduleId = s.Id,
+                    ScheduledTime = scheduledTime,
+                    OriginalScheduledTime = scheduledTime,
+                    Status = "Missed",
+                    MedicineName = s.Medicine.Name,
+                    Dosage = s.Medicine.Dosage,
+                    MealTiming = s.Medicine.MealTimeing
+                };
+                _context.MedicineLogs.Add(log);
+                todaysLogs.Add(log);
+                hasNewMissed = true;
+            }
+        }
+
+        if (hasNewMissed)
+        {
+            await _context.SaveChangesAsync();
+        }
+
+        // Categorize doses for today: Only pending/upcoming doses go into the active dashboard list
+        var pendingMedicines = new List<MedicineLog>();
+        var pendingSchedules = new List<MedicineSchedule>();
+        int todayTakenCount = 0;
+        int todayMissedCount = 0;
+
+        foreach (var schedule in todayAllSchedules)
         {
             var scheduledTime = today.Add(schedule.Time);
             var log = todaysLogs.FirstOrDefault(l =>
-                l.MedicineId == schedule.MedicineId &&
-                l.ScheduledTime == scheduledTime);
+                (l.ScheduleId.HasValue && l.ScheduleId.Value == schedule.Id) ||
+                (l.MedicineId == schedule.MedicineId &&
+                 ((l.OriginalScheduledTime.HasValue && l.OriginalScheduledTime.Value == scheduledTime) ||
+                  l.ScheduledTime == scheduledTime ||
+                  (l.Status == "Snoozed" && l.OriginalScheduledTime.HasValue && l.OriginalScheduledTime.Value == scheduledTime) ||
+                  Math.Abs((l.ScheduledTime - scheduledTime).TotalMinutes) < 2)));
 
-            if (log == null)
+            if (log != null && string.Equals(log.Status, "Taken", StringComparison.OrdinalIgnoreCase))
             {
-                pendingMedicines.Add(new MedicineLog
-                {
-                    MedicineId = schedule.MedicineId,
-                    Medicine = schedule.Medicine,
-                    PatientId = patient.Id,
-                    ScheduledTime = scheduledTime,
-                    Status = "Pending"
-                });
+                todayTakenCount++;
             }
-            else if (log.Status == "Pending")
+            else if (log != null && string.Equals(log.Status, "Missed", StringComparison.OrdinalIgnoreCase))
             {
-                pendingMedicines.Add(log);
+                todayMissedCount++;
+            }
+            else
+            {
+                // Pending, snoozed, or upcoming dose
+                pendingSchedules.Add(schedule);
+
+                if (log != null)
+                {
+                    if (!log.ScheduleId.HasValue)
+                        log.ScheduleId = schedule.Id;
+                    pendingMedicines.Add(log);
+                }
+                else
+                {
+                    pendingMedicines.Add(new MedicineLog
+                    {
+                        MedicineId = schedule.MedicineId,
+                        Medicine = schedule.Medicine,
+                        PatientId = patient.Id,
+                        ScheduleId = schedule.Id,
+                        ScheduledTime = scheduledTime,
+                        OriginalScheduledTime = scheduledTime,
+                        Status = "Pending",
+                        MedicineName = schedule.Medicine.Name,
+                        Dosage = schedule.Medicine.Dosage,
+                        MealTiming = schedule.Medicine.MealTimeing
+                    });
+                }
             }
         }
 
         pendingMedicines = pendingMedicines.OrderBy(log => log.ScheduledTime).ToList();
 
-        // Missed medicine logs
+        // Missed medicine logs for audit and history
         var missedMedicines = await _context.MedicineLogs
             .Include(log => log.Medicine)
             .Where(log =>
@@ -109,7 +201,7 @@ public class PatientDashboardController : ControllerBase
             .Take(20)
             .ToListAsync();
 
-        // Taken medicine logs
+        // Taken medicine logs for today & recent history
         var takenMedicines = await _context.MedicineLogs
             .Include(log => log.Medicine)
             .Where(log =>
@@ -119,30 +211,24 @@ public class PatientDashboardController : ControllerBase
             .Take(20)
             .ToListAsync();
 
-        // All logs for adherence
+        // All logs for overall historical adherence calculation
         var allLogs = await _context.MedicineLogs
             .Where(log => log.PatientId == patient.Id)
             .ToListAsync();
 
-        var totalDoses = allLogs.Count;
+        var totalDoses = allLogs.Count(log =>
+            string.Equals(log.Status, "Taken", StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(log.Status, "Missed", StringComparison.OrdinalIgnoreCase));
 
         var takenDoses = allLogs.Count(log =>
-            string.Equals(
-                log.Status,
-                "Taken",
-                StringComparison.OrdinalIgnoreCase));
+            string.Equals(log.Status, "Taken", StringComparison.OrdinalIgnoreCase));
 
         var missedDoses = allLogs.Count(log =>
-            string.Equals(
-                log.Status,
-                "Missed",
-                StringComparison.OrdinalIgnoreCase));
+            string.Equals(log.Status, "Missed", StringComparison.OrdinalIgnoreCase));
 
         var adherencePercentage = totalDoses == 0
-            ? 0
-            : Math.Round(
-                (double)takenDoses / totalDoses * 100,
-                2);
+            ? 100
+            : Math.Round((double)takenDoses / totalDoses * 100, 2);
 
         // Low stock medicines
         var lowStockMedicines = medicines
@@ -174,7 +260,7 @@ public class PatientDashboardController : ControllerBase
             EmergencyContact = patient.EmergencyContact
         };
 
-        // Final dashboard
+        // Final dashboard: returns only pending and upcoming doses for active routine display
         var dashboard = new PatientDashboardDto
         {
             Patient = patientInfo,
@@ -183,7 +269,7 @@ public class PatientDashboardController : ControllerBase
 
             Medicines = medicines,
 
-            TodaySchedules = todaySchedules,
+            TodaySchedules = pendingSchedules,
 
             PendingMedicines = pendingMedicines,
 
@@ -196,6 +282,14 @@ public class PatientDashboardController : ControllerBase
             TakenDoses = takenDoses,
 
             MissedDoses = missedDoses,
+
+            TodayTotalDoses = todayAllSchedules.Count,
+
+            TodayTakenDoses = todayTakenCount,
+
+            TodayMissedDoses = todayMissedCount,
+
+            TodayPendingDoses = pendingMedicines.Count,
 
             AdherencePercentage = adherencePercentage,
 
