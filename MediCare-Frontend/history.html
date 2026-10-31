@@ -1,784 +1,871 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MediCare - Medicine Intake History</title>
-  
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MediCare - Medicine Intake History</title>
 
-  <!-- Common MediCare Design Tokens & Core Styles -->
-  <link rel="stylesheet" href="css/common.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
 
-  <style>
-    :root {
-      --primary: #0284c7;
-      --primary-dark: #0369a1;
-      --primary-light: #e0f2fe;
-      --danger: #dc2626;
-      --danger-light: #fee2e2;
-      --success: #16a34a;
-      --success-light: #dcfce7;
-      --warning: #d97706;
-      --warning-light: #fef3c7;
-      --text-main: #0f172a;
-      --text-muted: #64748b;
-      --bg: #f8fafc;
-      --surface: #ffffff;
-      --border: #e2e8f0;
-      --radius: 12px;
-      --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-      --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-    }
+    <!-- Common MediCare Design Tokens & Core Styles -->
+    <link rel="stylesheet" href="css/common.css" />
+    <link rel="stylesheet" href="css/ai-chatbot.css" />
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: 'Plus Jakarta Sans', sans-serif;
-    }
+    <style>
+      :root {
+        --primary: #0284c7;
+        --primary-dark: #0369a1;
+        --primary-light: #e0f2fe;
+        --danger: #dc2626;
+        --danger-light: #fee2e2;
+        --success: #16a34a;
+        --success-light: #dcfce7;
+        --warning: #d97706;
+        --warning-light: #fef3c7;
+        --text-main: #0f172a;
+        --text-muted: #64748b;
+        --bg: #f8fafc;
+        --surface: #ffffff;
+        --border: #e2e8f0;
+        --radius: 12px;
+        --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+        --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+      }
 
-    body {
-      background-color: var(--bg);
-      color: var(--text-main);
-      min-height: 100vh;
-      overflow-x: hidden;
-      line-height: 1.5;
-    }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        font-family: "Plus Jakarta Sans", sans-serif;
+      }
 
-    /* Header */
-    .site-header {
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      background: rgba(255, 255, 255, 0.95);
-      backdrop-filter: blur(10px);
-      border-bottom: 1px solid var(--border);
-      height: 70px;
-      display: flex;
-      align-items: center;
-      padding: 0 clamp(16px, 4vw, 40px);
-    }
+      body {
+        background-color: var(--bg);
+        color: var(--text-main);
+        min-height: 100vh;
+        overflow-x: hidden;
+        line-height: 1.5;
+      }
 
-    .nav-container {
-      width: 100%;
-      max-width: 1380px;
-      margin: 0 auto;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
+      /* Header */
+      .site-header {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-bottom: 1px solid var(--border);
+        height: 70px;
+        display: flex;
+        align-items: center;
+        padding: 0 clamp(16px, 4vw, 40px);
+      }
 
-    .brand-logo {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      text-decoration: none;
-    }
+      .nav-container {
+        width: 100%;
+        max-width: 1380px;
+        margin: 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
 
-    .logo-icon {
-      width: 40px;
-      height: 40px;
-      background: linear-gradient(135deg, #0284c7, #0ea5e9);
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #ffffff;
-      font-weight: 800;
-      font-size: 20px;
-    }
+      .brand-logo {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        text-decoration: none;
+      }
 
-    .brand-text h1 {
-      font-size: 19px;
-      font-weight: 800;
-      color: var(--text-main);
-      line-height: 1.1;
-    }
+      .logo-icon {
+        width: 40px;
+        height: 40px;
+        background: linear-gradient(135deg, #0284c7, #0ea5e9);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #ffffff;
+        font-weight: 800;
+        font-size: 20px;
+      }
 
-    .brand-text span {
-      font-size: 11px;
-      font-weight: 600;
-      color: var(--primary);
-      text-transform: uppercase;
-    }
+      .brand-text h1 {
+        font-size: 19px;
+        font-weight: 800;
+        color: var(--text-main);
+        line-height: 1.1;
+      }
 
-    .desktop-nav-links {
-      display: flex;
-      align-items: center;
-      gap: 24px;
-      list-style: none;
-    }
+      .brand-text span {
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--primary);
+        text-transform: uppercase;
+      }
 
-    .desktop-nav-links a {
-      text-decoration: none;
-      color: var(--text-muted);
-      font-size: 14px;
-      font-weight: 600;
-    }
-    .desktop-nav-links a.active { color: var(--primary); }
+      .desktop-nav-links {
+        display: flex;
+        align-items: center;
+        gap: 24px;
+        list-style: none;
+      }
 
-    .btn {
-      padding: 9px 16px;
-      border-radius: 8px;
-      font-size: 13.5px;
-      font-weight: 600;
-      cursor: pointer;
-      border: 1px solid transparent;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      text-decoration: none;
-    }
-    .btn-primary { background: var(--primary); color: #fff; }
-    .btn-ghost { background: transparent; color: var(--text-main); border-color: var(--border); }
-    .btn-ghost:hover { background: #f1f5f9; }
+      .desktop-nav-links a {
+        text-decoration: none;
+        color: var(--text-muted);
+        font-size: 14px;
+        font-weight: 600;
+      }
+      .desktop-nav-links a.active {
+        color: var(--primary);
+      }
 
-    /* Mobile Controls */
-    .mobile-actions { display: none; }
-    .hamburger-btn {
-      width: 40px;
-      height: 40px;
-      border-radius: 8px;
-      border: 1px solid var(--border);
-      background: #ffffff;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 5px;
-      cursor: pointer;
-    }
-    .hamburger-btn span {
-      width: 18px;
-      height: 2px;
-      background: var(--text-main);
-    }
+      .btn {
+        padding: 9px 16px;
+        border-radius: 8px;
+        font-size: 13.5px;
+        font-weight: 600;
+        cursor: pointer;
+        border: 1px solid transparent;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+      }
+      .btn-primary {
+        background: var(--primary);
+        color: #fff;
+      }
+      .btn-ghost {
+        background: transparent;
+        color: var(--text-main);
+        border-color: var(--border);
+      }
+      .btn-ghost:hover {
+        background: #f1f5f9;
+      }
 
-    /* Mobile Drawer */
-    .mobile-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(15, 23, 42, 0.45);
-      backdrop-filter: blur(4px);
-      z-index: 200;
-      opacity: 0;
-      visibility: hidden;
-      transition: all 0.3s;
-    }
-    .mobile-overlay.active { opacity: 1; visibility: visible; }
+      /* Mobile Controls */
+      .mobile-actions {
+        display: none;
+      }
+      .hamburger-btn {
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+        background: #ffffff;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+        cursor: pointer;
+      }
+      .hamburger-btn span {
+        width: 18px;
+        height: 2px;
+        background: var(--text-main);
+      }
 
-    .mobile-drawer {
-      position: fixed;
-      top: 0;
-      right: -100%;
-      width: min(320px, 85vw);
-      height: 100%;
-      background: var(--surface);
-      z-index: 201;
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      transition: right 0.3s;
-    }
-    .mobile-drawer.active { right: 0; }
+      /* Mobile Drawer */
+      .mobile-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.45);
+        backdrop-filter: blur(4px);
+        z-index: 200;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s;
+      }
+      .mobile-overlay.active {
+        opacity: 1;
+        visibility: visible;
+      }
 
-    /* Page Container */
-    .page-wrapper {
-      max-width: 1380px;
-      margin: 0 auto;
-      padding: clamp(16px, 3vw, 32px) clamp(16px, 4vw, 40px);
-    }
+      .mobile-drawer {
+        position: fixed;
+        top: 0;
+        right: -100%;
+        width: min(320px, 85vw);
+        height: 100%;
+        background: var(--surface);
+        z-index: 201;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        transition: right 0.3s;
+      }
+      .mobile-drawer.active {
+        right: 0;
+      }
 
-    .section-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 16px;
-      margin-bottom: 24px;
-    }
-    .section-title h2 {
-      font-size: clamp(22px, 3.5vw, 28px);
-      font-weight: 800;
-    }
-    .section-title p {
-      font-size: 13px;
-      color: var(--text-muted);
-    }
+      /* Page Container */
+      .page-wrapper {
+        max-width: 1380px;
+        margin: 0 auto;
+        padding: clamp(16px, 3vw, 32px) clamp(16px, 4vw, 40px);
+      }
 
-    /* 4 Summary Stats */
-    .history-stats {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 16px;
-      margin-bottom: 24px;
-    }
-    .h-stat-card {
-      background: #ffffff;
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 16px;
-      box-shadow: var(--shadow-sm);
-    }
-    .h-stat-card .lbl { font-size: 12px; color: var(--text-muted); font-weight: 600; }
-    .h-stat-card .val { font-size: 24px; font-weight: 800; color: var(--text-main); margin-top: 4px; }
+      .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 16px;
+        margin-bottom: 24px;
+      }
+      .section-title h2 {
+        font-size: clamp(22px, 3.5vw, 28px);
+        font-weight: 800;
+      }
+      .section-title p {
+        font-size: 13px;
+        color: var(--text-muted);
+      }
 
-    /* Filter Controls Card */
-    .filter-card {
-      background: #ffffff;
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 16px;
-      margin-bottom: 20px;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      align-items: center;
-      justify-content: space-between;
-    }
-    .filter-left {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      flex: 1;
-      min-width: 280px;
-    }
-    .form-control {
-      padding: 8px 12px;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      font-size: 13px;
-      outline: none;
-      background: #fff;
-    }
-    .form-control:focus { border-color: var(--primary); }
+      /* 4 Summary Stats */
+      .history-stats {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        margin-bottom: 24px;
+      }
+      .h-stat-card {
+        background: #ffffff;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 16px;
+        box-shadow: var(--shadow-sm);
+      }
+      .h-stat-card .lbl {
+        font-size: 12px;
+        color: var(--text-muted);
+        font-weight: 600;
+      }
+      .h-stat-card .val {
+        font-size: 24px;
+        font-weight: 800;
+        color: var(--text-main);
+        margin-top: 4px;
+      }
 
-    .status-tabs {
-      display: flex;
-      background: #f1f5f9;
-      padding: 3px;
-      border-radius: 8px;
-      gap: 3px;
-      flex-wrap: wrap;
-    }
-    .tab-item {
-      padding: 6px 12px;
-      border: none;
-      background: transparent;
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--text-muted);
-      border-radius: 6px;
-      cursor: pointer;
-    }
-    .tab-item.active {
-      background: #ffffff;
-      color: var(--text-main);
-      box-shadow: var(--shadow-sm);
-    }
+      /* Filter Controls Card */
+      .filter-card {
+        background: #ffffff;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 16px;
+        margin-bottom: 20px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .filter-left {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        flex: 1;
+        min-width: 280px;
+      }
+      .form-control {
+        min-height: 44px;
+        padding: 10px 14px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        font-size: 14px;
+        outline: none;
+        background: #fff;
+        transition:
+          border-color 0.2s,
+          box-shadow 0.2s;
+      }
+      .form-control:focus-visible {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
+      }
 
-    /* History Table */
-    .table-card {
-      background: #ffffff;
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 20px;
-      box-shadow: var(--shadow-sm);
-    }
-    .table-responsive {
-      width: 100%;
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      min-width: 600px;
-      font-size: 13px;
-    }
-    th, td {
-      padding: 12px;
-      border-bottom: 1px solid var(--border);
-      text-align: left;
-    }
-    th {
-      font-size: 11.5px;
-      text-transform: uppercase;
-      color: var(--text-muted);
-      font-weight: 700;
-      background: #f8fafc;
-    }
+      .status-tabs {
+        display: flex;
+        background: #f1f5f9;
+        padding: 4px;
+        border-radius: 10px;
+        gap: 4px;
+        flex-wrap: wrap;
+      }
+      .tab-item {
+        min-height: 44px;
+        padding: 10px 18px;
+        border: none;
+        background: transparent;
+        font-size: 13.5px;
+        font-weight: 700;
+        color: var(--text-muted);
+        border-radius: 8px;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+      }
+      .tab-item:focus-visible {
+        outline: 3px solid var(--primary);
+        outline-offset: 2px;
+      }
+      .tab-item.active {
+        background: #ffffff;
+        color: var(--text-main);
+        box-shadow: var(--shadow-sm);
+      }
 
-    .badge-status {
-      display: inline-block;
-      padding: 3px 8px;
-      border-radius: 4px;
-      font-weight: 700;
-      font-size: 11px;
-    }
-    .status-taken { background: var(--success-light); color: var(--success); }
-    .status-missed { background: var(--danger-light); color: var(--danger); }
-    .status-pending { background: var(--warning-light); color: var(--warning); }
+      /* History Table */
+      .table-card {
+        background: #ffffff;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 20px;
+        box-shadow: var(--shadow-sm);
+      }
+      .table-responsive {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 600px;
+        font-size: 13px;
+      }
+      th,
+      td {
+        padding: 12px;
+        border-bottom: 1px solid var(--border);
+        text-align: left;
+      }
+      th {
+        font-size: 11.5px;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        font-weight: 700;
+        background: #f8fafc;
+      }
 
-    /* =========================================================
+      .badge-status {
+        display: inline-block;
+        padding: 3px 8px;
+        border-radius: 4px;
+        font-weight: 700;
+        font-size: 11px;
+      }
+      .status-taken {
+        background: var(--success-light);
+        color: var(--success);
+      }
+      .status-missed {
+        background: var(--danger-light);
+        color: var(--danger);
+      }
+      .status-pending {
+        background: var(--warning-light);
+        color: var(--warning);
+      }
+
+      /* =========================================================
        RESPONSIVE BREAKPOINTS (320px - 1366px+)
        ========================================================= */
-    @media (max-width: 1023px) {
-      .desktop-nav-links { display: none; }
-      .mobile-actions { display: flex; }
-      .history-stats { grid-template-columns: repeat(2, 1fr); }
-    }
+      @media (max-width: 1023px) {
+        .desktop-nav-links {
+          display: none;
+        }
+        .mobile-actions {
+          display: flex;
+        }
+        .history-stats {
+          grid-template-columns: repeat(2, 1fr);
+        }
+      }
 
-    @media (max-width: 767px) {
-      .section-header { flex-direction: column; align-items: stretch; }
-      .filter-card { flex-direction: column; align-items: stretch; }
-      .filter-left { flex-direction: column; min-width: 100%; }
-      .status-tabs { width: 100%; }
-      .tab-item { flex: 1; text-align: center; }
-      .history-stats { grid-template-columns: 1fr; gap: 10px; }
-    }
+      @media (max-width: 767px) {
+        .section-header {
+          flex-direction: column;
+          align-items: stretch;
+          gap: 14px;
+        }
+        .section-header .btn {
+          width: auto !important;
+          align-self: center !important;
+          margin: 4px auto 0 !important;
+          padding: 7px 14px !important;
+          font-size: 12.5px !important;
+          min-height: 36px !important;
+          border-radius: 8px !important;
+        }
+        tbody td .btn {
+          padding: 7px 14px !important;
+          font-size: 12.5px !important;
+          min-height: 36px !important;
+          border-radius: 8px !important;
+        }
+        .filter-card {
+          flex-direction: column;
+          align-items: stretch;
+        }
+        .filter-left {
+          flex-direction: column;
+          min-width: 100%;
+        }
+        .status-tabs {
+          width: 100%;
+        }
+        .tab-item {
+          flex: 1;
+          text-align: center;
+        }
+        .history-stats {
+          grid-template-columns: 1fr;
+          gap: 10px;
+        }
+      }
 
-    @media (max-width: 374px) {
-      .brand-text h1 { font-size: 16px; }
-      .brand-text span { display: none; }
-      .h-stat-card .val { font-size: 20px; }
-    }
-  </style>
-</head>
-<body>
+      @media (max-width: 374px) {
+        .brand-text h1 {
+          font-size: 16px;
+        }
+        .brand-text span {
+          display: none;
+        }
+        .h-stat-card .val {
+          font-size: 20px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- ================= MODULAR GLOBAL HEADER ================= -->
+    <header id="global-header"></header>
 
-  <!-- ================= MODULAR GLOBAL HEADER ================= -->
-  <header id="global-header"></header>
-
-  <!-- ================= MAIN CONTENT ================= -->
-  <div class="page-wrapper">
-    
-    <div class="section-header">
-      <div class="section-title">
-        <h2>Medication Intake Audit Trail</h2>
-        <p>Complete historical log of scheduled times, actual intake confirmations, and snoozes.</p>
+    <!-- ================= MAIN CONTENT ================= -->
+    <div class="page-wrapper">
+      <div class="section-header">
+        <div class="section-title">
+          <h2>Medication Intake Audit Trail</h2>
+          <p>
+            Complete historical log of scheduled times, actual intake
+            confirmations, and snoozes.
+          </p>
+        </div>
+        <button
+          class="btn btn-primary"
+          onclick="window.location.href = 'print-report.html'"
+        >
+          🖨️ Export Dossier
+        </button>
       </div>
-      <button class="btn btn-primary" onclick="window.location.href='print-report.html'">🖨️ Export Dossier</button>
+
+      <!-- 4 Summary Stats (Live from DB) -->
+      <div class="history-stats">
+        <div class="h-stat-card">
+          <div class="lbl">Total Doses Scheduled</div>
+          <div class="val" id="totalScheduledVal">0</div>
+        </div>
+        <div class="h-stat-card">
+          <div class="lbl">Doses Confirmed (Taken)</div>
+          <div class="val" style="color: var(--success)" id="totalTakenVal">
+            0
+          </div>
+        </div>
+        <div class="h-stat-card">
+          <div class="lbl">Doses Skipped (Missed)</div>
+          <div class="val" style="color: var(--danger)" id="totalMissedVal">
+            0
+          </div>
+        </div>
+        <div class="h-stat-card">
+          <div class="lbl">Snooze Postponements</div>
+          <div class="val" style="color: var(--warning)" id="totalSnoozedVal">
+            0 Times
+          </div>
+        </div>
+      </div>
+
+      <!-- Filter Bar (Matches MedicineLogFilterDto) -->
+      <div class="filter-card">
+        <div class="filter-left">
+          <input
+            type="text"
+            class="form-control"
+            id="searchMed"
+            placeholder="Search medicine..."
+            onkeyup="applyHistoryFilter()"
+          />
+
+          <select
+            class="form-control"
+            id="dateFilter"
+            onchange="applyHistoryFilter()"
+          >
+            <option value="all">All Dates</option>
+            <option value="today">Today Only</option>
+            <option value="7">Last 7 Days</option>
+            <option value="30">Last 30 Days</option>
+          </select>
+        </div>
+
+        <div class="status-tabs">
+          <button class="tab-item active" onclick="setStatusTab('all', this)">
+            All
+          </button>
+          <button class="tab-item" onclick="setStatusTab('Taken', this)">
+            Taken
+          </button>
+          <button class="tab-item" onclick="setStatusTab('Missed', this)">
+            Missed
+          </button>
+          <button class="tab-item" onclick="setStatusTab('Pending', this)">
+            Pending
+          </button>
+        </div>
+      </div>
+
+      <!-- History Log Table -->
+      <div class="table-card">
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>Scheduled Time</th>
+                <th>Medicine Name</th>
+                <th>Dosage</th>
+                <th>Status</th>
+                <th>Actual Time Taken</th>
+                <th>Snooze Count</th>
+                <th style="text-align: center">Record Status</th>
+              </tr>
+            </thead>
+            <tbody id="historyTableBody">
+              <tr>
+                <td
+                  colspan="7"
+                  style="
+                    text-align: center;
+                    padding: 40px;
+                    color: var(--text-muted);
+                  "
+                >
+                  Loading intake history logs from database...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
 
-    <!-- 4 Summary Stats (Live from DB) -->
-    <div class="history-stats">
-      <div class="h-stat-card">
-        <div class="lbl">Total Doses Scheduled</div>
-        <div class="val" id="totalScheduledVal">0</div>
-      </div>
-      <div class="h-stat-card">
-        <div class="lbl">Doses Confirmed (Taken)</div>
-        <div class="val" style="color: var(--success);" id="totalTakenVal">0</div>
-      </div>
-      <div class="h-stat-card">
-        <div class="lbl">Doses Skipped (Missed)</div>
-        <div class="val" style="color: var(--danger);" id="totalMissedVal">0</div>
-      </div>
-      <div class="h-stat-card">
-        <div class="lbl">Snooze Postponements</div>
-        <div class="val" style="color: var(--warning);" id="totalSnoozedVal">0 Times</div>
-      </div>
-    </div>
+    <!-- Shared MediCare API, Modular Navbar, and Global AI Chatbot -->
+    <script src="js/api.js"></script>
+    <script src="js/navbar.js"></script>
+    <script src="js/ai-chatbot.js"></script>
 
-    <!-- Filter Bar (Matches MedicineLogFilterDto) -->
-    <div class="filter-card">
-      <div class="filter-left">
-        <input type="text" class="form-control" id="searchMed" placeholder="Search medicine..." onkeyup="applyHistoryFilter()">
-        
-        <select class="form-control" id="dateFilter" onchange="applyHistoryFilter()">
-          <option value="all">All Dates</option>
-          <option value="today">Today Only</option>
-          <option value="7">Last 7 Days</option>
-          <option value="30">Last 30 Days</option>
-        </select>
-      </div>
+    <!-- ================= LIVE HISTORY DATABASE SCRIPT ================= -->
+    <script>
+      const API_URL =
+        (window.MediCareAPI && window.MediCareAPI.API_BASE_URL) ||
+        "http://localhost:5000/api";
+      let loadedLogs = [];
+      let activeStatus = "all";
 
-      <div class="status-tabs">
-        <button class="tab-item active" onclick="setStatusTab('all', this)">All</button>
-        <button class="tab-item" onclick="setStatusTab('Taken', this)">Taken</button>
-        <button class="tab-item" onclick="setStatusTab('Missed', this)">Missed</button>
-        <button class="tab-item" onclick="setStatusTab('Pending', this)">Pending</button>
-      </div>
-    </div>
+      async function loadHistoryLogs() {
+        const tbody = document.getElementById("historyTableBody");
+        try {
+          const urlParams = new URLSearchParams(window.location.search);
+          const queryPid = urlParams.get("patientId") || urlParams.get("id");
+          const endpoint = queryPid
+            ? `/medicinelog/patient/${queryPid}/history`
+            : "/medicinelog";
 
-    <!-- History Log Table -->
-    <div class="table-card">
-      <div class="table-responsive">
-        <table>
-          <thead>
-            <tr>
-              <th>Scheduled Time</th>
-              <th>Medicine Name</th>
-              <th>Dosage</th>
-              <th>Status</th>
-              <th>Actual Time Taken</th>
-              <th>Snooze Count</th>
-              <th style="text-align: center;">Actions</th>
-            </tr>
-          </thead>
-          <tbody id="historyTableBody">
-            <tr>
-              <td colspan="7" style="text-align: center; padding: 40px; color: var(--text-muted);">
-                Loading intake history logs from database...
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-  </div>
-
-  <!-- Shared MediCare API & Modular Navbar Utilities -->
-  <script src="js/api.js"></script>
-  <script src="js/navbar.js"></script>
-
-  <!-- ================= LIVE HISTORY DATABASE SCRIPT ================= -->
-  <script>
-    const API_URL = (window.MediCareAPI && window.MediCareAPI.API_BASE_URL) || 'http://localhost:5000/api';
-    let loadedLogs = [];
-    let activeStatus = 'all';
-
-    async function loadHistoryLogs() {
-      const tbody = document.getElementById('historyTableBody');
-      try {
-        const urlParams = new URLSearchParams(window.location.search);
-        const queryPid = urlParams.get('patientId') || urlParams.get('id');
-        const endpoint = queryPid ? `/medicinelog/patient/${queryPid}/history` : '/medicinelog';
-
-        let logs = [];
-        if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
-          try {
-            logs = await window.MediCareAPI.apiFetch(endpoint);
-          } catch (e) {
-            console.warn('[History] fetch fallback:', e);
+          let logs = [];
+          if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
+            try {
+              logs = await window.MediCareAPI.apiFetch(endpoint);
+            } catch (e) {
+              console.warn("[History] fetch fallback:", e);
+              const res = await fetch(`${API_URL}${endpoint}`, {
+                headers: {
+                  Authorization: `Bearer ${localStorage.getItem("medicare_jwt_token")}`,
+                },
+              });
+              if (res.ok) logs = await res.json();
+            }
+          } else {
             const res = await fetch(`${API_URL}${endpoint}`, {
-              headers: { 'Authorization': `Bearer ${localStorage.getItem('medicare_jwt_token')}` }
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem("medicare_jwt_token")}`,
+              },
             });
             if (res.ok) logs = await res.json();
           }
-        } else {
-          const res = await fetch(`${API_URL}${endpoint}`, {
-            headers: { 'Authorization': `Bearer ${localStorage.getItem('medicare_jwt_token')}` }
-          });
-          if (res.ok) logs = await res.json();
-        }
 
-        if (Array.isArray(logs)) {
-          loadedLogs = logs;
-        } else if (logs && Array.isArray(logs.data)) {
-          loadedLogs = logs.data;
-        } else if (logs && Array.isArray(logs.Data)) {
-          loadedLogs = logs.Data;
-        } else if (logs && (logs.id || logs.Id)) {
-          loadedLogs = [logs];
-        } else {
-          loadedLogs = [];
-        }
-
-        // Also check if there are today's scheduled doses from dashboard that haven't been taken yet
-        try {
-          if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
-            const role = (window.MediCareAPI.getUserRole() || '').toUpperCase();
-            let pendingList = [];
-
-            if (role === 'CAREGIVER') {
-              const cgDash = await window.MediCareAPI.apiFetch('/dashboard/caregiver').catch(() => null);
-              if (cgDash && Array.isArray(cgDash.pendingMedicines)) {
-                pendingList = cgDash.pendingMedicines;
-              }
-            } else {
-              const dash = await window.MediCareAPI.apiFetch('/dashboard/patient').catch(() => null);
-              if (dash && Array.isArray(dash.pendingMedicines)) {
-                pendingList = dash.pendingMedicines;
-              }
-            }
-
-            if (pendingList.length > 0) {
-              if (queryPid) {
-                pendingList = pendingList.filter(p => (p.patientId || (p.medicine && p.medicine.patientId)) == queryPid);
-              }
-              pendingList.forEach(p => {
-                const pMedId = p.medicineId || (p.medicine && p.medicine.id);
-                const pPid = p.patientId || (p.medicine && p.medicine.patientId) || 0;
-                const alreadyExists = loadedLogs.some(l => 
-                  (l.medicineId === pMedId || (l.medicine && l.medicine.id === pMedId)) && 
-                  new Date(l.scheduledTime).toDateString() === new Date(p.scheduledTime).toDateString()
-                );
-                if (!alreadyExists) {
-                  loadedLogs.unshift({
-                    id: p.id || 0,
-                    medicineId: pMedId,
-                    medicine: p.medicine,
-                    patientId: pPid,
-                    patient: p.patient || (p.medicine && p.medicine.patient),
-                    scheduledTime: p.scheduledTime,
-                    status: 'Pending',
-                    snoozeCount: p.snoozeCount || 0
-                  });
-                }
-              });
-            }
+          if (Array.isArray(logs)) {
+            loadedLogs = logs;
+          } else if (logs && Array.isArray(logs.data)) {
+            loadedLogs = logs.data;
+          } else if (logs && Array.isArray(logs.Data)) {
+            loadedLogs = logs.Data;
+          } else if (logs && (logs.id || logs.Id)) {
+            loadedLogs = [logs];
+          } else {
+            loadedLogs = [];
           }
-        } catch (e) {
-          console.warn('[History] Dashboard sync fallback:', e);
-        }
 
-        renderHistoryTable(loadedLogs);
-      } catch (err) {
-        console.error('[History] Failed to load logs:', err);
-        tbody.innerHTML = `
+          renderHistoryTable(loadedLogs);
+        } catch (err) {
+          console.error("[History] Failed to load logs:", err);
+          tbody.innerHTML = `
           <tr>
             <td colspan="7" style="text-align: center; padding: 30px; color: var(--text-muted);">
               No intake logs found in the database.
             </td>
           </tr>
         `;
+        }
       }
-    }
 
-    function renderHistoryTable(logs) {
-      const tbody = document.getElementById('historyTableBody');
-      tbody.innerHTML = '';
+      function renderHistoryTable(logs) {
+        const tbody = document.getElementById("historyTableBody");
+        tbody.innerHTML = "";
 
-      let taken = 0;
-      let missed = 0;
-      let snoozes = 0;
+        let taken = 0;
+        let missed = 0;
+        let snoozes = 0;
 
-      logs.forEach(l => {
-        const schedD = l.scheduledTime ? new Date(l.scheduledTime) : null;
-        const past15 = schedD && (Date.now() > (schedD.getTime() + 15 * 60 * 1000));
-        let st = (l.status || '').toLowerCase();
-        if (st !== 'taken' && past15) st = 'missed';
+        logs.forEach((l) => {
+          const schedD = l.scheduledTime ? new Date(l.scheduledTime) : null;
+          const past15 =
+            schedD && Date.now() > schedD.getTime() + 15 * 60 * 1000;
+          let st = (l.status || "").toLowerCase();
+          if (st !== "taken" && past15) st = "missed";
 
-        if (st === 'taken') taken++;
-        else if (st === 'missed') missed++;
-        snoozes += (l.snoozeCount || 0);
-      });
+          if (st === "taken") taken++;
+          else if (st === "missed") missed++;
+          snoozes += l.snoozeCount || 0;
+        });
 
-      document.getElementById('totalScheduledVal').innerText = logs.length;
-      document.getElementById('totalTakenVal').innerText = taken;
-      document.getElementById('totalMissedVal').innerText = missed;
-      document.getElementById('totalSnoozedVal').innerText = `${snoozes} Times`;
+        document.getElementById("totalScheduledVal").innerText = logs.length;
+        document.getElementById("totalTakenVal").innerText = taken;
+        document.getElementById("totalMissedVal").innerText = missed;
+        document.getElementById("totalSnoozedVal").innerText =
+          `${snoozes} Times`;
 
-      if (logs.length === 0) {
-        tbody.innerHTML = `
+        if (logs.length === 0) {
+          tbody.innerHTML = `
           <tr>
             <td colspan="7" style="text-align: center; padding: 40px; color: var(--text-muted);">
               <div style="font-size: 32px; margin-bottom: 8px;">📋</div>
-              <strong style="font-size: 15px;">No intake history recorded yet in database.</strong>
-              <div style="font-size: 12.5px; margin: 6px 0 14px;">Schedule your medicines to view doses and log them directly from here.</div>
-              <a href="medicines.html" class="btn btn-primary" style="display: inline-flex;">🕒 Go to Prescriptions & Schedule</a>
+              <strong style="font-size: 15px;">No historical intake records recorded yet in database.</strong>
+              <div style="font-size: 12.5px; margin: 6px 0 14px;">View and manage your active daily doses directly on the Schedule page.</div>
+              <a href="schedule.html" class="btn btn-primary" style="display: inline-flex;">📅 Go to Schedule Page</a>
             </td>
           </tr>
         `;
-        return;
-      }
-
-      const urlParams = new URLSearchParams(window.location.search);
-      const queryPid = urlParams.get('patientId') || urlParams.get('id') || '';
-
-      logs.forEach(log => {
-        const medName = log.medicine ? log.medicine.name : (log.medicineName || log.MedicineName || `Medicine #${log.medicineId}`);
-        const dosage = log.medicine ? (log.medicine.dosage || '1 Dose') : (log.dosage || log.Dosage || '1 Dose');
-        const targetPid = log.patientId || (log.medicine && log.medicine.patientId) || queryPid || 0;
-        const patientName = log.patient?.user?.name || log.patient?.name || (targetPid ? `Patient #${targetPid}` : '');
-
-        let schedTime = '-';
-        if (log.scheduledTime) {
-          schedTime = new Date(log.scheduledTime).toLocaleString('en-US', {
-            month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit'
-          });
-        }
-        let takenTime = '-';
-        if (log.takenTime) {
-          takenTime = new Date(log.takenTime).toLocaleString('en-US', {
-            month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit'
-          });
-        }
-        
-        const schedDate = log.scheduledTime ? new Date(log.scheduledTime) : null;
-        // 15-minute snooze / intake window
-        const isPast15Min = schedDate && (Date.now() > (schedDate.getTime() + 15 * 60 * 1000));
-
-        let status = log.status || 'Pending';
-        if (status.toLowerCase() !== 'taken' && isPast15Min) {
-          status = 'Missed';
+          return;
         }
 
-        const isTaken = (status.toLowerCase() === 'taken');
-        const isMissed = (status.toLowerCase() === 'missed');
+        const urlParams = new URLSearchParams(window.location.search);
+        const queryPid =
+          urlParams.get("patientId") || urlParams.get("id") || "";
 
-        let badgeClass = 'status-pending';
-        let badgeText = '⏳ Pending';
-        if (isTaken) {
-          badgeClass = 'status-taken';
-          badgeText = '✅ Taken';
-        } else if (isMissed) {
-          badgeClass = 'status-missed';
-          badgeText = '❌ Missed';
-        } else if (status.toLowerCase() === 'snoozed') {
-          badgeClass = 'status-pending';
-          badgeText = '⏳ Snoozed';
-        }
+        logs.forEach((log) => {
+          const medName = log.medicine
+            ? log.medicine.name
+            : log.medicineName ||
+              log.MedicineName ||
+              `Medicine #${log.medicineId}`;
+          const dosage = log.medicine
+            ? log.medicine.dosage || "1 Dose"
+            : log.dosage || log.Dosage || "1 Dose";
+          const targetPid =
+            log.patientId ||
+            (log.medicine && log.medicine.patientId) ||
+            queryPid ||
+            0;
+          const patientName =
+            log.patient?.user?.name ||
+            log.patient?.name ||
+            (targetPid ? `Patient #${targetPid}` : "");
 
-        const tr = document.createElement('tr');
-        tr.setAttribute('data-med', medName.toLowerCase());
-        tr.setAttribute('data-status', status);
-        tr.setAttribute('data-date', log.scheduledTime || '');
+          let schedTime = "-";
+          if (log.scheduledTime) {
+            schedTime = new Date(log.scheduledTime).toLocaleString("en-US", {
+              month: "short",
+              day: "numeric",
+              year: "numeric",
+              hour: "2-digit",
+              minute: "2-digit",
+            });
+          }
+          let takenTime = "-";
+          if (log.takenTime) {
+            takenTime = new Date(log.takenTime).toLocaleString("en-US", {
+              month: "short",
+              day: "numeric",
+              year: "numeric",
+              hour: "2-digit",
+              minute: "2-digit",
+            });
+          }
 
-        const safeMedName = escapeHtml(medName).replace(/'/g, "\\'");
+          const schedDate = log.scheduledTime
+            ? new Date(log.scheduledTime)
+            : null;
+          // 15-minute window for overdue doses
+          const isPast15Min =
+            schedDate && Date.now() > schedDate.getTime() + 15 * 60 * 1000;
 
-        tr.innerHTML = `
+          let status = log.status || "Pending";
+          if (status.toLowerCase() !== "taken" && isPast15Min) {
+            status = "Missed";
+          }
+
+          const isTaken = status.toLowerCase() === "taken";
+          const isMissed = status.toLowerCase() === "missed";
+
+          let badgeClass = "status-pending";
+          let badgeText = "⏳ Pending";
+          let recordDetail = `
+          <span style="color: var(--text-muted); font-size: 12.5px; font-weight: 600;">
+            ⏳ In Progress
+          </span>
+        `;
+
+          if (isTaken) {
+            badgeClass = "status-taken";
+            badgeText = "✅ Taken";
+            recordDetail = `
+            <span style="color: var(--success); font-weight: 700; font-size: 13px; background: #dcfce7; padding: 4px 10px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px;">
+              ✅ Dose Completed
+            </span>
+          `;
+          } else if (isMissed) {
+            badgeClass = "status-missed";
+            badgeText = "❌ Missed";
+            recordDetail = `
+            <span style="color: #b91c1c; font-weight: 700; font-size: 13px; background: #fee2e2; padding: 4px 10px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px;">
+              ❌ Missed Dose (Window Expired)
+            </span>
+          `;
+          } else if (status.toLowerCase() === "snoozed") {
+            badgeClass = "status-pending";
+            badgeText = "⏳ Snoozed";
+            recordDetail = `
+            <span style="color: #d97706; font-weight: 700; font-size: 13px; background: #fef3c7; padding: 4px 10px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px;">
+              ⏳ Postponed (${log.snoozeCount || 1}x)
+            </span>
+          `;
+          }
+
+          const tr = document.createElement("tr");
+          tr.setAttribute("data-med", medName.toLowerCase());
+          tr.setAttribute("data-status", status);
+          tr.setAttribute("data-date", log.scheduledTime || "");
+
+          tr.innerHTML = `
           <td><strong>${schedTime}</strong></td>
           <td>
             <div style="font-weight: 600;">${escapeHtml(medName)}</div>
-            ${patientName ? `<div style="font-size: 11px; color: var(--primary); font-weight: 600; margin-top: 2px;">👤 ${escapeHtml(patientName)}</div>` : ''}
+            ${patientName ? `<div style="font-size: 11px; color: var(--primary); font-weight: 600; margin-top: 2px;">👤 ${escapeHtml(patientName)}</div>` : ""}
           </td>
           <td>${escapeHtml(dosage)}</td>
           <td id="status-cell-${log.id}"><span class="badge-status ${badgeClass}">${badgeText}</span></td>
           <td id="time-cell-${log.id}">${takenTime}</td>
           <td id="snooze-cell-${log.id}">${log.snoozeCount || 0}</td>
-          <td style="text-align: center;" id="action-cell-${log.id}">
-            ${isTaken ? `
-              <span style="color: var(--success); font-weight: 700; font-size: 13px; background: #dcfce7; padding: 4px 10px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px;">
-                ✅ Completed
-              </span>
-            ` : isMissed ? `
-              <span style="color: #b91c1c; font-weight: 700; font-size: 13px; background: #fee2e2; padding: 4px 10px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px;">
-                ❌ Missed (15m Expired)
-              </span>
-            ` : `
-              <div style="display: inline-flex; gap: 6px; justify-content: center;">
-                <button class="btn btn-sm btn-success" id="take-hist-btn-${log.id}" onclick="takeDoseFromHistory(${log.id || 0}, ${log.medicineId}, ${targetPid}, '${safeMedName}', '${log.scheduledTime}')" style="padding: 5px 12px; font-size: 12px; font-weight: 700; background: var(--success); color: white; border: none; border-radius: 6px; cursor: pointer;">
-                  ✅ Take
-                </button>
-                <button class="btn btn-sm btn-warning" id="snooze-hist-btn-${log.id}" onclick="snoozeDoseFromHistory(${log.id || 0}, ${log.medicineId}, ${targetPid}, '${safeMedName}', '${log.scheduledTime}')" style="padding: 5px 12px; font-size: 12px; font-weight: 700; background: var(--warning); color: white; border: none; border-radius: 6px; cursor: pointer;">
-                  ⏳ Snooze (15m)
-                </button>
-              </div>
-            `}
+          <td style="text-align: center;">
+            ${recordDetail}
           </td>
         `;
 
-        tbody.appendChild(tr);
-      });
+          tbody.appendChild(tr);
+        });
 
-      applyHistoryFilter();
-    }
+        applyHistoryFilter();
+      }
 
-    // Direct Take action from History table
-    async function takeDoseFromHistory(logId, medId, patientId, medName, schedTime) {
-      const cell = document.getElementById(`action-cell-${logId}`);
-      if (cell) cell.innerHTML = `<span style="color: var(--text-muted); font-size: 12px;">Recording...</span>`;
+      function setStatusTab(status, btn) {
+        activeStatus = status;
+        document
+          .querySelectorAll(".tab-item")
+          .forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        applyHistoryFilter();
+      }
 
-      try {
-        if (logId && logId > 0) {
-          await window.MediCareAPI.apiFetch(`/medicinelog/${logId}/taken`, 'PUT');
-        } else {
-          let pId = patientId;
-          if (!pId || pId <= 0) {
-            const user = window.MediCareAPI.getCurrentUser();
-            pId = (user && user.patientId) ? user.patientId : 1;
+      function applyHistoryFilter() {
+        const search = (document.getElementById("searchMed").value || "")
+          .toLowerCase()
+          .trim();
+        const dateFilterVal =
+          document.getElementById("dateFilter")?.value || "all";
+        const rows = document.querySelectorAll("#historyTableBody tr");
+
+        const now = new Date();
+        const todayStart = new Date(
+          now.getFullYear(),
+          now.getMonth(),
+          now.getDate(),
+        ).getTime();
+        const sevenDaysAgo = todayStart - 6 * 24 * 60 * 60 * 1000;
+        const thirtyDaysAgo = todayStart - 29 * 24 * 60 * 60 * 1000;
+
+        rows.forEach((row) => {
+          const medAttr = row.getAttribute("data-med");
+          if (!medAttr) return; // empty state placeholder
+
+          const medName = medAttr.toLowerCase();
+          const rowStatus = row.getAttribute("data-status") || "";
+          const rowDateStr = row.getAttribute("data-date") || "";
+          const rowTime = rowDateStr ? new Date(rowDateStr).getTime() : 0;
+
+          const matchesSearch = !search || medName.includes(search);
+          const matchesStatus =
+            activeStatus === "all" ||
+            rowStatus.toLowerCase() === activeStatus.toLowerCase();
+
+          let matchesDate = true;
+          if (dateFilterVal === "today") {
+            matchesDate =
+              rowTime >= todayStart &&
+              rowTime < todayStart + 24 * 60 * 60 * 1000;
+          } else if (dateFilterVal === "7") {
+            matchesDate = rowTime >= sevenDaysAgo;
+          } else if (dateFilterVal === "30") {
+            matchesDate = rowTime >= thirtyDaysAgo;
           }
-          await window.MediCareAPI.apiFetch('/medicinelog', 'POST', {
-            medicineId: medId,
-            patientId: Number(pId),
-            scheduledTime: schedTime || new Date().toISOString(),
-            status: 'Taken'
-          });
-        }
 
-        alert(`✅ Dose for "${medName}" confirmed as Taken! History updated & stock deducted.`);
-        await loadHistoryLogs();
-      } catch (err) {
-        console.error('[History Take] Failed:', err);
-        alert('Failed to mark dose as taken: ' + (err.message || 'Error'));
-        await loadHistoryLogs();
-      }
-    }
-
-    // Direct Snooze action from History table
-    async function snoozeDoseFromHistory(logId, medId, patientId, medName, schedTime) {
-      if (schedTime) {
-        const schedDate = new Date(schedTime);
-        if (Date.now() > schedDate.getTime() + 15 * 60 * 1000) {
-          alert('❌ Dose miss ho chuki hai! 15 minute ka snooze window expire ho chuka hai.');
-          return;
-        }
+          row.style.display =
+            matchesSearch && matchesStatus && matchesDate ? "" : "none";
+        });
       }
 
-      const cell = document.getElementById(`action-cell-${logId}`);
-      if (cell) cell.innerHTML = `<span style="color: var(--text-muted); font-size: 12px;">Snoozing...</span>`;
-
-      try {
-        let targetId = logId;
-        if (!targetId || targetId <= 0) {
-          let pId = patientId;
-          if (!pId || pId <= 0) {
-            const user = window.MediCareAPI.getCurrentUser();
-            pId = (user && user.patientId) ? user.patientId : 1;
-          }
-          const created = await window.MediCareAPI.apiFetch('/medicinelog', 'POST', {
-            medicineId: medId,
-            patientId: Number(pId),
-            scheduledTime: new Date().toISOString(),
-            status: 'Pending'
-          });
-          targetId = created.id || created.Id || 0;
-        }
-
-        if (targetId && targetId > 0) {
-          await window.MediCareAPI.apiFetch(`/medicinelog/${targetId}/snooze?minutes=15`, 'PUT');
-        }
-
-        alert(`⏳ Dose for "${medName}" snoozed by 15 minutes!`);
-        await loadHistoryLogs();
-      } catch (err) {
-        console.error('[History Snooze] Failed:', err);
-        alert('Failed to snooze dose: ' + (err.message || 'Error'));
-        await loadHistoryLogs();
+      function escapeHtml(str) {
+        if (!str) return "";
+        return String(str)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;");
       }
-    }
 
-    function setStatusTab(status, btn) {
-      activeStatus = status;
-      document.querySelectorAll('.tab-item').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      applyHistoryFilter();
-    }
-
-    function applyHistoryFilter() {
-      const search = (document.getElementById('searchMed').value || '').toLowerCase().trim();
-      const rows = document.querySelectorAll('#historyTableBody tr');
-
-      rows.forEach(row => {
-        const medAttr = row.getAttribute('data-med');
-        if (!medAttr) return; // empty state placeholder
-
-        const medName = medAttr.toLowerCase();
-        const rowStatus = row.getAttribute('data-status') || '';
-
-        const matchesSearch = !search || medName.includes(search);
-        const matchesStatus = (activeStatus === 'all') || (rowStatus.toLowerCase() === activeStatus.toLowerCase());
-
-        row.style.display = (matchesSearch && matchesStatus) ? '' : 'none';
+      document.addEventListener("DOMContentLoaded", () => {
+        loadHistoryLogs();
       });
-    }
-
-    function escapeHtml(str) {
-      if (!str) return '';
-      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-    }
-
-    document.addEventListener('DOMContentLoaded', () => {
-      loadHistoryLogs();
-    });
-  </script>
-</body>
-</html>ipt>
-</body>
+    </script>
+  </body>
 </html>
