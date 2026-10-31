@@ -418,28 +418,10 @@
           border: 1px solid var(--border);
         }
 
-        #global-header .hamburger-btn {
-          width: 34px;
-          height: 34px;
-          min-width: 34px;
-          min-height: 34px;
-          border-radius: 8px;
-          border: 1px solid var(--border);
-          gap: 3.5px;
-          padding: 0;
-        }
-
-        #global-header .hamburger-btn span {
-          width: 15px;
-          height: 2px;
-        }
-
-        #global-header .hamburger-btn.active span:nth-child(1) {
-          transform: translateY(5.5px) rotate(45deg);
-        }
-
-        #global-header .hamburger-btn.active span:nth-child(3) {
-          transform: translateY(-5.5px) rotate(-45deg);
+        #global-header .hamburger-btn,
+        #global-header #menuToggle,
+        .mobile-hamburger-btn {
+          display: none !important;
         }
 
         .metric-grid {
@@ -466,17 +448,10 @@
           border-radius: 6px;
         }
 
-        #global-header .hamburger-btn {
-          width: 30px;
-          height: 30px;
-          min-width: 30px;
-          min-height: 30px;
-          border-radius: 6px;
-          gap: 2.5px;
-        }
-
-        #global-header .hamburger-btn span {
-          width: 13px;
+        #global-header .hamburger-btn,
+        #global-header #menuToggle,
+        .mobile-hamburger-btn {
+          display: none !important;
         }
       }
 
@@ -506,34 +481,19 @@
           box-sizing: border-box;
         }
 
-        #global-header .hamburger-btn {
-          width: 32px;
-          height: 32px;
-          min-width: 32px;
-          min-height: 32px;
-          padding: 0;
-          border-radius: var(--radius-sm);
-          border: 1px solid var(--border);
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          gap: 3.5px;
-          box-sizing: border-box;
+        #global-header .hamburger-btn,
+        #global-header #menuToggle,
+        .mobile-hamburger-btn {
+          display: none !important;
         }
+      }
 
-        #global-header .hamburger-btn span {
-          width: 14px;
-          height: 1.8px;
-        }
-
-        #global-header .hamburger-btn.active span:nth-child(1) {
-          transform: translateY(5.3px) rotate(45deg);
-        }
-
-        #global-header .hamburger-btn.active span:nth-child(3) {
-          transform: translateY(-5.3px) rotate(-45deg);
-        }
+      /* Unconditionally hide hamburger button on index.html across all screens (desktop, laptop, tablet, mobile) */
+      #global-header .hamburger-btn,
+      #global-header #menuToggle,
+      .mobile-hamburger-btn,
+      .hamburger-btn {
+        display: none !important;
       }
     </style>
   </head>
@@ -551,9 +511,7 @@
           MediCare - Smart Medicine Reminder & <span>Family Monitoring System</span>
         </h2>
         <p class="hero-desc">
-          Integrated medicine routine logs, automated snooze mechanics, live
-          emergency beaconing, low-stock inventory audits, and browser-printable
-          medical dossiers.
+          "Never miss a dose. Track medications, send instant SOS alerts, manage pill inventory, and keep family caregivers connected in real time."
         </p>
         <div class="hero-cta">
           <!-- Direct Login Page Link -->
@@ -562,7 +520,7 @@
             class="btn btn-primary"
             style="padding: 12px 24px"
           >
-            Login / Portal Access
+            Get Started 
           </a>
           <a href="#features" class="btn btn-ghost" style="padding: 12px 24px">
             Features ↓
@@ -574,10 +532,9 @@
       <section class="dashboard-overview" id="dashboard-overview">
         <div class="section-title-wrap">
           <div>
-            <h3>Live Medical Compliance Dashboard</h3>
+            <h3>Real-Time Health & Compliance Dashboard</h3>
             <p>
-              Real-time analytics rendered directly from patient & caregiver
-              routines
+              Live insights and adherence tracking powered by patient routines and caregiver alerts
             </p>
           </div>
         </div>
@@ -668,16 +625,16 @@
         <!-- Charts (Line & Doughnut) -->
         <div class="charts-row">
           <div class="chart-box">
-            <h4>Medication Adherence Trajectory</h4>
-            <p>Monthly compliance trends over the last 6 months</p>
+            <h4>Monthly Routine Progress</h4>
+            <p>How consistently doses have been taken over the last 6 months</p>
             <div class="chart-canvas-wrap">
               <canvas id="adherenceLineChart"></canvas>
             </div>
           </div>
 
           <div class="chart-box">
-            <h4>Dose Compliance Breakdown</h4>
-            <p>Real-time intake status for active routines</p>
+            <h4>Today's Dose Overview</h4>
+            <p>Real-time summary of current medication progress</p>
             <div class="chart-canvas-wrap doughnut-wrap">
               <canvas id="doseStatusDoughnut"></canvas>
             </div>
@@ -692,8 +649,7 @@
             <div class="pill-badge">System Capabilities</div>
             <h2>Features of MediCare</h2>
             <p>
-              Every single feature is natively backed by dedicated ASP.NET Core
-              Web API endpoints and Entity Framework entities.
+              Everything you need to simplify medication schedules, ensure safety, and keep families connected.
             </p>
           </div>
 
