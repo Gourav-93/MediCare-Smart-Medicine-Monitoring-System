@@ -1,1003 +1,1269 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MediCare - Medicine & Schedule Management</title>
-  
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MediCare - Medicine & Schedule Management</title>
 
-  <!-- Common MediCare Design Tokens & Core Styles -->
-  <link rel="stylesheet" href="css/common.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
 
-  <style>
-    :root {
-      --primary: #0284c7;
-      --primary-dark: #0369a1;
-      --primary-light: #e0f2fe;
-      --danger: #dc2626;
-      --danger-light: #fee2e2;
-      --success: #16a34a;
-      --success-light: #dcfce7;
-      --warning: #d97706;
-      --warning-light: #fef3c7;
-      --text-main: #0f172a;
-      --text-muted: #64748b;
-      --bg: #f8fafc;
-      --surface: #ffffff;
-      --border: #e2e8f0;
-      --radius: 12px;
-      --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-      --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-      --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
-    }
+    <!-- Common MediCare Design Tokens & Core Styles -->
+    <link rel="stylesheet" href="css/common.css" />
+    <link rel="stylesheet" href="css/ai-chatbot.css" />
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: 'Plus Jakarta Sans', sans-serif;
-    }
+    <style>
+      :root {
+        --primary: #0284c7;
+        --primary-dark: #0369a1;
+        --primary-light: #e0f2fe;
+        --danger: #dc2626;
+        --danger-light: #fee2e2;
+        --success: #16a34a;
+        --success-light: #dcfce7;
+        --warning: #d97706;
+        --warning-light: #fef3c7;
+        --text-main: #0f172a;
+        --text-muted: #64748b;
+        --bg: #f8fafc;
+        --surface: #ffffff;
+        --border: #e2e8f0;
+        --radius: 12px;
+        --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+        --shadow-md:
+          0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+      }
 
-    body {
-      background-color: var(--bg);
-      color: var(--text-main);
-      min-height: 100vh;
-      overflow-x: hidden;
-      line-height: 1.5;
-    }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        font-family: "Plus Jakarta Sans", sans-serif;
+      }
 
-    /* =========================================================
+      body {
+        background-color: var(--bg);
+        color: var(--text-main);
+        min-height: 100vh;
+        overflow-x: hidden;
+        line-height: 1.5;
+      }
+
+      /* =========================================================
        HEADER / NAVBAR
        ========================================================= */
-    .site-header {
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      background: rgba(255, 255, 255, 0.95);
-      backdrop-filter: blur(10px);
-      border-bottom: 1px solid var(--border);
-      height: 70px;
-      display: flex;
-      align-items: center;
-      padding: 0 clamp(16px, 4vw, 40px);
-    }
-
-    .nav-container {
-      width: 100%;
-      max-width: 1380px;
-      margin: 0 auto;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .brand-logo {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      text-decoration: none;
-    }
-
-    .logo-icon {
-      width: 40px;
-      height: 40px;
-      background: linear-gradient(135deg, #0284c7, #0ea5e9);
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #ffffff;
-      font-weight: 800;
-      font-size: 20px;
-      box-shadow: 0 4px 10px rgba(2, 132, 199, 0.3);
-    }
-
-    .brand-text h1 {
-      font-size: 19px;
-      font-weight: 800;
-      color: var(--text-main);
-      line-height: 1.1;
-    }
-
-    .brand-text span {
-      font-size: 11px;
-      font-weight: 600;
-      color: var(--primary);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    .desktop-nav-links {
-      display: flex;
-      align-items: center;
-      gap: 28px;
-      list-style: none;
-    }
-
-    .desktop-nav-links a {
-      text-decoration: none;
-      color: var(--text-muted);
-      font-size: 14px;
-      font-weight: 600;
-      transition: color 0.2s;
-    }
-
-    .desktop-nav-links a.active,
-    .desktop-nav-links a:hover {
-      color: var(--primary);
-    }
-
-    .desktop-actions {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .btn {
-      padding: 9px 16px;
-      border-radius: 8px;
-      font-size: 13.5px;
-      font-weight: 600;
-      cursor: pointer;
-      border: 1px solid transparent;
-      transition: all 0.2s;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      text-decoration: none;
-    }
-
-    .btn-primary {
-      background: var(--primary);
-      color: #ffffff;
-    }
-    .btn-primary:hover {
-      background: var(--primary-dark);
-    }
-
-    .btn-ghost {
-      background: transparent;
-      color: var(--text-main);
-      border-color: var(--border);
-    }
-    .btn-ghost:hover {
-      background: #f1f5f9;
-    }
-
-    .btn-sos {
-      background: var(--danger);
-      color: #fff;
-      padding: 8px 14px;
-      font-size: 13px;
-      border-radius: 8px;
-      animation: pulse-sos 2s infinite;
-    } 
-    @keyframes pulse-sos {
-      0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.4); }
-      70% { box-shadow: 0 0 0 8px rgba(220, 38, 38, 0); }
-      100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
-    } 
-
-    /* Mobile Controls */
-    .mobile-actions {
-      display: none;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .hamburger-btn {
-      width: 40px;
-      height: 40px;
-      border-radius: 8px;
-      border: 1px solid var(--border);
-      background: #ffffff;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 5px;
-      cursor: pointer;
-    }
-
-    .hamburger-btn span {
-      width: 18px;
-      height: 2px;
-      background: var(--text-main);
-      border-radius: 2px;
-    }
-
-    /* Mobile Drawer */
-    .mobile-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(15, 23, 42, 0.45);
-      backdrop-filter: blur(4px);
-      z-index: 200;
-      opacity: 0;
-      visibility: hidden;
-      transition: all 0.3s;
-    }
-    .mobile-overlay.active {
-      opacity: 1;
-      visibility: visible;
-    }
-
-    .mobile-drawer {
-      position: fixed;
-      top: 0;
-      right: -100%;
-      width: min(320px, 85vw);
-      height: 100%;
-      background: var(--surface);
-      z-index: 201;
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      transition: right 0.3s ease;
-    }
-    .mobile-drawer.active { right: 0; }
-
-    .drawer-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding-bottom: 14px;
-      border-bottom: 1px solid var(--border);
-    }
-    .close-btn {
-      background: #f1f5f9;
-      border: none;
-      width: 34px;
-      height: 34px;
-      border-radius: 8px;
-      font-size: 18px;
-      cursor: pointer;
-    }
-
-    .drawer-links {
-      list-style: none;
-      padding: 16px 0;
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-    }
-    .drawer-links a {
-      text-decoration: none;
-      color: var(--text-main);
-      font-size: 15px;
-      font-weight: 600;
-    }
-
-    /* =========================================================
-       PAGE CONTENT CONTAINER
-       ========================================================= */
-    .page-wrapper {
-      max-width: 1380px;
-      margin: 0 auto;
-      padding: clamp(16px, 3vw, 32px) clamp(16px, 4vw, 40px);
-    }
-
-    /* Header Bar */
-    .section-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 16px;
-      margin-bottom: 24px;
-    }
-
-    .section-title h2 {
-      font-size: clamp(22px, 3.5vw, 28px);
-      font-weight: 800;
-      letter-spacing: -0.5px;
-    }
-    .section-title p {
-      font-size: 13px;
-      color: var(--text-muted);
-    }
-
-    /* Controls: Search & Filter Tabs */
-    .filter-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 12px;
-      margin-bottom: 20px;
-    }
-
-    .search-box {
-      flex: 1;
-      min-width: 240px;
-      max-width: 400px;
-      position: relative;
-    }
-
-    .search-input {
-      width: 100%;
-      padding: 10px 14px 10px 38px;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      background: #fff;
-      font-size: 13.5px;
-      outline: none;
-    }
-    .search-input:focus {
-      border-color: var(--primary);
-    }
-    .search-icon {
-      position: absolute;
-      left: 12px;
-      top: 50%;
-      transform: translateY(-50%);
-      color: var(--text-muted);
-      font-size: 14px;
-    }
-
-    .tab-pills {
-      display: flex;
-      background: #e2e8f0;
-      border-radius: 8px;
-      padding: 3px;
-      gap: 2px;
-    }
-
-    .tab-btn {
-      padding: 6px 14px;
-      border-radius: 6px;
-      border: none;
-      font-size: 12.5px;
-      font-weight: 600;
-      background: transparent;
-      color: var(--text-muted);
-      cursor: pointer;
-    }
-    .tab-btn.active {
-      background: #fff;
-      color: var(--text-main);
-      box-shadow: var(--shadow-sm);
-    }
-
-    /* =========================================================
-       MEDICINES CARD GRID
-       ========================================================= */
-    .med-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 16px;
-      margin-bottom: 40px;
-    }
-
-    .med-card {
-      background: #fff;
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 20px;
-      box-shadow: var(--shadow-sm);
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      transition: all 0.2s;
-    }
-    .med-card:hover {
-      box-shadow: var(--shadow-md);
-      border-color: #cbd5e1;
-    }
-
-    .med-card-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      margin-bottom: 12px;
-    }
-
-    .med-name {
-      font-size: 17px;
-      font-weight: 700;
-      color: var(--text-main);
-    }
-
-    .med-dosage {
-      font-size: 12.5px;
-      color: var(--text-muted);
-      margin-top: 2px;
-    }
-
-    .stock-badge {
-      font-size: 11px;
-      font-weight: 700;
-      padding: 4px 10px;
-      border-radius: 20px;
-      white-space: nowrap;
-    }
-    .stock-good { background: var(--success-light); color: var(--success); }
-    .stock-low { background: var(--warning-light); color: var(--warning); border: 1px solid #fde68a; }
-    .stock-empty { background: var(--danger-light); color: var(--danger); }
-
-    .schedule-chips {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      margin: 14px 0;
-    }
-    .time-chip {
-      background: #f1f5f9;
-      color: #334155;
-      font-size: 12px;
-      font-weight: 600;
-      padding: 4px 10px;
-      border-radius: 6px;
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-    }
-
-    .med-dates {
-      font-size: 11.5px;
-      color: var(--text-muted);
-      border-top: 1px dashed var(--border);
-      padding-top: 10px;
-      margin-bottom: 14px;
-    }
-
-    .med-actions {
-      display: flex;
-      gap: 8px;
-    }
-    .med-actions .btn {
-      flex: 1;
-      font-size: 12.5px;
-      padding: 7px 10px;
-    }
-    .btn-danger {
-      background: var(--danger-light);
-      color: var(--danger);
-      border-color: #fca5a5;
-    }
-    .btn-danger:hover {
-      background: #dc2626;
-      color: #fff;
-    }
-
-    /* Toast Notification */
-    .toast-notification {
-      position: fixed;
-      bottom: 24px;
-      right: 24px;
-      background: #0f172a;
-      color: #ffffff;
-      padding: 14px 22px;
-      border-radius: 10px;
-      font-size: 14px;
-      font-weight: 600;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
-      border-left: 5px solid #10b981;
-      transform: translateY(120px);
-      opacity: 0;
-      transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-      z-index: 1000;
-    }
-    .toast-notification.show {
-      transform: translateY(0);
-      opacity: 1;
-    }
-
-    /* =========================================================
-       ADD / EDIT MODAL
-       ========================================================= */
-    .modal-backdrop {
-      position: fixed;
-      inset: 0;
-      background: rgba(15, 23, 42, 0.5);
-      backdrop-filter: blur(4px);
-      z-index: 300;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      padding: 16px;
-    }
-    .modal-backdrop.active { display: flex; }
-
-    .modal-box {
-      background: #fff;
-      width: 100%;
-      max-width: 500px;
-      border-radius: 16px;
-      padding: 24px;
-      border: 1px solid var(--border);
-      box-shadow: var(--shadow-lg);
-      max-height: 90vh;
-      overflow-y: auto;
-    }
-
-    .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 18px;
-    }
-    .modal-header h3 {
-      font-size: 18px;
-      font-weight: 700;
-    }
-
-    .form-group {
-      margin-bottom: 14px;
-    }
-    .form-group label {
-      display: block;
-      font-size: 12.5px;
-      font-weight: 600;
-      margin-bottom: 5px;
-    }
-    .form-control {
-      width: 100%;
-      padding: 9px 12px;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      font-size: 13.5px;
-      outline: none;
-    }
-    .form-control:focus {
-      border-color: var(--primary);
-    }
-
-    .form-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-    }
-
-    /* Dynamic Time Schedule Tags */
-    .time-slot-list {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      margin-top: 8px;
-    }
-    .time-tag {
-      background: var(--primary-light);
-      color: var(--primary-dark);
-      padding: 4px 8px;
-      border-radius: 6px;
-      font-size: 12px;
-      font-weight: 600;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .time-tag-remove {
-      cursor: pointer;
-      font-size: 14px;
-    }
-
-    /* =========================================================
-       RESPONSIVE BREAKPOINTS (320px - 1366px+)
-       ========================================================= */
-    /* Small Laptops (1024px to 1365px) */
-    @media (max-width: 1365px) {
-      .med-grid {
-        grid-template-columns: repeat(3, 1fr);
-      }
-    }
-
-    /* Tablets (768px to 1023px) */
-    @media (max-width: 1023px) {
-      .desktop-nav-links, .desktop-actions .btn-ghost {
-        display: none;
-      }
-      .mobile-actions {
+      .site-header {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-bottom: 1px solid var(--border);
+        height: 70px;
         display: flex;
+        align-items: center;
+        padding: 0 clamp(16px, 4vw, 40px);
       }
-      .med-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 14px;
-      }
-    }
 
-    /* Mobiles (320px to 767px) */
-    @media (max-width: 767px) {
-      .section-header {
-        flex-direction: column;
-        align-items: stretch;
-      }
-      .section-header .btn {
+      .nav-container {
         width: 100%;
+        max-width: 1380px;
+        margin: 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
       }
-      .filter-bar {
-        flex-direction: column;
-        align-items: stretch;
+
+      .brand-logo {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        text-decoration: none;
       }
-      .search-box {
-        max-width: 100%;
+
+      .logo-icon {
+        width: 40px;
+        height: 40px;
+        background: linear-gradient(135deg, #0284c7, #0ea5e9);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #ffffff;
+        font-weight: 800;
+        font-size: 20px;
+        box-shadow: 0 4px 10px rgba(2, 132, 199, 0.3);
       }
-      .tab-pills {
-        width: 100%;
+
+      .brand-text h1 {
+        font-size: 19px;
+        font-weight: 800;
+        color: var(--text-main);
+        line-height: 1.1;
       }
-      .tab-btn {
-        flex: 1;
-        text-align: center;
+
+      .brand-text span {
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--primary);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
       }
-      .med-grid {
-        grid-template-columns: 1fr;
+
+      .desktop-nav-links {
+        display: flex;
+        align-items: center;
+        gap: 28px;
+        list-style: none;
+      }
+
+      .desktop-nav-links a {
+        text-decoration: none;
+        color: var(--text-muted);
+        font-size: 14px;
+        font-weight: 600;
+        transition: color 0.2s;
+      }
+
+      .desktop-nav-links a.active,
+      .desktop-nav-links a:hover {
+        color: var(--primary);
+      }
+
+      .desktop-actions {
+        display: flex;
+        align-items: center;
         gap: 12px;
       }
-      .form-row {
-        grid-template-columns: 1fr;
+
+      .btn {
+        padding: 9px 16px;
+        border-radius: 8px;
+        font-size: 13.5px;
+        font-weight: 600;
+        cursor: pointer;
+        border: 1px solid transparent;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        text-decoration: none;
+      }
+
+      .btn-primary {
+        background: var(--primary);
+        color: #ffffff;
+      }
+      .btn-primary:hover {
+        background: var(--primary-dark);
+      }
+
+      .btn-ghost {
+        background: transparent;
+        color: var(--text-main);
+        border-color: var(--border);
+      }
+      .btn-ghost:hover {
+        background: #f1f5f9;
+      }
+
+      .btn-sos {
+        background: var(--danger);
+        color: #fff;
+        padding: 8px 14px;
+        font-size: 13px;
+        border-radius: 8px;
+        animation: pulse-sos 2s infinite;
+      }
+      @keyframes pulse-sos {
+        0% {
+          box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.4);
+        }
+        70% {
+          box-shadow: 0 0 0 8px rgba(220, 38, 38, 0);
+        }
+        100% {
+          box-shadow: 0 0 0 0 rgba(220, 38, 38, 0);
+        }
+      }
+
+      /* Mobile Controls */
+      .mobile-actions {
+        display: none;
+        align-items: center;
         gap: 8px;
       }
-    }
 
-    @media (max-width: 374px) {
-      .brand-text h1 { font-size: 16px; }
-      .brand-text span { display: none; }
-      .med-actions {
+      .hamburger-btn {
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+        background: #ffffff;
+        display: flex;
         flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+        cursor: pointer;
+      }
+
+      .hamburger-btn span {
+        width: 18px;
+        height: 2px;
+        background: var(--text-main);
+        border-radius: 2px;
+      }
+
+      /* Mobile Drawer */
+      .mobile-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.45);
+        backdrop-filter: blur(4px);
+        z-index: 200;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s;
+      }
+      .mobile-overlay.active {
+        opacity: 1;
+        visibility: visible;
+      }
+
+      .mobile-drawer {
+        position: fixed;
+        top: 0;
+        right: -100%;
+        width: min(320px, 85vw);
+        height: 100%;
+        background: var(--surface);
+        z-index: 201;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        transition: right 0.3s ease;
+      }
+      .mobile-drawer.active {
+        right: 0;
+      }
+
+      .drawer-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-bottom: 14px;
+        border-bottom: 1px solid var(--border);
+      }
+      .close-btn {
+        background: #f1f5f9;
+        border: none;
+        width: 34px;
+        height: 34px;
+        border-radius: 8px;
+        font-size: 18px;
+        cursor: pointer;
+      }
+
+      .drawer-links {
+        list-style: none;
+        padding: 16px 0;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+      }
+      .drawer-links a {
+        text-decoration: none;
+        color: var(--text-main);
+        font-size: 15px;
+        font-weight: 600;
+      }
+
+      /* =========================================================
+       PAGE CONTENT CONTAINER
+       ========================================================= */
+      .page-wrapper {
+        max-width: 1380px;
+        margin: 0 auto;
+        padding: clamp(16px, 3vw, 32px) clamp(16px, 4vw, 40px);
+      }
+
+      /* Header Bar */
+      .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 16px;
+        margin-bottom: 24px;
+      }
+
+      .section-title h2 {
+        font-size: clamp(22px, 3.5vw, 28px);
+        font-weight: 800;
+        letter-spacing: -0.5px;
+      }
+      .section-title p {
+        font-size: 13px;
+        color: var(--text-muted);
+      }
+
+      /* Controls: Search & Filter Tabs */
+      .filter-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-bottom: 20px;
+      }
+
+      .search-box {
+        flex: 1;
+        min-width: 240px;
+        max-width: 400px;
+        position: relative;
+      }
+
+      .search-input {
+        width: 100%;
+        padding: 10px 14px 10px 38px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: #fff;
+        font-size: 13.5px;
+        outline: none;
+      }
+      .search-input:focus {
+        border-color: var(--primary);
+      }
+      .search-icon {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-muted);
+        font-size: 14px;
+      }
+
+      .tab-pills {
+        display: flex;
+        background: #e2e8f0;
+        border-radius: 8px;
+        padding: 3px;
+        gap: 2px;
+      }
+
+      .tab-btn {
+        padding: 6px 14px;
+        border-radius: 6px;
+        border: none;
+        font-size: 12.5px;
+        font-weight: 600;
+        background: transparent;
+        color: var(--text-muted);
+        cursor: pointer;
+      }
+      .tab-btn.active {
+        background: #fff;
+        color: var(--text-main);
+        box-shadow: var(--shadow-sm);
+      }
+
+      /* =========================================================
+       MEDICINES CARD GRID
+       ========================================================= */
+      .med-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+        margin-bottom: 40px;
+      }
+
+      .med-card {
+        background: #fff;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 20px;
+        box-shadow: var(--shadow-sm);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        transition: all 0.2s;
+      }
+      .med-card:hover {
+        box-shadow: var(--shadow-md);
+        border-color: #cbd5e1;
+      }
+
+      .med-card-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 12px;
+      }
+
+      .med-name {
+        font-size: 17px;
+        font-weight: 700;
+        color: var(--text-main);
+      }
+
+      .med-dosage {
+        font-size: 12.5px;
+        color: var(--text-muted);
+        margin-top: 2px;
+      }
+
+      .stock-badge {
+        font-size: 11px;
+        font-weight: 700;
+        padding: 4px 10px;
+        border-radius: 20px;
+        white-space: nowrap;
+      }
+      .stock-good {
+        background: var(--success-light);
+        color: var(--success);
+      }
+      .stock-low {
+        background: var(--warning-light);
+        color: var(--warning);
+        border: 1px solid #fde68a;
+      }
+      .stock-empty {
+        background: var(--danger-light);
+        color: var(--danger);
+      }
+
+      .schedule-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin: 14px 0;
+      }
+      .time-chip {
+        background: #f1f5f9;
+        color: #334155;
+        font-size: 12px;
+        font-weight: 600;
+        padding: 4px 10px;
+        border-radius: 6px;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+      }
+
+      .med-dates {
+        font-size: 11.5px;
+        color: var(--text-muted);
+        border-top: 1px dashed var(--border);
+        padding-top: 10px;
+        margin-bottom: 14px;
+      }
+
+      .med-actions {
+        display: flex;
+        gap: 8px;
       }
       .med-actions .btn {
-        width: 100%;
+        flex: 1;
+        font-size: 12.5px;
+        padding: 7px 10px;
       }
-    }
-  </style>
-</head>
-<body>
+      .btn-danger {
+        background: var(--danger-light);
+        color: var(--danger);
+        border-color: #fca5a5;
+      }
+      .btn-danger:hover {
+        background: #dc2626;
+        color: #fff;
+      }
 
-  <!-- ================= MODULAR GLOBAL HEADER ================= -->
-  <header id="global-header"></header>
+      /* Toast Notification */
+      .toast-notification {
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        background: #0f172a;
+        color: #ffffff;
+        padding: 14px 22px;
+        border-radius: 10px;
+        font-size: 14px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+        border-left: 5px solid #10b981;
+        transform: translateY(120px);
+        opacity: 0;
+        transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+        z-index: 1000;
+      }
+      .toast-notification.show {
+        transform: translateY(0);
+        opacity: 1;
+      }
 
-  <!-- ================= PAGE CONTENT ================= -->
-  <div class="page-wrapper">
-    
-    <!-- Title & Add Button -->
-    <!-- Title & Add Button -->
-    <div class="section-header">
-      <div class="section-title">
-        <h2>Active Prescriptions & Stock</h2>
-        <p>Manage prescription doses, schedule times, and inventory refill triggers.</p>
+      /* =========================================================
+       ADD / EDIT MODAL
+       ========================================================= */
+      .modal-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.5);
+        backdrop-filter: blur(4px);
+        z-index: 300;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+      }
+      .modal-backdrop.active {
+        display: flex;
+      }
+
+      .modal-box {
+        background: #fff;
+        width: 100%;
+        max-width: 500px;
+        border-radius: 16px;
+        padding: 24px;
+        border: 1px solid var(--border);
+        box-shadow: var(--shadow-lg);
+        max-height: 90vh;
+        overflow-y: auto;
+      }
+
+      .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 18px;
+      }
+      .modal-header h3 {
+        font-size: 18px;
+        font-weight: 700;
+      }
+
+      .form-group {
+        margin-bottom: 14px;
+      }
+      .form-group label {
+        display: block;
+        font-size: 12.5px;
+        font-weight: 600;
+        margin-bottom: 5px;
+      }
+      .form-control {
+        width: 100%;
+        padding: 9px 12px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        font-size: 13.5px;
+        outline: none;
+      }
+      .form-control:focus {
+        border-color: var(--primary);
+      }
+
+      .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+
+      /* Dynamic Time Schedule Tags */
+      .time-slot-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-top: 8px;
+      }
+      .time-tag {
+        background: var(--primary-light);
+        color: var(--primary-dark);
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .time-tag-remove {
+        cursor: pointer;
+        font-size: 14px;
+      }
+
+      /* =========================================================
+       RESPONSIVE BREAKPOINTS (320px - 1366px+)
+       ========================================================= */
+      /* Small Laptops (1024px to 1365px) */
+      @media (max-width: 1365px) {
+        .med-grid {
+          grid-template-columns: repeat(3, 1fr);
+        }
+      }
+
+      /* Tablets (768px to 1023px) */
+      @media (max-width: 1023px) {
+        .desktop-nav-links,
+        .desktop-actions .btn-ghost {
+          display: none;
+        }
+        .mobile-actions {
+          display: flex;
+        }
+        .med-grid {
+          grid-template-columns: repeat(2, 1fr);
+          gap: 14px;
+        }
+      }
+
+      /* Mobiles (320px to 767px) */
+      @media (max-width: 767px) {
+        .section-header {
+          flex-direction: column;
+          align-items: stretch;
+          gap: 14px;
+        }
+        .section-header .btn {
+          width: auto !important;
+          align-self: center !important;
+          margin: 2px auto 0 !important;
+          min-height: 34px !important;
+          padding: 6px 14px !important;
+          font-size: 12.5px !important;
+          border-radius: 8px !important;
+        }
+        .filter-bar {
+          flex-direction: column;
+          align-items: stretch;
+        }
+        .search-box {
+          max-width: 100%;
+        }
+        .tab-pills {
+          width: 100%;
+        }
+        .tab-btn {
+          flex: 1;
+          text-align: center;
+        }
+        .med-grid {
+          grid-template-columns: 1fr;
+          gap: 12px;
+        }
+        .form-row {
+          grid-template-columns: 1fr;
+          gap: 8px;
+        }
+      }
+
+      @media (max-width: 374px) {
+        .brand-text h1 {
+          font-size: 16px;
+        }
+        .brand-text span {
+          display: none;
+        }
+        .med-actions {
+          flex-direction: column;
+        }
+        .med-actions .btn {
+          width: 100%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- ================= MODULAR GLOBAL HEADER ================= -->
+    <header id="global-header"></header>
+
+    <!-- ================= PAGE CONTENT ================= -->
+    <div class="page-wrapper">
+      <!-- Title & Add Button -->
+      <!-- Title & Add Button -->
+      <div class="section-header">
+        <div class="section-title">
+          <h2>Active Prescriptions & Stock</h2>
+          <p>
+            Manage prescription doses, schedule times, and inventory refill
+            triggers.
+          </p>
+        </div>
+        <button
+          class="btn btn-primary"
+          id="openAddBtn"
+          onclick="openMedicineModal()"
+        >
+          + Add New Medicine
+        </button>
       </div>
-      <button class="btn btn-primary" id="openAddBtn" onclick="openMedicineModal()">+ Add New Medicine</button>
+
+      <!-- Search & Filter Tab Controls -->
+      <div class="filter-bar">
+        <div class="search-box">
+          <span class="search-icon">🔍</span>
+          <input
+            type="text"
+            id="searchInput"
+            class="search-input"
+            placeholder="Search medicine name or batch..."
+            onkeyup="filterMedicines()"
+          />
+        </div>
+
+        <div class="tab-pills">
+          <button class="tab-btn active" id="tabAll" onclick="setFilter('all')">
+            All Meds (<span id="allCount">0</span>)
+          </button>
+          <button class="tab-btn" id="tabLow" onclick="setFilter('low')">
+            Low Stock (<span id="lowCount">0</span>) ⚠️
+          </button>
+        </div>
+      </div>
+
+      <!-- Medicines Grid (Live from /api/medicine) -->
+      <div class="med-grid" id="medGrid">
+        <div
+          style="
+            grid-column: 1/-1;
+            text-align: center;
+            padding: 40px;
+            color: var(--text-muted);
+          "
+        >
+          Loading active medicines from backend API...
+        </div>
+      </div>
     </div>
 
-    <!-- Search & Filter Tab Controls -->
-    <div class="filter-bar">
-      <div class="search-box">
-        <span class="search-icon">🔍</span>
-        <input type="text" id="searchInput" class="search-input" placeholder="Search medicine name or batch..." onkeyup="filterMedicines()">
-      </div>
+    <!-- ================= TOAST NOTIFICATION ================= -->
+    <div id="toastNotification" class="toast-notification">
+      <span class="toast-icon" id="toastIcon">✅</span>
+      <span id="toastMsg">Operation completed successfully</span>
+    </div>
 
-      <div class="tab-pills">
-        <button class="tab-btn active" id="tabAll" onclick="setFilter('all')">All Meds (<span id="allCount">0</span>)</button>
-        <button class="tab-btn" id="tabLow" onclick="setFilter('low')">Low Stock (<span id="lowCount">0</span>) ⚠️</button>
+    <!-- ================= ADD / EDIT MEDICINE MODAL ================= -->
+    <div class="modal-backdrop" id="medModal">
+      <div class="modal-box">
+        <div class="modal-header">
+          <h3 id="modalTitle">Add New Medicine</h3>
+          <button class="close-btn" onclick="closeMedicineModal()">
+            &times;
+          </button>
+        </div>
+
+        <form id="medForm" onsubmit="handleMedSubmit(event)">
+          <input type="hidden" id="editingMedId" value="" />
+
+          <!-- Medicine Name -->
+          <div class="form-group">
+            <label for="medName">Medicine Name</label>
+            <input
+              type="text"
+              class="form-control"
+              id="medName"
+              placeholder="e.g., Amoxicillin 500mg"
+              required
+            />
+          </div>
+
+          <!-- Batch Number & Quantity -->
+          <div class="form-row">
+            <div class="form-group">
+              <label for="medBatch">Batch Number</label>
+              <input
+                type="text"
+                class="form-control"
+                id="medBatch"
+                placeholder="e.g., BATCH-2026-X1"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label for="medStock">Quantity / Stock</label>
+              <input
+                type="number"
+                class="form-control"
+                id="medStock"
+                placeholder="50"
+                min="1"
+                required
+              />
+            </div>
+          </div>
+
+          <!-- Price & Expiry Date -->
+          <div class="form-row">
+            <div class="form-group">
+              <label for="medPrice">Price ($)</label>
+              <input
+                type="number"
+                step="0.01"
+                class="form-control"
+                id="medPrice"
+                placeholder="25.00"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label for="expiryDate">Expiry Date</label>
+              <input
+                type="date"
+                class="form-control"
+                id="expiryDate"
+                required
+              />
+            </div>
+          </div>
+
+          <!-- Dosage & Start Date -->
+          <div class="form-row">
+            <div class="form-group">
+              <label for="medDose">Dosage / Strength</label>
+              <input
+                type="text"
+                class="form-control"
+                id="medDose"
+                placeholder="e.g., 1 Tablet"
+                value="1 Tablet"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label for="startDate">Start Date</label>
+              <input type="date" class="form-control" id="startDate" required />
+            </div>
+          </div>
+
+          <!-- Meal Timing & Schedule Reminder Time -->
+          <div class="form-row">
+            <div class="form-group">
+              <label for="medMealTiming">Meal Timing</label>
+              <select class="form-control" id="medMealTiming" required>
+                <option value="AfterMeal" selected>
+                  After Meal (Recommended)
+                </option>
+                <option value="BeforeMeal">Before Meal</option>
+                <option value="EmptyStomach">Empty Stomach</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="medSchedHour">Scheduled Intake Time (Daily)</label>
+              <div style="display: flex; gap: 6px">
+                <select class="form-control" id="medSchedHour" style="flex: 1">
+                  <option value="1">01</option>
+                  <option value="2">02</option>
+                  <option value="3">03</option>
+                  <option value="4">04</option>
+                  <option value="5">05</option>
+                  <option value="6">06</option>
+                  <option value="7">07</option>
+                  <option value="8" selected>08</option>
+                  <option value="9">09</option>
+                  <option value="10">10</option>
+                  <option value="11">11</option>
+                  <option value="12">12</option>
+                </select>
+                <span style="align-self: center; font-weight: bold">:</span>
+                <select
+                  class="form-control"
+                  id="medSchedMinute"
+                  style="flex: 1"
+                >
+                  <option value="00" selected>00</option>
+                  <option value="15">15</option>
+                  <option value="30">30</option>
+                  <option value="45">45</option>
+                </select>
+                <select class="form-control" id="medSchedAmPm" style="flex: 1">
+                  <option value="AM" selected>AM</option>
+                  <option value="PM">PM</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 10px; margin-top: 24px">
+            <button
+              type="button"
+              class="btn btn-ghost"
+              style="flex: 1"
+              onclick="closeMedicineModal()"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              class="btn btn-primary"
+              id="saveMedBtn"
+              style="flex: 2"
+            >
+              Save & Open Schedule
+            </button>
+          </div>
+        </form>
       </div>
     </div>
 
-    <!-- Medicines Grid (Live from /api/medicine) -->
-    <div class="med-grid" id="medGrid">
-      <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--text-muted);">
-        Loading active medicines from backend API...
+    <!-- ================= 12-HOUR SCHEDULE TIME MODAL ================= -->
+    <div class="modal-backdrop" id="scheduleModal">
+      <div class="modal-box" style="max-width: 440px">
+        <div class="modal-header">
+          <h3 id="schedModalTitle">Set Daily Reminder Time (12-Hour)</h3>
+          <button class="close-btn" onclick="closeScheduleModal()">
+            &times;
+          </button>
+        </div>
+
+        <input type="hidden" id="schedTargetMedId" value="" />
+        <p
+          style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px"
+        >
+          Choose your 12-hour reminder time with AM / PM for this medication:
+        </p>
+
+        <!-- 12-Hour Dropdowns -->
+        <div
+          class="form-row"
+          style="
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 16px;
+          "
+        >
+          <div class="form-group" style="margin-bottom: 0">
+            <label for="schedHour">Hour (1-12)</label>
+            <select
+              id="schedHour"
+              class="form-control"
+              style="font-weight: 700; font-size: 15px"
+            >
+              <option value="1">01</option>
+              <option value="2">02</option>
+              <option value="3">03</option>
+              <option value="4">04</option>
+              <option value="5">05</option>
+              <option value="6">06</option>
+              <option value="7">07</option>
+              <option value="8" selected>08</option>
+              <option value="9">09</option>
+              <option value="10">10</option>
+              <option value="11">11</option>
+              <option value="12">12</option>
+            </select>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 0">
+            <label for="schedMinute">Minute</label>
+            <select
+              id="schedMinute"
+              class="form-control"
+              style="font-weight: 700; font-size: 15px"
+            >
+              <option value="00" selected>:00</option>
+              <option value="05">:05</option>
+              <option value="10">:10</option>
+              <option value="15">:15</option>
+              <option value="20">:20</option>
+              <option value="25">:25</option>
+              <option value="30">:30</option>
+              <option value="35">:35</option>
+              <option value="40">:40</option>
+              <option value="45">:45</option>
+              <option value="50">:50</option>
+              <option value="55">:55</option>
+            </select>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 0">
+            <label for="schedAmPm">AM / PM</label>
+            <select
+              id="schedAmPm"
+              class="form-control"
+              style="font-weight: 700; font-size: 15px; color: var(--primary)"
+            >
+              <option value="AM" selected>AM</option>
+              <option value="PM">PM</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Quick Preset Buttons -->
+        <div style="margin-bottom: 16px">
+          <label
+            style="
+              font-size: 12px;
+              font-weight: 600;
+              color: var(--text-muted);
+              display: block;
+              margin-bottom: 6px;
+            "
+            >Quick Presets (12-Hour):</label
+          >
+          <div style="display: flex; flex-wrap: wrap; gap: 6px">
+            <button
+              type="button"
+              class="time-chip"
+              style="cursor: pointer"
+              onclick="setSchedulePreset(8, '00', 'AM')"
+            >
+              🌅 Morning 08:00 AM
+            </button>
+            <button
+              type="button"
+              class="time-chip"
+              style="cursor: pointer"
+              onclick="setSchedulePreset(1, '30', 'PM')"
+            >
+              ☀️ Afternoon 01:30 PM
+            </button>
+            <button
+              type="button"
+              class="time-chip"
+              style="cursor: pointer"
+              onclick="setSchedulePreset(8, '30', 'PM')"
+            >
+              🌙 Night 08:30 PM
+            </button>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 10px; margin-top: 20px">
+          <button
+            type="button"
+            class="btn btn-ghost"
+            style="flex: 1"
+            onclick="closeScheduleModal()"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            class="btn btn-primary"
+            id="saveSchedBtn"
+            style="flex: 2"
+            onclick="submit12HourScheduleSlot()"
+          >
+            Save 12-Hour Slot
+          </button>
+        </div>
       </div>
     </div>
-  </div>
 
-  <!-- ================= TOAST NOTIFICATION ================= -->
-  <div id="toastNotification" class="toast-notification">
-    <span class="toast-icon" id="toastIcon">✅</span>
-    <span id="toastMsg">Operation completed successfully</span>
-  </div>
+    <!-- Shared MediCare API, Modular Navbar, and Global AI Chatbot -->
+    <script src="js/api.js"></script>
+    <script src="js/navbar.js"></script>
+    <script src="js/ai-chatbot.js"></script>
 
-  <!-- ================= ADD / EDIT MEDICINE MODAL ================= -->
-  <div class="modal-backdrop" id="medModal">
-    <div class="modal-box">
-      <div class="modal-header">
-        <h3 id="modalTitle">Add New Medicine</h3>
-        <button class="close-btn" onclick="closeMedicineModal()">&times;</button>
-      </div>
+    <!-- ================= LIVE MEDICINES LOGIC ================= -->
+    <script>
+      const API_URL =
+        (window.MediCareAPI && window.MediCareAPI.API_BASE_URL) ||
+        "http://localhost:5000/api";
+      let loadedMedicines = [];
+      let currentFilter = "all";
 
-      <form id="medForm" onsubmit="handleMedSubmit(event)">
-        <input type="hidden" id="editingMedId" value="">
+      // Toast Helper
+      function showToast(message, isSuccess = true) {
+        const toast = document.getElementById("toastNotification");
+        const msg = document.getElementById("toastMsg");
+        const icon = document.getElementById("toastIcon");
+        if (!toast || !msg) return;
 
-        <!-- Medicine Name -->
-        <div class="form-group">
-          <label for="medName">Medicine Name</label>
-          <input type="text" class="form-control" id="medName" placeholder="e.g., Amoxicillin 500mg" required>
-        </div>
+        msg.innerText = message;
+        icon.innerText = isSuccess ? "✅" : "⚠️";
+        toast.style.borderLeftColor = isSuccess ? "#10b981" : "#f59e0b";
+        toast.classList.add("show");
+        console.log("[MediCare Toast]", message);
 
-        <!-- Batch Number & Quantity -->
-        <div class="form-row">
-          <div class="form-group">
-            <label for="medBatch">Batch Number</label>
-            <input type="text" class="form-control" id="medBatch" placeholder="e.g., BATCH-2026-X1" required>
-          </div>
-          <div class="form-group">
-            <label for="medStock">Quantity / Stock</label>
-            <input type="number" class="form-control" id="medStock" placeholder="50" min="1" required>
-          </div>
-        </div>
+        setTimeout(() => {
+          toast.classList.remove("show");
+        }, 3500);
+      }
 
-        <!-- Price & Expiry Date -->
-        <div class="form-row">
-          <div class="form-group">
-            <label for="medPrice">Price ($)</label>
-            <input type="number" step="0.01" class="form-control" id="medPrice" placeholder="25.00" required>
-          </div>
-          <div class="form-group">
-            <label for="expiryDate">Expiry Date</label>
-            <input type="date" class="form-control" id="expiryDate" required>
-          </div>
-        </div>
+      // Modal Handlers
+      const medModal = document.getElementById("medModal");
 
-        <!-- Dosage & Start Date -->
-        <div class="form-row">
-          <div class="form-group">
-            <label for="medDose">Dosage / Strength</label>
-            <input type="text" class="form-control" id="medDose" placeholder="e.g., 1 Tablet" value="1 Tablet" required>
-          </div>
-          <div class="form-group">
-            <label for="startDate">Start Date</label>
-            <input type="date" class="form-control" id="startDate" required>
-          </div>
-        </div>
+      function openMedicineModal() {
+        document.getElementById("modalTitle").innerText = "Add New Medicine";
+        document.getElementById("saveMedBtn").innerText = "Save Medicine";
+        document.getElementById("editingMedId").value = "";
+        document.getElementById("medForm").reset();
 
-        <div style="display: flex; gap: 10px; margin-top: 24px;">
-          <button type="button" class="btn btn-ghost" style="flex: 1;" onclick="closeMedicineModal()">Cancel</button>
-          <button type="submit" class="btn btn-primary" id="saveMedBtn" style="flex: 2;">Save Medicine</button>
-        </div>
-      </form>
-    </div>
-  </div>
+        const today = new Date();
+        const nextMonth = new Date(today.getTime() + 60 * 24 * 60 * 60 * 1000);
+        document.getElementById("startDate").value = today
+          .toISOString()
+          .split("T")[0];
+        document.getElementById("expiryDate").value = nextMonth
+          .toISOString()
+          .split("T")[0];
+        document.getElementById("medDose").value = "1 Tablet";
+        document.getElementById("medBatch").value =
+          "BATCH-" +
+          today.getFullYear() +
+          "-X" +
+          Math.floor(Math.random() * 90 + 10);
+        document.getElementById("medPrice").value = "20.00";
 
-  <!-- ================= 12-HOUR SCHEDULE TIME MODAL ================= -->
-  <div class="modal-backdrop" id="scheduleModal">
-    <div class="modal-box" style="max-width: 440px;">
-      <div class="modal-header">
-        <h3 id="schedModalTitle">Set Daily Reminder Time (12-Hour)</h3>
-        <button class="close-btn" onclick="closeScheduleModal()">&times;</button>
-      </div>
+        medModal.classList.add("active");
+      }
 
-      <input type="hidden" id="schedTargetMedId" value="">
-      <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">
-        Choose your 12-hour reminder time with AM / PM for this medication:
-      </p>
+      function closeMedicineModal() {
+        medModal.classList.remove("active");
+      }
 
-      <!-- 12-Hour Dropdowns -->
-      <div class="form-row" style="grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 16px;">
-        <div class="form-group" style="margin-bottom: 0;">
-          <label for="schedHour">Hour (1-12)</label>
-          <select id="schedHour" class="form-control" style="font-weight: 700; font-size: 15px;">
-            <option value="1">01</option>
-            <option value="2">02</option>
-            <option value="3">03</option>
-            <option value="4">04</option>
-            <option value="5">05</option>
-            <option value="6">06</option>
-            <option value="7">07</option>
-            <option value="8" selected>08</option>
-            <option value="9">09</option>
-            <option value="10">10</option>
-            <option value="11">11</option>
-            <option value="12">12</option>
-          </select>
-        </div>
+      let loadedSchedules = [];
 
-        <div class="form-group" style="margin-bottom: 0;">
-          <label for="schedMinute">Minute</label>
-          <select id="schedMinute" class="form-control" style="font-weight: 700; font-size: 15px;">
-            <option value="00" selected>:00</option>
-            <option value="05">:05</option>
-            <option value="10">:10</option>
-            <option value="15">:15</option>
-            <option value="20">:20</option>
-            <option value="25">:25</option>
-            <option value="30">:30</option>
-            <option value="35">:35</option>
-            <option value="40">:40</option>
-            <option value="45">:45</option>
-            <option value="50">:50</option>
-            <option value="55">:55</option>
-          </select>
-        </div>
-
-        <div class="form-group" style="margin-bottom: 0;">
-          <label for="schedAmPm">AM / PM</label>
-          <select id="schedAmPm" class="form-control" style="font-weight: 700; font-size: 15px; color: var(--primary);">
-            <option value="AM" selected>AM</option>
-            <option value="PM">PM</option>
-          </select>
-        </div>
-      </div>
-
-      <!-- Quick Preset Buttons -->
-      <div style="margin-bottom: 16px;">
-        <label style="font-size: 12px; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 6px;">Quick Presets (12-Hour):</label>
-        <div style="display: flex; flex-wrap: wrap; gap: 6px;">
-          <button type="button" class="time-chip" style="cursor: pointer;" onclick="setSchedulePreset(8, '00', 'AM')">🌅 Morning 08:00 AM</button>
-          <button type="button" class="time-chip" style="cursor: pointer;" onclick="setSchedulePreset(1, '30', 'PM')">☀️ Afternoon 01:30 PM</button>
-          <button type="button" class="time-chip" style="cursor: pointer;" onclick="setSchedulePreset(8, '30', 'PM')">🌙 Night 08:30 PM</button>
-        </div>
-      </div>
-
-      <div style="display: flex; gap: 10px; margin-top: 20px;">
-        <button type="button" class="btn btn-ghost" style="flex: 1;" onclick="closeScheduleModal()">Cancel</button>
-        <button type="button" class="btn btn-primary" id="saveSchedBtn" style="flex: 2;" onclick="submit12HourScheduleSlot()">Save 12-Hour Slot</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Shared MediCare API & Modular Navbar Utilities -->
-  <script src="js/api.js"></script>
-  <script src="js/navbar.js"></script>
-
-  <!-- ================= LIVE MEDICINES LOGIC ================= -->
-  <script>
-    const API_URL = (window.MediCareAPI && window.MediCareAPI.API_BASE_URL) || 'http://localhost:5000/api';
-    let loadedMedicines = [];
-    let currentFilter = 'all';
-
-    // Toast Helper
-    function showToast(message, isSuccess = true) {
-      const toast = document.getElementById('toastNotification');
-      const msg = document.getElementById('toastMsg');
-      const icon = document.getElementById('toastIcon');
-      if (!toast || !msg) return;
-
-      msg.innerText = message;
-      icon.innerText = isSuccess ? '✅' : '⚠️';
-      toast.style.borderLeftColor = isSuccess ? '#10b981' : '#f59e0b';
-      toast.classList.add('show');
-      console.log('[MediCare Toast]', message);
-
-      setTimeout(() => {
-        toast.classList.remove('show');
-      }, 3500);
-    }
-
-    // Modal Handlers
-    const medModal = document.getElementById('medModal');
-
-    function openMedicineModal() {
-      document.getElementById('modalTitle').innerText = 'Add New Medicine';
-      document.getElementById('saveMedBtn').innerText = 'Save Medicine';
-      document.getElementById('editingMedId').value = '';
-      document.getElementById('medForm').reset();
-      
-      const today = new Date();
-      const nextMonth = new Date(today.getTime() + 60 * 24 * 60 * 60 * 1000);
-      document.getElementById('startDate').value = today.toISOString().split('T')[0];
-      document.getElementById('expiryDate').value = nextMonth.toISOString().split('T')[0];
-      document.getElementById('medDose').value = '1 Tablet';
-      
-      medModal.classList.add('active');
-    }
-
-    function closeMedicineModal() {
-      medModal.classList.remove('active');
-    }
-
-    let loadedSchedules = [];
-
-    // Fetch and Render Medicines & Schedules
-    async function loadMedicines() {
-      const grid = document.getElementById('medGrid');
-      try {
-        let response;
-        if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
-          try {
-            response = await window.MediCareAPI.apiFetch('/medicine');
-          } catch (e) {
+      // Fetch and Render Medicines & Schedules
+      async function loadMedicines() {
+        const grid = document.getElementById("medGrid");
+        try {
+          let response;
+          if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
+            try {
+              response = await window.MediCareAPI.apiFetch("/medicine");
+            } catch (e) {
+              const res = await fetch(`${API_URL}/medicine`);
+              response = await res.json();
+            }
+            try {
+              const schRes =
+                await window.MediCareAPI.apiFetch("/medicineschedule");
+              loadedSchedules = Array.isArray(schRes) ? schRes : [];
+            } catch (e) {
+              console.warn("[Medicines] Schedule fetch fallback:", e);
+            }
+          } else {
             const res = await fetch(`${API_URL}/medicine`);
             response = await res.json();
           }
-          try {
-            const schRes = await window.MediCareAPI.apiFetch('/medicineschedule');
-            loadedSchedules = Array.isArray(schRes) ? schRes : [];
-          } catch (e) {
-            console.warn('[Medicines] Schedule fetch fallback:', e);
-          }
-        } else {
-          const res = await fetch(`${API_URL}/medicine`);
-          response = await res.json();
-        }
 
-        loadedMedicines = Array.isArray(response) ? response : [];
-        renderMedicines(loadedMedicines);
-      } catch (err) {
-        console.error('[MediCare API] Error loading medicines:', err);
-        grid.innerHTML = `
+          loadedMedicines = Array.isArray(response) ? response : [];
+          renderMedicines(loadedMedicines);
+        } catch (err) {
+          console.error("[MediCare API] Error loading medicines:", err);
+          grid.innerHTML = `
           <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--danger);">
             ⚠️ Failed to connect to .NET API (${API_URL}/medicine). Ensure the backend server is running.
           </div>
         `;
+        }
       }
-    }
 
-    function renderMedicines(medicines) {
-      const grid = document.getElementById('medGrid');
-      grid.innerHTML = '';
+      function renderMedicines(medicines) {
+        const grid = document.getElementById("medGrid");
+        grid.innerHTML = "";
 
-      let lowCount = 0;
-      medicines.forEach(m => {
-        if (m.stock <= 5) lowCount++;
-      });
-      document.getElementById('allCount').innerText = medicines.length;
-      document.getElementById('lowCount').innerText = lowCount;
+        let lowCount = 0;
+        medicines.forEach((m) => {
+          if (m.stock <= 5) lowCount++;
+        });
+        document.getElementById("allCount").innerText = medicines.length;
+        document.getElementById("lowCount").innerText = lowCount;
 
-      if (!medicines || medicines.length === 0) {
-        grid.innerHTML = `
+        if (!medicines || medicines.length === 0) {
+          grid.innerHTML = `
           <div style="grid-column: 1/-1; text-align: center; padding: 50px 20px; background: #fff; border-radius: var(--radius); border: 1px dashed var(--border);">
             <div style="font-size: 32px; margin-bottom: 8px;">💊</div>
             <div style="font-size: 16px; font-weight: 700; color: var(--text-main);">No Prescriptions Found</div>
             <div style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">Click "+ Add New Medicine" above to record your first prescription.</div>
           </div>
         `;
-        return;
-      }
-
-      medicines.forEach(med => {
-        const isLow = med.stock <= 5;
-        const stockBadgeClass = isLow ? 'stock-badge stock-low' : 'stock-badge stock-good';
-        const stockBadgeText = isLow ? `⚠️ ${med.stock} Units (Low)` : `${med.stock} Units In Stock`;
-
-        // Parse batch/price if present in dosage or defaults
-        let dosageText = med.dosage || '1 Tablet';
-        let batchDisplay = '';
-        let priceDisplay = '';
-        
-        const batchMatch = dosageText.match(/Batch:\s*([^•\n]+)/i);
-        if (batchMatch) {
-          batchDisplay = batchMatch[1].trim();
-        }
-        const priceMatch = dosageText.match(/\$([0-9.]+)/i);
-        if (priceMatch) {
-          priceDisplay = `$${priceMatch[1]}`;
+          return;
         }
 
-        const expFormatted = med.endDate ? new Date(med.endDate).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : 'N/A';
-        const startFormatted = med.startDate ? new Date(med.startDate).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : 'N/A';
+        medicines.forEach((med) => {
+          const isLow = med.stock <= 5;
+          const stockBadgeClass = isLow
+            ? "stock-badge stock-low"
+            : "stock-badge stock-good";
+          const stockBadgeText = isLow
+            ? `⚠️ ${med.stock} Units (Low)`
+            : `${med.stock} Units In Stock`;
 
-        // Helper function to format any TimeSpan or time string into 12-hour AM/PM format
-        function formatTime12h(timeVal) {
-          if (!timeVal) return '08:00 AM';
-          const str = String(timeVal);
-          const parts = str.split('T').pop().split(':');
-          if (parts.length >= 2) {
-            let h = parseInt(parts[0], 10);
-            const m = parts[1].padStart(2, '0');
-            const ampm = h >= 12 ? 'PM' : 'AM';
-            h = h % 12;
-            h = h ? h : 12;
-            return `${String(h).padStart(2, '0')}:${m} ${ampm}`;
+          // Parse batch/price if present in dosage or defaults
+          let dosageText = med.dosage || "1 Tablet";
+          let batchDisplay = "";
+          let priceDisplay = "";
+
+          const batchMatch = dosageText.match(/Batch:\s*([^•\n]+)/i);
+          if (batchMatch) {
+            batchDisplay = batchMatch[1].trim();
           }
-          return str;
-        }
+          const priceMatch = dosageText.match(/\$([0-9.]+)/i);
+          if (priceMatch) {
+            priceDisplay = `$${priceMatch[1]}`;
+          }
 
-        // Filter schedules for this medicine and display in 12-hour AM/PM format
-        const medSchedules = loadedSchedules.filter(s => s.medicineId === med.id);
-        const schedHtml = medSchedules.map(s => {
-          const time12 = formatTime12h(s.time);
-          return `<span class="time-chip" style="background:#e0f2fe; color:#0369a1; font-weight:600;" title="Schedule ID #${s.id}">⏰ ${time12} <button onclick="deleteScheduleSlot(${s.id}, ${med.id})" style="border:none; background:transparent; color:var(--danger); cursor:pointer; font-weight:bold; margin-left:3px;" title="Delete Slot">&times;</button></span>`;
-        }).join('');
+          const expFormatted = med.endDate
+            ? new Date(med.endDate).toLocaleDateString("en-US", {
+                year: "numeric",
+                month: "short",
+                day: "numeric",
+              })
+            : "N/A";
+          const startFormatted = med.startDate
+            ? new Date(med.startDate).toLocaleDateString("en-US", {
+                year: "numeric",
+                month: "short",
+                day: "numeric",
+              })
+            : "N/A";
 
-        const notScheduledNotice = medSchedules.length === 0 
-          ? `<span class="time-chip" style="background:#fef2f2; color:#991b1b; font-weight:600;">⚠️ Not Scheduled</span>` 
-          : '';
+          // Helper function to format any TimeSpan or time string into 12-hour AM/PM format
+          function formatTime12h(timeVal) {
+            if (!timeVal) return "08:00 AM";
+            const str = String(timeVal);
+            const parts = str.split("T").pop().split(":");
+            if (parts.length >= 2) {
+              let h = parseInt(parts[0], 10);
+              const m = parts[1].padStart(2, "0");
+              const ampm = h >= 12 ? "PM" : "AM";
+              h = h % 12;
+              h = h ? h : 12;
+              return `${String(h).padStart(2, "0")}:${m} ${ampm}`;
+            }
+            return str;
+          }
 
-        const isScheduled = medSchedules.length > 0;
+          // Filter schedules for this medicine and display in 12-hour AM/PM format
+          const medSchedules = loadedSchedules.filter(
+            (s) => s.medicineId === med.id,
+          );
+          const schedHtml = medSchedules
+            .map((s) => {
+              const time12 = formatTime12h(s.time);
+              return `<span class="time-chip" style="background:#e0f2fe; color:#0369a1; font-weight:600;" title="Schedule ID #${s.id}">⏰ ${time12} <button onclick="deleteScheduleSlot(${s.id}, ${med.id})" style="border:none; background:transparent; color:var(--danger); cursor:pointer; font-weight:bold; margin-left:3px;" title="Delete Slot">&times;</button></span>`;
+            })
+            .join("");
 
-        const card = document.createElement('div');
-        card.className = 'med-card';
-        card.id = `med-card-${med.id}`;
-        card.setAttribute('data-id', med.id);
-        card.setAttribute('data-name', (med.name || '').toLowerCase());
-        card.setAttribute('data-stock', med.stock);
+          const notScheduledNotice =
+            medSchedules.length === 0
+              ? `<span class="time-chip" style="background:#fef2f2; color:#991b1b; font-weight:600;">⚠️ Not Scheduled</span>`
+              : "";
 
-        card.innerHTML = `
+          const isScheduled = medSchedules.length > 0;
+
+          const card = document.createElement("div");
+          card.className = "med-card";
+          card.id = `med-card-${med.id}`;
+          card.setAttribute("data-id", med.id);
+          card.setAttribute("data-name", (med.name || "").toLowerCase());
+          card.setAttribute("data-stock", med.stock);
+
+          card.innerHTML = `
           <div>
             <div class="med-card-top">
               <div>
@@ -1010,12 +1276,12 @@
             </div>
 
             <div class="schedule-chips">
-              <span class="time-chip">🍽️ ${escapeHtml(med.mealTimeing || med.mealTiming || 'AfterMeal')}</span>
+              <span class="time-chip">🍽️ ${escapeHtml(med.mealTimeing || med.mealTiming || "AfterMeal")}</span>
               ${notScheduledNotice}
               ${schedHtml}
               <button onclick="addScheduleSlot(${med.id}, '${escapeHtml(med.name)}')" class="time-chip" style="background:#f8fafc; border:1px dashed var(--border); color:var(--primary); cursor:pointer; font-weight:600;">+ Set Schedule Time (12-Hr)</button>
-              ${priceDisplay ? `<span class="time-chip" style="background: #ecfdf5; color: #065f46; font-weight: 700;">💰 ${escapeHtml(priceDisplay)}</span>` : ''}
-              ${batchDisplay ? `<span class="time-chip" style="background: #f1f5f9; color: #475569;">🏷️ ${escapeHtml(batchDisplay)}</span>` : ''}
+              ${priceDisplay ? `<span class="time-chip" style="background: #ecfdf5; color: #065f46; font-weight: 700;">💰 ${escapeHtml(priceDisplay)}</span>` : ""}
+              ${batchDisplay ? `<span class="time-chip" style="background: #f1f5f9; color: #475569;">🏷️ ${escapeHtml(batchDisplay)}</span>` : ""}
             </div>
 
             <div class="med-dates">
@@ -1024,325 +1290,459 @@
           </div>
 
           <div class="med-actions">
-            ${isScheduled ? `
-              <button class="btn btn-success" id="take-btn-${med.id}" onclick="quickTakeDose(${med.id}, '${escapeHtml(med.name)}', ${med.patientId || 1}, ${med.stock})" style="background: var(--success); color: #fff; font-weight: 700; border-radius: 8px;">
-                💊 Take Dose
-              </button>
-            ` : `
-              <button class="btn btn-ghost" style="opacity: 0.55; cursor: not-allowed; border: 1px dashed var(--border); font-size: 12px; color: var(--text-muted); background: #f8fafc;" title="Please schedule an intake reminder time first before taking dose" disabled>
-                🔒 Schedule First to Take
-              </button>
-            `}
+            <a href="schedule.html" class="btn btn-ghost" style="color: var(--primary); font-weight: 700; border-color: var(--primary-light); background: #f0f9ff;">📅 Manage Schedule</a>
             <button class="btn btn-ghost" id="edit-btn-${med.id}" onclick="editMed(${med.id})">✏️ Edit</button>
             <button class="btn btn-danger" id="delete-btn-${med.id}" onclick="deleteMedicine(${med.id})">🗑️ Delete</button>
           </div>
         `;
 
-        grid.appendChild(card);
-      });
+          grid.appendChild(card);
+        });
 
-      filterMedicines();
-    }
-
-    // Quick Intake Confirmation from Prescriptions Page (Only enabled when scheduled)
-    async function quickTakeDose(medId, medName, patientId, currentStock) {
-      const btn = document.getElementById(`take-btn-${medId}`);
-      if (btn) {
-        btn.disabled = true;
-        btn.innerText = '⏳ Recording...';
+        filterMedicines();
       }
 
-      try {
-        const user = window.MediCareAPI ? window.MediCareAPI.getCurrentUser() : null;
-        const pId = patientId || (user && user.patientId ? user.patientId : 1);
-
-        if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
-          await window.MediCareAPI.apiFetch('/medicinelog', 'POST', {
-            medicineId: medId,
-            patientId: pId,
-            scheduledTime: new Date().toISOString(),
-            status: 'Taken'
-          });
+      // Quick Intake Confirmation from Prescriptions Page (Only enabled when scheduled)
+      async function quickTakeDose(medId, medName, patientId, currentStock) {
+        if (
+          !confirm(
+            `Did you take your prescribed dose of "${medName}"?\n\nClick OK to confirm.`,
+          )
+        ) {
+          return;
         }
 
+        const btn = document.getElementById(`take-btn-${medId}`);
         if (btn) {
-          const nowStr = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-          btn.outerHTML = `
+          btn.disabled = true;
+          btn.innerText = "⏳ Recording...";
+        }
+
+        try {
+          const user = window.MediCareAPI
+            ? window.MediCareAPI.getCurrentUser()
+            : null;
+          const pId =
+            patientId || (user && user.patientId ? user.patientId : 1);
+
+          if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
+            await window.MediCareAPI.apiFetch("/medicinelog", "POST", {
+              medicineId: medId,
+              patientId: pId,
+              scheduledTime: new Date().toISOString(),
+              status: "Taken",
+            });
+          }
+
+          if (btn) {
+            const nowStr = new Date().toLocaleTimeString("en-US", {
+              hour: "2-digit",
+              minute: "2-digit",
+            });
+            btn.outerHTML = `
             <span class="badge-taken-done" style="background:#dcfce7; color:#16a34a; font-weight:700; font-size:12.5px; padding:7px 12px; border-radius:8px; display:inline-flex; align-items:center; gap:5px; border:1px solid #bbf7d0;">
               ✅ Taken (${nowStr})
             </span>
           `;
-        }
+          }
 
-        showToast(`✅ Confirmed: 1 Dose of "${medName}" taken! Inventory updated & recorded in History.`);
-        setTimeout(() => { loadMedicines(); }, 1500);
-      } catch (err) {
-        console.error('[Quick Take] Failed:', err);
-        alert('Failed to log intake: ' + (err.message || 'Operation failed'));
-        if (btn) {
-          btn.disabled = false;
-          btn.innerHTML = `💊 Take Dose`;
+          showToast(
+            `✅ Confirmed: 1 Dose of "${medName}" taken! Inventory updated & recorded in History.`,
+          );
+          setTimeout(() => {
+            loadMedicines();
+          }, 1500);
+        } catch (err) {
+          console.error("[Quick Take] Failed:", err);
+          alert("Failed to log intake: " + (err.message || "Operation failed"));
+          if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = `💊 Take Dose`;
+          }
         }
       }
-    }
 
-    // 12-Hour Schedule Modal Functions
-    function addScheduleSlot(medId, medName) {
-      document.getElementById('schedTargetMedId').value = medId;
-      document.getElementById('schedModalTitle').innerText = `Set 12-Hour Reminder: "${medName}"`;
-      document.getElementById('schedHour').value = "8";
-      document.getElementById('schedMinute').value = "00";
-      document.getElementById('schedAmPm').value = "AM";
-      document.getElementById('scheduleModal').classList.add('active');
-    }
-
-    function closeScheduleModal() {
-      document.getElementById('scheduleModal').classList.remove('active');
-    }
-
-    function setSchedulePreset(hour, minute, ampm) {
-      document.getElementById('schedHour').value = String(hour);
-      document.getElementById('schedMinute').value = String(minute);
-      document.getElementById('schedAmPm').value = String(ampm);
-    }
-
-    async function submit12HourScheduleSlot() {
-      const medId = parseInt(document.getElementById('schedTargetMedId').value, 10);
-      let hour = parseInt(document.getElementById('schedHour').value, 10);
-      const minute = document.getElementById('schedMinute').value;
-      const ampm = document.getElementById('schedAmPm').value;
-
-      // Convert 12-hour format with AM/PM to backend 24-hour TimeSpan HH:mm:00
-      let backendHour = hour;
-      if (ampm === 'PM' && backendHour < 12) backendHour += 12;
-      if (ampm === 'AM' && backendHour === 12) backendHour = 0;
-      const formattedTime = `${String(backendHour).padStart(2, '0')}:${minute}:00`;
-      const display12h = `${String(hour).padStart(2, '0')}:${minute} ${ampm}`;
-
-      const saveBtn = document.getElementById('saveSchedBtn');
-      saveBtn.disabled = true;
-      saveBtn.innerText = 'Saving...';
-
-      try {
-        if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
-          await window.MediCareAPI.apiFetch('/medicineschedule', 'POST', {
-            medicineId: medId,
-            time: formattedTime,
-            frequency: 'Daily'
-          });
-        }
-        closeScheduleModal();
-        showToast(`Schedule slot (${display12h}) saved to database!`);
-        await loadMedicines();
-      } catch (err) {
-        alert("Failed to save schedule slot: " + (err.message || 'Operation failed'));
-      } finally {
-        saveBtn.disabled = false;
-        saveBtn.innerText = 'Save 12-Hour Slot';
+      // 12-Hour Schedule Modal Functions
+      function addScheduleSlot(medId, medName) {
+        document.getElementById("schedTargetMedId").value = medId;
+        document.getElementById("schedModalTitle").innerText =
+          `Set 12-Hour Reminder: "${medName}"`;
+        document.getElementById("schedHour").value = "8";
+        document.getElementById("schedMinute").value = "00";
+        document.getElementById("schedAmPm").value = "AM";
+        document.getElementById("scheduleModal").classList.add("active");
       }
-    }
 
-    async function deleteScheduleSlot(scheduleId, medId) {
-      if (!confirm(`Delete reminder schedule slot #${scheduleId}?`)) return;
-      try {
-        if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
-          await window.MediCareAPI.apiFetch(`/medicinelog/${scheduleId}`, 'DELETE').catch(() => {});
-          await window.MediCareAPI.apiFetch(`/medicineschedule/${scheduleId}`, 'DELETE');
-        }
-        showToast(`Schedule slot removed from database.`);
-        await loadMedicines();
-      } catch (err) {
-        alert("Failed to delete schedule slot: " + (err.message || 'Operation failed'));
+      function closeScheduleModal() {
+        document.getElementById("scheduleModal").classList.remove("active");
       }
-    }
 
-    function escapeHtml(str) {
-      if (!str) return '';
-      return String(str)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;');
-    }
+      function setSchedulePreset(hour, minute, ampm) {
+        document.getElementById("schedHour").value = String(hour);
+        document.getElementById("schedMinute").value = String(minute);
+        document.getElementById("schedAmPm").value = String(ampm);
+      }
 
-    // Submit handler (Add or Update)
-    async function handleMedSubmit(e) {
-      e.preventDefault();
-      const saveBtn = document.getElementById('saveMedBtn');
-      saveBtn.disabled = true;
-      saveBtn.innerText = 'Saving...';
+      async function submit12HourScheduleSlot() {
+        const medId = parseInt(
+          document.getElementById("schedTargetMedId").value,
+          10,
+        );
+        let hour = parseInt(document.getElementById("schedHour").value, 10);
+        const minute = String(
+          parseInt(document.getElementById("schedMinute").value, 10) || 0,
+        ).padStart(2, "0");
+        const ampm = document.getElementById("schedAmPm").value;
 
-      const editingId = document.getElementById('editingMedId').value;
-      const name = document.getElementById('medName').value.trim();
-      const batch = document.getElementById('medBatch').value.trim();
-      const stock = parseInt(document.getElementById('medStock').value, 10) || 1;
-      const price = parseFloat(document.getElementById('medPrice').value) || 0;
-      const expiryDate = document.getElementById('expiryDate').value;
-      const startDate = document.getElementById('startDate').value;
-      const dose = document.getElementById('medDose').value.trim() || '1 Tablet';
+        // Convert 12-hour format with AM/PM to backend 24-hour TimeSpan HH:mm:00
+        let backendHour = hour;
+        if (ampm === "PM" && backendHour < 12) backendHour += 12;
+        if (ampm === "AM" && backendHour === 12) backendHour = 0;
+        const formattedTime = `${String(backendHour).padStart(2, "0")}:${minute}:00`;
+        const display12h = `${String(hour).padStart(2, "0")}:${minute} ${ampm}`;
 
-      // Encode Batch & Price inside Dosage field so it seamlessly round-trips with backend DTO
-      const compositeDosage = `${dose} • Batch: ${batch} • $${price.toFixed(2)}`;
+        const saveBtn = document.getElementById("saveSchedBtn");
+        saveBtn.disabled = true;
+        saveBtn.innerText = "Saving...";
 
-      const payload = {
-        patientId: 1,
-        name: name,
-        dosage: compositeDosage,
-        dose: 1,
-        stock: stock,
-        startDate: startDate ? new Date(startDate).toISOString() : new Date().toISOString(),
-        endDate: expiryDate ? new Date(expiryDate).toISOString() : new Date(Date.now() + 30*24*3600*1000).toISOString(),
-        mealTiming: 'AfterMeal'
-      };
+        try {
+          if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
+            await window.MediCareAPI.apiFetch("/medicineschedule", "POST", {
+              medicineId: medId,
+              time: formattedTime,
+              frequency: "Daily",
+            });
+          }
+          closeScheduleModal();
+          showToast(`Schedule slot (${display12h}) saved to database!`);
+          await loadMedicines();
+        } catch (err) {
+          alert(
+            "Failed to save schedule slot: " +
+              (err.message || "Operation failed"),
+          );
+        } finally {
+          saveBtn.disabled = false;
+          saveBtn.innerText = "Save 12-Hour Slot";
+        }
+      }
 
-      try {
-        let result;
-        const token = localStorage.getItem('medicare_jwt_token');
-        const authHeaders = {
-          'Content-Type': 'application/json',
-          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+      async function deleteScheduleSlot(scheduleId, medId) {
+        if (!confirm(`Delete reminder schedule slot #${scheduleId}?`)) return;
+        try {
+          if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
+            await window.MediCareAPI.apiFetch(
+              `/medicinelog/${scheduleId}`,
+              "DELETE",
+            ).catch(() => {});
+            await window.MediCareAPI.apiFetch(
+              `/medicineschedule/${scheduleId}`,
+              "DELETE",
+            );
+          }
+          showToast(`Schedule slot removed from database.`);
+          await loadMedicines();
+        } catch (err) {
+          alert(
+            "Failed to delete schedule slot: " +
+              (err.message || "Operation failed"),
+          );
+        }
+      }
+
+      function escapeHtml(str) {
+        if (!str) return "";
+        return String(str)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;");
+      }
+
+      // Submit handler (Add or Update)
+      async function handleMedSubmit(e) {
+        e.preventDefault();
+        const saveBtn = document.getElementById("saveMedBtn");
+        saveBtn.disabled = true;
+        saveBtn.innerText = "Saving...";
+
+        const editingId = document.getElementById("editingMedId").value;
+        const name = document.getElementById("medName").value.trim();
+        const batch = document.getElementById("medBatch").value.trim();
+        const stock =
+          parseInt(document.getElementById("medStock").value, 10) || 1;
+        const price =
+          parseFloat(document.getElementById("medPrice").value) || 0;
+        const expiryDate = document.getElementById("expiryDate").value;
+        const startDate = document.getElementById("startDate").value;
+        const dose =
+          document.getElementById("medDose").value.trim() || "1 Tablet";
+
+        const mealTimingEl = document.getElementById("medMealTiming");
+        const mealTimingVal = mealTimingEl ? mealTimingEl.value : "AfterMeal";
+
+        // Encode Batch & Price inside Dosage field so it seamlessly round-trips with backend DTO
+        const compositeDosage = `${dose} • Batch: ${batch} • $${price.toFixed(2)}`;
+
+        const payload = {
+          patientId: 1,
+          name: name,
+          dosage: compositeDosage,
+          dose: 1,
+          stock: stock,
+          startDate: startDate
+            ? new Date(startDate).toISOString()
+            : new Date().toISOString(),
+          endDate: expiryDate
+            ? new Date(expiryDate).toISOString()
+            : new Date(Date.now() + 30 * 24 * 3600 * 1000).toISOString(),
+          mealTiming: mealTimingVal,
         };
 
-        if (editingId) {
-          console.log(`[MediCare API] Updating medicine ID ${editingId}:`, payload);
-          let res;
-          if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
-            result = await window.MediCareAPI.apiFetch(`/medicine/${editingId}`, 'PUT', payload);
+        try {
+          let result;
+          const token = localStorage.getItem("medicare_jwt_token");
+          const authHeaders = {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          };
+
+          if (editingId) {
+            console.log(
+              `[MediCare API] Updating medicine ID ${editingId}:`,
+              payload,
+            );
+            let res;
+            if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
+              result = await window.MediCareAPI.apiFetch(
+                `/medicine/${editingId}`,
+                "PUT",
+                payload,
+              );
+            } else {
+              res = await fetch(`${API_URL}/medicine/${editingId}`, {
+                method: "PUT",
+                headers: authHeaders,
+                body: JSON.stringify(payload),
+              });
+              if (!res.ok) {
+                const errText = await res.text();
+                throw new Error(`HTTP ${res.status}: ${errText}`);
+              }
+              result = await res.json();
+            }
+            showToast(`Medicine "${name}" updated successfully in database!`);
+            closeMedicineModal();
+            await loadMedicines();
           } else {
-            res = await fetch(`${API_URL}/medicine/${editingId}`, {
-              method: 'PUT',
-              headers: authHeaders,
-              body: JSON.stringify(payload)
+            console.log(
+              "[MediCare API] Adding new medicine to database:",
+              payload,
+            );
+            let res;
+            if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
+              result = await window.MediCareAPI.apiFetch(
+                "/medicine",
+                "POST",
+                payload,
+              );
+            } else {
+              res = await fetch(`${API_URL}/medicine`, {
+                method: "POST",
+                headers: authHeaders,
+                body: JSON.stringify(payload),
+              });
+              if (!res.ok) {
+                const errText = await res.text();
+                throw new Error(`HTTP ${res.status}: ${errText}`);
+              }
+              result = await res.json();
+            }
+
+            const createdMedId = result ? result.id || result.Id : 0;
+
+            // Schedule daily time slot
+            let hour =
+              parseInt(document.getElementById("medSchedHour").value, 10) || 8;
+            const minute = String(
+              parseInt(document.getElementById("medSchedMinute").value, 10) ||
+                0,
+            ).padStart(2, "0");
+            const ampm = document.getElementById("medSchedAmPm").value || "AM";
+            let backendHour = hour;
+            if (ampm === "PM" && backendHour < 12) backendHour += 12;
+            if (ampm === "AM" && backendHour === 12) backendHour = 0;
+            const formattedTime = `${String(backendHour).padStart(2, "0")}:${minute}:00`;
+            const display12h = `${String(hour).padStart(2, "0")}:${minute} ${ampm}`;
+
+            if (createdMedId > 0) {
+              try {
+                if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
+                  await window.MediCareAPI.apiFetch(
+                    "/medicineschedule",
+                    "POST",
+                    {
+                      medicineId: createdMedId,
+                      time: formattedTime,
+                      frequency: "Daily",
+                    },
+                  );
+                } else {
+                  await fetch(`${API_URL}/medicineschedule`, {
+                    method: "POST",
+                    headers: authHeaders,
+                    body: JSON.stringify({
+                      medicineId: createdMedId,
+                      time: formattedTime,
+                      frequency: "Daily",
+                    }),
+                  });
+                }
+              } catch (schErr) {
+                console.warn(
+                  "[MediCare Schedule] Auto-create slot notice:",
+                  schErr,
+                );
+              }
+            }
+
+            // Requirement 1: Automatically redirect patient to Schedule page with success message
+            sessionStorage.setItem(
+              "medicare_flash_msg",
+              `✅ Medicine "${name}" and daily schedule (${display12h}) added successfully!`,
+            );
+            window.location.href = "schedule.html";
+            return;
+          }
+        } catch (err) {
+          console.error("[MediCare API] Submit failed:", err);
+          alert(
+            "Failed to save medicine to database: " +
+              err.message +
+              "\n\nPlease ensure you are logged in.",
+          );
+        } finally {
+          saveBtn.disabled = false;
+          saveBtn.innerText = editingId ? "Update Medicine" : "Save Medicine";
+        }
+      }
+
+      // Edit Modal Populate
+      function editMed(id) {
+        const med = loadedMedicines.find((m) => m.id === id);
+        if (!med) return;
+
+        document.getElementById("modalTitle").innerText =
+          "Edit Medicine: " + med.name;
+        document.getElementById("saveMedBtn").innerText = "Update Medicine";
+        document.getElementById("editingMedId").value = med.id;
+        document.getElementById("medName").value = med.name || "";
+        document.getElementById("medStock").value = med.stock || 0;
+
+        // Extract batch, price, and dose
+        const dosageText = med.dosage || "";
+        const batchMatch = dosageText.match(/Batch:\s*([^•\n]+)/i);
+        document.getElementById("medBatch").value = batchMatch
+          ? batchMatch[1].trim()
+          : "BATCH-2026-01";
+
+        const priceMatch = dosageText.match(/\$([0-9.]+)/i);
+        document.getElementById("medPrice").value = priceMatch
+          ? parseFloat(priceMatch[1])
+          : 20.0;
+
+        const dosePart = dosageText.split("•")[0].trim();
+        document.getElementById("medDose").value = dosePart || "1 Tablet";
+
+        if (med.startDate) {
+          document.getElementById("startDate").value = new Date(med.startDate)
+            .toISOString()
+            .split("T")[0];
+        }
+        if (med.endDate) {
+          document.getElementById("expiryDate").value = new Date(med.endDate)
+            .toISOString()
+            .split("T")[0];
+        }
+
+        medModal.classList.add("active");
+      }
+
+      // Delete Medicine (MySQL)
+      async function deleteMedicine(id) {
+        const med = loadedMedicines.find((m) => m.id === id);
+        const medName = med ? med.name : `ID ${id}`;
+        if (
+          !confirm(
+            `Are you sure you want to delete "${medName}" from database?`,
+          )
+        )
+          return;
+
+        console.log(
+          `[MediCare API] Deleting medicine ${medName} (ID: ${id}) from MySQL...`,
+        );
+
+        try {
+          const token = localStorage.getItem("medicare_jwt_token");
+          if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
+            await window.MediCareAPI.apiFetch(`/medicine/${id}`, "DELETE");
+          } else {
+            const res = await fetch(`${API_URL}/medicine/${id}`, {
+              method: "DELETE",
+              headers: token ? { Authorization: `Bearer ${token}` } : {},
             });
             if (!res.ok) {
               const errText = await res.text();
               throw new Error(`HTTP ${res.status}: ${errText}`);
             }
-            result = await res.json();
           }
-          showToast(`Medicine "${name}" updated successfully in database!`);
-        } else {
-          console.log('[MediCare API] Adding new medicine to database:', payload);
-          let res;
-          if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
-            result = await window.MediCareAPI.apiFetch('/medicine', 'POST', payload);
-          } else {
-            res = await fetch(`${API_URL}/medicine`, {
-              method: 'POST',
-              headers: authHeaders,
-              body: JSON.stringify(payload)
-            });
-            if (!res.ok) {
-              const errText = await res.text();
-              throw new Error(`HTTP ${res.status}: ${errText}`);
-            }
-            result = await res.json();
-          }
-          showToast(`Medicine "${name}" saved to MySQL database successfully!`);
+          showToast(
+            `Medicine "${medName}" deleted from database successfully!`,
+          );
+          await loadMedicines();
+        } catch (err) {
+          console.error("[MediCare API] Delete failed:", err);
+          alert("Failed to delete medicine: " + err.message);
         }
-
-        console.log('[MediCare API] Operation successful, response:', result);
-        closeMedicineModal();
-        await loadMedicines();
-      } catch (err) {
-        console.error('[MediCare API] Submit failed:', err);
-        alert('Failed to save medicine to database: ' + err.message + '\n\nPlease ensure you are logged in.');
-      } finally {
-        saveBtn.disabled = false;
-        saveBtn.innerText = editingId ? 'Update Medicine' : 'Save Medicine';
-      }
-    }
-
-    // Edit Modal Populate
-    function editMed(id) {
-      const med = loadedMedicines.find(m => m.id === id);
-      if (!med) return;
-
-      document.getElementById('modalTitle').innerText = 'Edit Medicine: ' + med.name;
-      document.getElementById('saveMedBtn').innerText = 'Update Medicine';
-      document.getElementById('editingMedId').value = med.id;
-      document.getElementById('medName').value = med.name || '';
-      document.getElementById('medStock').value = med.stock || 0;
-
-      // Extract batch, price, and dose
-      const dosageText = med.dosage || '';
-      const batchMatch = dosageText.match(/Batch:\s*([^•\n]+)/i);
-      document.getElementById('medBatch').value = batchMatch ? batchMatch[1].trim() : 'BATCH-2026-01';
-
-      const priceMatch = dosageText.match(/\$([0-9.]+)/i);
-      document.getElementById('medPrice').value = priceMatch ? parseFloat(priceMatch[1]) : 20.00;
-
-      const dosePart = dosageText.split('•')[0].trim();
-      document.getElementById('medDose').value = dosePart || '1 Tablet';
-
-      if (med.startDate) {
-        document.getElementById('startDate').value = new Date(med.startDate).toISOString().split('T')[0];
-      }
-      if (med.endDate) {
-        document.getElementById('expiryDate').value = new Date(med.endDate).toISOString().split('T')[0];
       }
 
-      medModal.classList.add('active');
-    }
-
-    // Delete Medicine (MySQL)
-    async function deleteMedicine(id) {
-      const med = loadedMedicines.find(m => m.id === id);
-      const medName = med ? med.name : `ID ${id}`;
-      if (!confirm(`Are you sure you want to delete "${medName}" from database?`)) return;
-
-      console.log(`[MediCare API] Deleting medicine ${medName} (ID: ${id}) from MySQL...`);
-
-      try {
-        const token = localStorage.getItem('medicare_jwt_token');
-        if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
-          await window.MediCareAPI.apiFetch(`/medicine/${id}`, 'DELETE');
-        } else {
-          const res = await fetch(`${API_URL}/medicine/${id}`, {
-            method: 'DELETE',
-            headers: token ? { 'Authorization': `Bearer ${token}` } : {}
-          });
-          if (!res.ok) {
-            const errText = await res.text();
-            throw new Error(`HTTP ${res.status}: ${errText}`);
-          }
-        }
-        showToast(`Medicine "${medName}" deleted from database successfully!`);
-        await loadMedicines();
-      } catch (err) {
-        console.error('[MediCare API] Delete failed:', err);
-        alert('Failed to delete medicine: ' + err.message);
+      // Search and Tabs Filter
+      function setFilter(type) {
+        currentFilter = type;
+        document
+          .getElementById("tabAll")
+          .classList.toggle("active", type === "all");
+        document
+          .getElementById("tabLow")
+          .classList.toggle("active", type === "low");
+        filterMedicines();
       }
-    }
 
-    // Search and Tabs Filter
-    function setFilter(type) {
-      currentFilter = type;
-      document.getElementById('tabAll').classList.toggle('active', type === 'all');
-      document.getElementById('tabLow').classList.toggle('active', type === 'low');
-      filterMedicines();
-    }
+      function filterMedicines() {
+        const query = (document.getElementById("searchInput").value || "")
+          .toLowerCase()
+          .trim();
+        const cards = document.querySelectorAll(".med-card");
 
-    function filterMedicines() {
-      const query = (document.getElementById('searchInput').value || '').toLowerCase().trim();
-      const cards = document.querySelectorAll('.med-card');
+        cards.forEach((card) => {
+          const name = (card.getAttribute("data-name") || "").toLowerCase();
+          const text = card.innerText.toLowerCase();
+          const stock = parseInt(card.getAttribute("data-stock"), 10) || 0;
 
-      cards.forEach(card => {
-        const name = (card.getAttribute('data-name') || '').toLowerCase();
-        const text = card.innerText.toLowerCase();
-        const stock = parseInt(card.getAttribute('data-stock'), 10) || 0;
+          const matchesSearch =
+            !query || name.includes(query) || text.includes(query);
+          const matchesTab =
+            currentFilter === "all" || (currentFilter === "low" && stock <= 5);
 
-        const matchesSearch = !query || name.includes(query) || text.includes(query);
-        const matchesTab = currentFilter === 'all' || (currentFilter === 'low' && stock <= 5);
+          card.style.display = matchesSearch && matchesTab ? "flex" : "none";
+        });
+      }
 
-        card.style.display = (matchesSearch && matchesTab) ? 'flex' : 'none';
+      // Initial Load
+      document.addEventListener("DOMContentLoaded", () => {
+        loadMedicines();
       });
-    }
-
-    // Initial Load
-    document.addEventListener('DOMContentLoaded', () => {
-      loadMedicines();
-    });
-  </script>
-</body>
+    </script>
+  </body>
 </html>
