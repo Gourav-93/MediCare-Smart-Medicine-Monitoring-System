@@ -1,686 +1,875 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MediCare - Emergency SOS Command Center</title>
-  
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MediCare - Emergency SOS Command Center</title>
 
-  <!-- Common MediCare Design Tokens & Core Styles -->
-  <link rel="stylesheet" href="css/common.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
 
-  <style>
-    :root {
-      --primary: #0284c7;
-      --primary-dark: #0369a1;
-      --primary-light: #e0f2fe;
-      --danger: #dc2626;
-      --danger-dark: #b91c1c;
-      --danger-light: #fee2e2;
-      --success: #16a34a;
-      --success-light: #dcfce7;
-      --warning: #d97706;
-      --warning-light: #fef3c7;
-      --text-main: #0f172a;
-      --text-muted: #64748b;
-      --bg: #f8fafc;
-      --surface: #ffffff;
-      --border: #e2e8f0;
-      --radius: 14px;
-      --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-      --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-      --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
-    }
+    <!-- Common MediCare Design Tokens & Core Styles -->
+    <link rel="stylesheet" href="css/common.css" />
+    <link rel="stylesheet" href="css/ai-chatbot.css" />
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: 'Plus Jakarta Sans', sans-serif;
-    }
+    <style>
+      :root {
+        --primary: #0284c7;
+        --primary-dark: #0369a1;
+        --primary-light: #e0f2fe;
+        --danger: #dc2626;
+        --danger-dark: #b91c1c;
+        --danger-light: #fee2e2;
+        --success: #16a34a;
+        --success-light: #dcfce7;
+        --warning: #d97706;
+        --warning-light: #fef3c7;
+        --text-main: #0f172a;
+        --text-muted: #64748b;
+        --bg: #f8fafc;
+        --surface: #ffffff;
+        --border: #e2e8f0;
+        --radius: 14px;
+        --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+        --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+        --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+      }
 
-    body {
-      background-color: var(--bg);
-      color: var(--text-main);
-      min-height: 100vh;
-      overflow-x: hidden;
-      line-height: 1.5;
-    }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        font-family: "Plus Jakarta Sans", sans-serif;
+      }
 
-    /* Header */
-    .site-header {
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      background: rgba(255, 255, 255, 0.95);
-      backdrop-filter: blur(10px);
-      border-bottom: 1px solid var(--border);
-      height: 70px;
-      display: flex;
-      align-items: center;
-      padding: 0 clamp(16px, 4vw, 40px);
-    }
+      body {
+        background-color: var(--bg);
+        color: var(--text-main);
+        min-height: 100vh;
+        overflow-x: hidden;
+        line-height: 1.5;
+      }
 
-    .nav-container {
-      width: 100%;
-      max-width: 1380px;
-      margin: 0 auto;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
+      /* Header */
+      .site-header {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-bottom: 1px solid var(--border);
+        height: 70px;
+        display: flex;
+        align-items: center;
+        padding: 0 clamp(16px, 4vw, 40px);
+      }
 
-    .brand-logo {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      text-decoration: none;
-    }
+      .nav-container {
+        width: 100%;
+        max-width: 1380px;
+        margin: 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
 
-    .logo-icon {
-      width: 40px;
-      height: 40px;
-      background: linear-gradient(135deg, #dc2626, #ef4444);
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #ffffff;
-      font-weight: 800;
-      font-size: 20px;
-      box-shadow: 0 4px 10px rgba(220, 38, 38, 0.3);
-    }
+      .brand-logo {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        text-decoration: none;
+      }
 
-    .brand-text h1 {
-      font-size: 19px;
-      font-weight: 800;
-      color: var(--text-main);
-      line-height: 1.1;
-    }
+      .logo-icon {
+        width: 40px;
+        height: 40px;
+        background: linear-gradient(135deg, #dc2626, #ef4444);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #ffffff;
+        font-weight: 800;
+        font-size: 20px;
+        box-shadow: 0 4px 10px rgba(220, 38, 38, 0.3);
+      }
 
-    .brand-text span {
-      font-size: 11px;
-      font-weight: 600;
-      color: var(--danger);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
+      .brand-text h1 {
+        font-size: 19px;
+        font-weight: 800;
+        color: var(--text-main);
+        line-height: 1.1;
+      }
 
-    .desktop-nav-links {
-      display: flex;
-      align-items: center;
-      gap: 24px;
-      list-style: none;
-    }
+      .brand-text span {
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--danger);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
 
-    .desktop-nav-links a {
-      text-decoration: none;
-      color: var(--text-muted);
-      font-size: 14px;
-      font-weight: 600;
-      transition: color 0.2s;
-    }
-    .desktop-nav-links a:hover,
-    .desktop-nav-links a.active {
-      color: var(--danger);
-    }
+      .desktop-nav-links {
+        display: flex;
+        align-items: center;
+        gap: 24px;
+        list-style: none;
+      }
 
-    .btn {
-      padding: 9px 16px;
-      border-radius: 8px;
-      font-size: 13.5px;
-      font-weight: 600;
-      cursor: pointer;
-      border: 1px solid transparent;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      text-decoration: none;
-      transition: all 0.2s;
-    }
-    .btn-ghost { background: transparent; color: var(--text-main); border-color: var(--border); }
-    .btn-ghost:hover { background: #f1f5f9; }
-    .btn-danger { background: var(--danger); color: #fff; }
-    .btn-danger:hover { background: var(--danger-dark); }
-    .btn-success { background: var(--success); color: #fff; }
+      .desktop-nav-links a {
+        text-decoration: none;
+        color: var(--text-muted);
+        font-size: 14px;
+        font-weight: 600;
+        transition: color 0.2s;
+      }
+      .desktop-nav-links a:hover,
+      .desktop-nav-links a.active {
+        color: var(--danger);
+      }
 
-    /* Mobile Drawer */
-    .mobile-actions { display: none; align-items: center; gap: 8px; }
-    .hamburger-btn {
-      width: 40px;
-      height: 40px;
-      border-radius: 8px;
-      border: 1px solid var(--border);
-      background: #ffffff;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 5px;
-      cursor: pointer;
-    }
-    .hamburger-btn span { width: 18px; height: 2px; background: var(--text-main); }
+      .btn {
+        padding: 9px 16px;
+        border-radius: 8px;
+        font-size: 13.5px;
+        font-weight: 600;
+        cursor: pointer;
+        border: 1px solid transparent;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        text-decoration: none;
+        transition: all 0.2s;
+      }
+      .btn-ghost {
+        background: transparent;
+        color: var(--text-main);
+        border-color: var(--border);
+      }
+      .btn-ghost:hover {
+        background: #f1f5f9;
+      }
+      .btn-danger {
+        background: var(--danger);
+        color: #fff;
+      }
+      .btn-danger:hover {
+        background: var(--danger-dark);
+      }
+      .btn-success {
+        background: var(--success);
+        color: #fff;
+      }
 
-    .mobile-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(15, 23, 42, 0.45);
-      backdrop-filter: blur(4px);
-      z-index: 200;
-      opacity: 0;
-      visibility: hidden;
-      transition: all 0.3s;
-    }
-    .mobile-overlay.active { opacity: 1; visibility: visible; }
+      /* Mobile Drawer */
+      .mobile-actions {
+        display: none;
+        align-items: center;
+        gap: 8px;
+      }
+      .hamburger-btn {
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+        background: #ffffff;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+        cursor: pointer;
+      }
+      .hamburger-btn span {
+        width: 18px;
+        height: 2px;
+        background: var(--text-main);
+      }
 
-    .mobile-drawer {
-      position: fixed;
-      top: 0;
-      right: -100%;
-      width: min(320px, 85vw);
-      height: 100%;
-      background: var(--surface);
-      z-index: 201;
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      transition: right 0.3s ease;
-    }
-    .mobile-drawer.active { right: 0; }
+      .mobile-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.45);
+        backdrop-filter: blur(4px);
+        z-index: 200;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s;
+      }
+      .mobile-overlay.active {
+        opacity: 1;
+        visibility: visible;
+      }
 
-    /* Page Container */
-    .page-wrapper {
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: clamp(16px, 3vw, 32px) clamp(16px, 4vw, 40px);
-    }
+      .mobile-drawer {
+        position: fixed;
+        top: 0;
+        right: -100%;
+        width: min(320px, 85vw);
+        height: 100%;
+        background: var(--surface);
+        z-index: 201;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        transition: right 0.3s ease;
+      }
+      .mobile-drawer.active {
+        right: 0;
+      }
 
-    /* =========================================================
+      /* Page Container */
+      .page-wrapper {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: clamp(16px, 3vw, 32px) clamp(16px, 4vw, 40px);
+      }
+
+      /* =========================================================
        PANIC SOS HERO SECTION
        ========================================================= */
-    .sos-beacon-box {
-      background: #ffffff;
-      border: 1px solid #fecaca;
-      border-radius: 18px;
-      padding: clamp(24px, 4vw, 40px) 20px;
-      text-align: center;
-      box-shadow: 0 4px 20px rgba(220, 38, 38, 0.08);
-      margin-bottom: 28px;
-      position: relative;
-      overflow: hidden;
-    }
+      .sos-beacon-box {
+        background: #ffffff;
+        border: 1px solid #fecaca;
+        border-radius: 18px;
+        padding: clamp(24px, 4vw, 40px) 20px;
+        text-align: center;
+        box-shadow: 0 4px 20px rgba(220, 38, 38, 0.08);
+        margin-bottom: 28px;
+        position: relative;
+        overflow: hidden;
+      }
 
-    .sos-beacon-box::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 4px;
-      background: linear-gradient(90deg, #dc2626, #f87171, #dc2626);
-    }
+      .sos-beacon-box::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #dc2626, #f87171, #dc2626);
+      }
 
-    .sos-title {
-      font-size: clamp(22px, 4vw, 30px);
-      font-weight: 800;
-      color: #991b1b;
-      letter-spacing: -0.5px;
-      margin-bottom: 6px;
-    }
+      .sos-title {
+        font-size: clamp(22px, 4vw, 30px);
+        font-weight: 800;
+        color: #991b1b;
+        letter-spacing: -0.5px;
+        margin-bottom: 6px;
+      }
 
-    .sos-sub {
-      font-size: 14px;
-      color: var(--text-muted);
-      max-width: 600px;
-      margin: 0 auto 28px;
-    }
+      .sos-sub {
+        font-size: 14px;
+        color: var(--text-muted);
+        max-width: 600px;
+        margin: 0 auto 28px;
+      }
 
-    /* Giant Touch-Friendly SOS Panic Button */
-    .panic-button-wrap {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 20px;
-    }
+      /* Giant Touch-Friendly SOS Panic Button */
+      .panic-button-wrap {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 20px;
+      }
 
-    .panic-button {
-      width: clamp(150px, 36vw, 190px);
-      height: clamp(150px, 36vw, 190px);
-      border-radius: 50%;
-      background: radial-gradient(circle, #ef4444 0%, #dc2626 70%, #991b1b 100%);
-      border: 6px solid #fee2e2;
-      color: #ffffff;
-      font-size: clamp(28px, 6vw, 36px);
-      font-weight: 900;
-      letter-spacing: 1px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.5), 0 10px 25px rgba(220, 38, 38, 0.4);
-      animation: pulse-ring 2.2s infinite;
-      user-select: none;
-      transition: transform 0.15s ease;
-      touch-action: manipulation;
-    }
+      .panic-button {
+        width: clamp(150px, 36vw, 190px);
+        height: clamp(150px, 36vw, 190px);
+        border-radius: 50%;
+        background: radial-gradient(
+          circle,
+          #ef4444 0%,
+          #dc2626 70%,
+          #991b1b 100%
+        );
+        border: 6px solid #fee2e2;
+        color: #ffffff;
+        font-size: clamp(28px, 6vw, 36px);
+        font-weight: 900;
+        letter-spacing: 1px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow:
+          0 0 0 0 rgba(220, 38, 38, 0.5),
+          0 10px 25px rgba(220, 38, 38, 0.4);
+        animation: pulse-ring 2.2s infinite;
+        user-select: none;
+        transition: transform 0.15s ease;
+        touch-action: manipulation;
+      }
 
-    .panic-button:active {
-      transform: scale(0.94);
-    }
+      .panic-button:active {
+        transform: scale(0.94);
+      }
 
-    .panic-button span {
-      font-size: 11px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.8px;
-      margin-top: 4px;
-      opacity: 0.9;
-    }
+      .panic-button span {
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        margin-top: 4px;
+        opacity: 0.9;
+      }
 
-    @keyframes pulse-ring {
-      0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.55), 0 10px 25px rgba(220, 38, 38, 0.4); }
-      70% { box-shadow: 0 0 0 24px rgba(220, 38, 38, 0), 0 10px 25px rgba(220, 38, 38, 0.4); }
-      100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0), 0 10px 25px rgba(220, 38, 38, 0.4); }
-    }
+      @keyframes pulse-ring {
+        0% {
+          box-shadow:
+            0 0 0 0 rgba(220, 38, 38, 0.55),
+            0 10px 25px rgba(220, 38, 38, 0.4);
+        }
+        70% {
+          box-shadow:
+            0 0 0 24px rgba(220, 38, 38, 0),
+            0 10px 25px rgba(220, 38, 38, 0.4);
+        }
+        100% {
+          box-shadow:
+            0 0 0 0 rgba(220, 38, 38, 0),
+            0 10px 25px rgba(220, 38, 38, 0.4);
+        }
+      }
 
-    /* Active Emergency In-Progress Banner */
-    .incident-active-banner {
-      display: none;
-      background: #fef2f2;
-      border: 1px solid #f87171;
-      border-radius: var(--radius);
-      padding: 18px 20px;
-      margin-bottom: 28px;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 14px;
-    }
-    .incident-active-banner.show {
-      display: flex;
-    }
+      /* Active Emergency In-Progress Banner */
+      .incident-active-banner {
+        display: none;
+        background: #fef2f2;
+        border: 1px solid #f87171;
+        border-radius: var(--radius);
+        padding: 18px 20px;
+        margin-bottom: 28px;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 14px;
+      }
+      .incident-active-banner.show {
+        display: flex;
+      }
 
-    /* 2-Column Split: Direct Quick-Dial Contacts + Incident Guide */
-    .emergency-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 20px;
-      margin-bottom: 30px;
-    }
+      /* 2-Column Split: Direct Quick-Dial Contacts + Incident Guide */
+      .emergency-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        margin-bottom: 30px;
+      }
 
-    .content-box {
-      background: #ffffff;
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: clamp(18px, 3vw, 24px);
-      box-shadow: var(--shadow-sm);
-    }
+      .content-box {
+        background: #ffffff;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: clamp(18px, 3vw, 24px);
+        box-shadow: var(--shadow-sm);
+      }
 
-    .content-box h3 {
-      font-size: 17px;
-      font-weight: 700;
-      margin-bottom: 4px;
-      color: var(--text-main);
-    }
-    .content-box p {
-      font-size: 12.5px;
-      color: var(--text-muted);
-      margin-bottom: 16px;
-    }
+      .content-box h3 {
+        font-size: 17px;
+        font-weight: 700;
+        margin-bottom: 4px;
+        color: var(--text-main);
+      }
+      .content-box p {
+        font-size: 12.5px;
+        color: var(--text-muted);
+        margin-bottom: 16px;
+      }
 
-    /* Contact Card List */
-    .contact-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 12px 14px;
-      background: #f8fafc;
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      margin-bottom: 10px;
-      gap: 12px;
-    }
-    .contact-item:last-child { margin-bottom: 0; }
+      /* Contact Card List */
+      .contact-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 14px;
+        background: #f8fafc;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        margin-bottom: 10px;
+        gap: 12px;
+      }
+      .contact-item:last-child {
+        margin-bottom: 0;
+      }
 
-    .c-info strong {
-      display: block;
-      font-size: 14px;
-      color: var(--text-main);
-    }
-    .c-info span {
-      font-size: 12px;
-      color: var(--text-muted);
-    }
+      .c-info strong {
+        display: block;
+        font-size: 14px;
+        color: var(--text-main);
+      }
+      .c-info span {
+        font-size: 12px;
+        color: var(--text-muted);
+      }
 
-    .call-btn {
-      background: #ffffff;
-      color: var(--success);
-      border: 1px solid #bbf7d0;
-      padding: 8px 14px;
-      border-radius: 8px;
-      font-size: 13px;
-      font-weight: 700;
-      text-decoration: none;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      white-space: nowrap;
-    }
-    .call-btn:hover {
-      background: var(--success-light);
-    }
+      .call-btn {
+        background: #ffffff;
+        color: var(--success);
+        border: 1px solid #bbf7d0;
+        padding: 8px 14px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 700;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        white-space: nowrap;
+      }
+      .call-btn:hover {
+        background: var(--success-light);
+      }
 
-    /* Medical Identity Snapshot */
-    .id-row {
-      display: flex;
-      justify-content: space-between;
-      padding: 9px 0;
-      border-bottom: 1px solid var(--border);
-      font-size: 13px;
-    }
-    .id-row:last-child { border-bottom: none; }
-    .id-row span { color: var(--text-muted); }
-    .id-row strong { color: var(--text-main); }
+      /* Medical Identity Snapshot */
+      .id-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 9px 0;
+        border-bottom: 1px solid var(--border);
+        font-size: 13px;
+      }
+      .id-row:last-child {
+        border-bottom: none;
+      }
+      .id-row span {
+        color: var(--text-muted);
+      }
+      .id-row strong {
+        color: var(--text-main);
+      }
 
-    /* =========================================================
+      /* =========================================================
        RESPONSIVE BREAKPOINTS (320px - 1366px+)
        ========================================================= */
-    @media (max-width: 1023px) {
-      .desktop-nav-links { display: none; }
-      .mobile-actions { display: flex; }
-      .emergency-grid { grid-template-columns: 1fr; }
-    }
+      @media (max-width: 1023px) {
+        .desktop-nav-links {
+          display: none;
+        }
+        .mobile-actions {
+          display: flex;
+        }
+        .emergency-grid {
+          grid-template-columns: 1fr;
+        }
+      }
 
-    @media (max-width: 767px) {
-      .incident-active-banner { flex-direction: column; align-items: stretch; text-align: left; }
-      .incident-active-banner .btn { width: 100%; }
-      .contact-item { flex-direction: column; align-items: stretch; gap: 8px; }
-      .call-btn { justify-content: center; width: 100%; }
-    }
+      @media (max-width: 767px) {
+        .incident-active-banner {
+          flex-direction: column;
+          align-items: stretch;
+          text-align: left;
+        }
+        .incident-active-banner .btn {
+          width: 100%;
+        }
+        .contact-item {
+          flex-direction: column;
+          align-items: stretch;
+          gap: 8px;
+        }
+        .call-btn {
+          justify-content: center;
+          width: 100%;
+        }
+      }
 
-    @media (max-width: 374px) {
-      .brand-text h1 { font-size: 16px; }
-      .brand-text span { display: none; }
-      .sos-title { font-size: 20px; }
-    }
-  </style>
-</head>
-<body>
+      @media (max-width: 374px) {
+        .brand-text h1 {
+          font-size: 16px;
+        }
+        .brand-text span {
+          display: none;
+        }
+        .sos-title {
+          font-size: 20px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- ================= MODULAR GLOBAL HEADER ================= -->
+    <header id="global-header"></header>
 
-  <!-- ================= MODULAR GLOBAL HEADER ================= -->
-  <header id="global-header"></header>
-
-  <!-- ================= MAIN EMERGENCY CONTENT ================= -->
-  <div class="page-wrapper">
-    
-    <!-- Active Emergency Incident Banner (Shows dynamically upon trigger) -->
-    <div class="incident-active-banner" id="activeIncidentBanner">
-      <div style="display: flex; align-items: center; gap: 12px;">
-        <span style="font-size: 26px;">🚨</span>
-        <div>
-          <strong style="color: #991b1b; font-size: 15px;">DISTRESS BROADCAST IN PROGRESS</strong>
-          <div style="color: #b91c1c; font-size: 12.5px;">
-            Caregiver Rahul Verma and Emergency Services alerted with GPS coordinates.
+    <!-- ================= MAIN EMERGENCY CONTENT ================= -->
+    <div class="page-wrapper">
+      <!-- Active Emergency Incident Banner (Shows dynamically upon trigger) -->
+      <div class="incident-active-banner" id="activeIncidentBanner">
+        <div style="display: flex; align-items: center; gap: 12px">
+          <span style="font-size: 26px">🚨</span>
+          <div>
+            <strong style="color: #991b1b; font-size: 15px"
+              >DISTRESS BROADCAST IN PROGRESS</strong
+            >
+            <div style="color: #b91c1c; font-size: 12.5px">
+              Caregiver Rahul Verma and Emergency Services alerted with GPS
+              coordinates.
+            </div>
           </div>
         </div>
-      </div>
-      <button class="btn btn-success" onclick="resolveCurrentSOS()">✓ Mark Situation Resolved</button>
-    </div>
-
-    <!-- SOS PANIC BEACON SECTION -->
-    <div class="sos-beacon-box">
-      <h2 class="sos-title">One-Tap Emergency Distress Beacon</h2>
-      <p class="sos-sub">
-        Tap the red button below to immediately notify all linked caregivers, dispatch SMS alerts, and trigger high-priority alerts across the system.
-      </p>
-
-      <div class="panic-button-wrap">
-        <button class="panic-button" id="sosPanicBtn" onclick="triggerPanicBroadcast()">
-          SOS
-          <span>TAP NOW</span>
+        <button class="btn btn-success" onclick="resolveCurrentSOS()">
+          ✓ Mark Situation Resolved
         </button>
       </div>
 
-      <div style="font-size: 12px; color: var(--text-muted);">
-        Backend API Trigger: <code>POST /api/emergency</code> • Location & Prescription context attached automatically.
+      <!-- SOS PANIC BEACON SECTION -->
+      <div class="sos-beacon-box">
+        <h2 class="sos-title">One-Tap Emergency Distress Beacon</h2>
+        <p class="sos-sub">
+          Tap the red button below to immediately notify all linked caregivers,
+          dispatch SMS alerts, and trigger high-priority alerts across the
+          system.
+        </p>
+
+        <div class="panic-button-wrap">
+          <button
+            class="panic-button"
+            id="sosPanicBtn"
+            onclick="triggerPanicBroadcast()"
+          >
+            SOS
+            <span>TAP NOW</span>
+          </button>
+        </div>
+
+        <div style="font-size: 12px; color: var(--text-muted)">
+          Backend API Trigger: <code>POST /api/emergency</code> • Location &
+          Prescription context attached automatically.
+        </div>
+      </div>
+
+      <!-- 2-COLUMN SPLIT: DIRECT CALLS + PATIENT MEDICAL IDENTIFIER -->
+      <div class="emergency-grid">
+        <!-- Box 1: Quick Dial Emergency Numbers -->
+        <div class="content-box">
+          <h3>Instant Emergency Contacts</h3>
+          <p>
+            One-touch direct calling for local ambulance, caregiver, and
+            attending physician.
+          </p>
+
+          <div class="contact-item">
+            <div class="c-info">
+              <strong>National Emergency Helpline</strong>
+              <span>Police / Medical (24x7)</span>
+            </div>
+            <a href="tel:112" class="call-btn">📞 Call 112</a>
+          </div>
+
+          <div class="contact-item">
+            <div class="c-info">
+              <strong>Ambulance Service</strong>
+              <span>Emergency Paramedics</span>
+            </div>
+            <a href="tel:108" class="call-btn">🚑 Call 108</a>
+          </div>
+
+          <div class="contact-item" id="caregiverContactItem">
+            <div class="c-info">
+              <strong id="cgNameDisplay">Linked Caregiver</strong>
+              <span>Primary Emergency Contact</span>
+            </div>
+            <a href="tel:112" id="cgCallLink" class="call-btn"
+              >📞 Direct Call</a
+            >
+          </div>
+        </div>
+
+        <!-- Box 2: Critical Health Snapshot (Live from Database) -->
+        <div class="content-box">
+          <h3>First-Responder Medical Snapshot</h3>
+          <p>
+            Live patient demographics and database drug regimen for attending
+            staff.
+          </p>
+
+          <div class="id-row">
+            <span>Patient Name:</span>
+            <strong id="snapPatientName">Loading...</strong>
+          </div>
+          <div class="id-row">
+            <span>Account Email:</span>
+            <strong id="snapPatientEmail">Loading...</strong>
+          </div>
+          <div class="id-row">
+            <span>Active Prescriptions in DB:</span>
+            <strong id="snapActiveMeds">Fetching from MySQL...</strong>
+          </div>
+          <div class="id-row">
+            <span>Database Emergency Status:</span>
+            <strong id="snapEmergencyStatus" style="color: var(--success)"
+              >Normal (No Active Distress)</strong
+            >
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- 2-COLUMN SPLIT: DIRECT CALLS + PATIENT MEDICAL IDENTIFIER -->
-    <div class="emergency-grid">
-      
-      <!-- Box 1: Quick Dial Emergency Numbers -->
-      <div class="content-box">
-        <h3>Instant Emergency Contacts</h3>
-        <p>One-touch direct calling for local ambulance, caregiver, and attending physician.</p>
+    <!-- Shared MediCare API, Modular Navbar, and Global AI Chatbot -->
+    <script src="js/api.js"></script>
+    <script src="js/navbar.js"></script>
+    <script src="js/ai-chatbot.js"></script>
 
-        <div class="contact-item">
-          <div class="c-info">
-            <strong>National Emergency Helpline</strong>
-            <span>Police / Medical (24x7)</span>
-          </div>
-          <a href="tel:112" class="call-btn">📞 Call 112</a>
-        </div>
+    <!-- ================= LIVE DATABASE WIRE JAVASCRIPT ================= -->
+    <script>
+      const API_URL =
+        (window.MediCareAPI && window.MediCareAPI.API_BASE_URL) ||
+        "http://localhost:5000/api";
+      let currentActiveAlertId = null;
 
-        <div class="contact-item">
-          <div class="c-info">
-            <strong>Ambulance Service</strong>
-            <span>Emergency Paramedics</span>
-          </div>
-          <a href="tel:108" class="call-btn">🚑 Call 108</a>
-        </div>
+      // 1. Load Real Patient Info & Database Prescriptions
+      async function loadMedicalSnapshot() {
+        try {
+          const user =
+            (window.MediCareAPI && window.MediCareAPI.getCurrentUser()) || {};
+          document.getElementById("snapPatientName").innerText =
+            user.name || "Patient";
+          document.getElementById("snapPatientEmail").innerText =
+            user.email || "patient@medicare.com";
 
-        <div class="contact-item" id="caregiverContactItem">
-          <div class="c-info">
-            <strong id="cgNameDisplay">Linked Caregiver</strong>
-            <span>Primary Emergency Contact</span>
-          </div>
-          <a href="tel:112" id="cgCallLink" class="call-btn">📞 Direct Call</a>
-        </div>
-      </div>
-
-      <!-- Box 2: Critical Health Snapshot (Live from Database) -->
-      <div class="content-box">
-        <h3>First-Responder Medical Snapshot</h3>
-        <p>Live patient demographics and database drug regimen for attending staff.</p>
-
-        <div class="id-row">
-          <span>Patient Name:</span>
-          <strong id="snapPatientName">Loading...</strong>
-        </div>
-        <div class="id-row">
-          <span>Account Email:</span>
-          <strong id="snapPatientEmail">Loading...</strong>
-        </div>
-        <div class="id-row">
-          <span>Active Prescriptions in DB:</span>
-          <strong id="snapActiveMeds">Fetching from MySQL...</strong>
-        </div>
-        <div class="id-row">
-          <span>Database Emergency Status:</span>
-          <strong id="snapEmergencyStatus" style="color: var(--success);">Normal (No Active Distress)</strong>
-        </div>
-      </div>
-
-    </div>
-
-  </div>
-
-  <!-- Shared MediCare API & Modular Navbar Utilities -->
-  <script src="js/api.js"></script>
-  <script src="js/navbar.js"></script>
-
-  <!-- ================= LIVE DATABASE WIRE JAVASCRIPT ================= -->
-  <script>
-    const API_URL = (window.MediCareAPI && window.MediCareAPI.API_BASE_URL) || 'http://localhost:5000/api';
-    let currentActiveAlertId = null;
-
-    // 1. Load Real Patient Info & Database Prescriptions
-    async function loadMedicalSnapshot() {
-      try {
-        const user = (window.MediCareAPI && window.MediCareAPI.getCurrentUser()) || {};
-        document.getElementById('snapPatientName').innerText = user.name || 'Patient';
-        document.getElementById('snapPatientEmail').innerText = user.email || 'patient@medicare.com';
-
-        let pId = 1;
-        // Fetch dashboard for patient demographics and emergency contact
-        if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
-          try {
-            const dash = await window.MediCareAPI.apiFetch('/dashboard/patient');
-            if (dash && dash.patient) {
-              pId = dash.patient.id || 1;
-              document.getElementById('snapPatientName').innerText = dash.patient.name || user.name;
-              document.getElementById('snapPatientEmail').innerText = dash.patient.email || user.email;
-              if (dash.patient.emergencyContact) {
-                document.getElementById('cgNameDisplay').innerText = `Emergency Contact (${dash.patient.emergencyContact})`;
-                document.getElementById('cgCallLink').href = `tel:${dash.patient.emergencyContact}`;
+          let pId = 1;
+          // Fetch dashboard for patient demographics and emergency contact
+          if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
+            try {
+              const dash =
+                await window.MediCareAPI.apiFetch("/dashboard/patient");
+              if (dash && dash.patient) {
+                pId = dash.patient.id || 1;
+                document.getElementById("snapPatientName").innerText =
+                  dash.patient.name || user.name;
+                document.getElementById("snapPatientEmail").innerText =
+                  dash.patient.email || user.email;
+                if (dash.patient.emergencyContact) {
+                  document.getElementById("cgNameDisplay").innerText =
+                    `Emergency Contact (${dash.patient.emergencyContact})`;
+                  document.getElementById("cgCallLink").href =
+                    `tel:${dash.patient.emergencyContact}`;
+                }
               }
+            } catch (e) {
+              console.warn("[Emergency] patient dashboard fallback:", e);
             }
-          } catch (e) {
-            console.warn('[Emergency] patient dashboard fallback:', e);
+
+            // Check linked caregivers
+            try {
+              const cgs = await window.MediCareAPI.apiFetch(
+                `/Caregiverpatient/patient/${pId}`,
+              );
+              if (Array.isArray(cgs) && cgs.length > 0) {
+                const cg = cgs[0];
+                const cgName =
+                  cg.caregiver && cg.caregiver.user
+                    ? cg.caregiver.user.name
+                    : "Primary Caregiver";
+                const cgEmail =
+                  cg.caregiver && cg.caregiver.user
+                    ? cg.caregiver.user.email
+                    : "";
+                document.getElementById("cgNameDisplay").innerText =
+                  `${cgName} (${cg.relationType || "Caregiver"})`;
+              }
+            } catch (e) {}
           }
 
-          // Check linked caregivers
-          try {
-            const cgs = await window.MediCareAPI.apiFetch(`/Caregiverpatient/patient/${pId}`);
-            if (Array.isArray(cgs) && cgs.length > 0) {
-              const cg = cgs[0];
-              const cgName = (cg.caregiver && cg.caregiver.user) ? cg.caregiver.user.name : 'Primary Caregiver';
-              const cgEmail = (cg.caregiver && cg.caregiver.user) ? cg.caregiver.user.email : '';
-              document.getElementById('cgNameDisplay').innerText = `${cgName} (${cg.relationType || 'Caregiver'})`;
+          // Fetch real active medicines from MySQL
+          let meds = [];
+          if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
+            try {
+              meds = await window.MediCareAPI.apiFetch("/medicine");
+            } catch (e) {
+              console.warn("[Emergency] /medicine fallback:", e);
             }
-          } catch (e) {}
-        }
-
-        // Fetch real active medicines from MySQL
-        let meds = [];
-        if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
-          try {
-            meds = await window.MediCareAPI.apiFetch('/medicine');
-          } catch (e) {
-            console.warn('[Emergency] /medicine fallback:', e);
           }
-        }
-        if (Array.isArray(meds) && meds.length > 0) {
-          const names = meds.map(m => m.name).join(', ');
-          document.getElementById('snapActiveMeds').innerText = names;
-        } else {
-          document.getElementById('snapActiveMeds').innerText = 'None recorded in database';
-        }
-
-        // Check if there is an active emergency in MySQL
-        await checkActiveEmergencies();
-      } catch (err) {
-        console.error('[Emergency] Snapshot error:', err);
-      }
-    }
-
-    async function checkActiveEmergencies() {
-      try {
-        let alerts = [];
-        if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
-          alerts = await window.MediCareAPI.apiFetch('/emergency');
-        } else {
-          const token = localStorage.getItem('medicare_jwt_token');
-          const res = await fetch(`${API_URL}/emergency`, {
-            headers: token ? { 'Authorization': `Bearer ${token}` } : {}
-          });
-          if (res.ok) alerts = await res.json();
-        }
-
-        if (Array.isArray(alerts)) {
-          const active = alerts.find(a => (a.status || '').toUpperCase() === 'ACTIVE');
-          if (active) {
-            currentActiveAlertId = active.id;
-            document.getElementById('activeIncidentBanner').classList.add('show');
-            document.getElementById('snapEmergencyStatus').innerText = '🚨 DISTRESS BROADCAST ACTIVE';
-            document.getElementById('snapEmergencyStatus').style.color = 'var(--danger)';
+          if (Array.isArray(meds) && meds.length > 0) {
+            const names = meds.map((m) => m.name).join(", ");
+            document.getElementById("snapActiveMeds").innerText = names;
           } else {
-            document.getElementById('activeIncidentBanner').classList.remove('show');
-            document.getElementById('snapEmergencyStatus').innerText = 'Normal (No Active Distress)';
-            document.getElementById('snapEmergencyStatus').style.color = 'var(--success)';
+            document.getElementById("snapActiveMeds").innerText =
+              "None recorded in database";
+          }
+
+          // Check if there is an active emergency in MySQL
+          await checkActiveEmergencies();
+        } catch (err) {
+          console.error("[Emergency] Snapshot error:", err);
+        }
+      }
+
+      async function checkActiveEmergencies() {
+        try {
+          let alerts = [];
+          if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
+            alerts = await window.MediCareAPI.apiFetch("/emergency");
+          } else {
+            const token = localStorage.getItem("medicare_jwt_token");
+            const res = await fetch(`${API_URL}/emergency`, {
+              headers: token ? { Authorization: `Bearer ${token}` } : {},
+            });
+            if (res.ok) alerts = await res.json();
+          }
+
+          if (Array.isArray(alerts)) {
+            const active = alerts.find(
+              (a) => (a.status || "").toUpperCase() === "ACTIVE",
+            );
+            if (active) {
+              currentActiveAlertId = active.id;
+              document
+                .getElementById("activeIncidentBanner")
+                .classList.add("show");
+              document.getElementById("snapEmergencyStatus").innerText =
+                "🚨 DISTRESS BROADCAST ACTIVE";
+              document.getElementById("snapEmergencyStatus").style.color =
+                "var(--danger)";
+            } else {
+              document
+                .getElementById("activeIncidentBanner")
+                .classList.remove("show");
+              document.getElementById("snapEmergencyStatus").innerText =
+                "Normal (No Active Distress)";
+              document.getElementById("snapEmergencyStatus").style.color =
+                "var(--success)";
+            }
+          }
+        } catch (e) {
+          console.warn("[Emergency] Active check fallback:", e);
+        }
+      }
+
+      // 2. Trigger Panic Broadcast (POST /api/emergency)
+      async function triggerPanicBroadcast(alreadyConfirmed = false) {
+        if (!alreadyConfirmed) {
+          const confirmSOS = confirm(
+            "🚨 ARE YOU SURE YOU WANT TO SEND AN EMERGENCY SOS ALERT?\n\nThis will send high-priority alerts to linked caregivers and record an active emergency in the database.",
+          );
+          if (!confirmSOS) return;
+        }
+
+        const panicBtn = document.querySelector(".panic-button");
+        if (panicBtn) {
+          panicBtn.style.opacity = "0.7";
+          panicBtn.style.pointerEvents = "none";
+        }
+
+        try {
+          const payload = {
+            message: "Emergency SOS Beacon Triggered from MediCare Web App",
+          };
+          let result = null;
+
+          if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
+            result = await window.MediCareAPI.apiFetch(
+              "/emergency",
+              "POST",
+              payload,
+            );
+          } else {
+            const token = localStorage.getItem("medicare_jwt_token");
+            const res = await fetch(`${API_URL}/emergency`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                ...(token ? { Authorization: `Bearer ${token}` } : {}),
+              },
+              body: JSON.stringify(payload),
+            });
+            if (!res.ok) throw new Error(`Server returned HTTP ${res.status}`);
+            result = await res.json();
+          }
+
+          currentActiveAlertId = result.emergencyId || result.id || 1;
+          document.getElementById("activeIncidentBanner").classList.add("show");
+          document.getElementById("snapEmergencyStatus").innerText =
+            "🚨 DISTRESS BROADCAST ACTIVE";
+          document.getElementById("snapEmergencyStatus").style.color =
+            "var(--danger)";
+
+          alert(
+            "🚨 EMERGENCY ALERT SENT!\n\nYour emergency distress signal has been saved to the database. Your linked caregivers and emergency contacts have been notified.",
+          );
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        } catch (err) {
+          console.error("[Emergency] SOS Trigger failed:", err);
+          // CRITICAL: Never pretend an alert was sent if the request fails
+          alert(
+            "⚠️ EMERGENCY ALERT COULD NOT BE SENT: " +
+              (err.message || "Cannot contact server.") +
+              "\n\nPlease dial emergency services immediately (911 / 112 / 108) or call your caregiver directly right now!",
+          );
+        } finally {
+          if (panicBtn) {
+            panicBtn.style.opacity = "1";
+            panicBtn.style.pointerEvents = "auto";
           }
         }
-      } catch (e) {
-        console.warn('[Emergency] Active check fallback:', e);
       }
-    }
 
-    // 2. Trigger Panic Broadcast (POST /api/emergency)
-    async function triggerPanicBroadcast() {
-      const confirmSOS = confirm("🚨 ARE YOU SURE YOU WANT TO TRIGGER AN EMERGENCY SOS ALERT?\n\nThis will send high-priority alerts to linked caregivers and store the distress event in the database.");
-      if (!confirmSOS) return;
+      // 3. Resolve Current SOS (PUT /api/emergency/{id}/resolve)
+      async function resolveCurrentSOS() {
+        if (
+          !confirm("Confirm that the emergency situation is safely resolved?")
+        )
+          return;
 
-      try {
-        const payload = { message: "Emergency SOS Beacon Triggered from MediCare Web App" };
-        let result = null;
+        try {
+          const id = currentActiveAlertId || 1;
+          if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
+            await window.MediCareAPI.apiFetch(
+              `/emergency/${id}/resolve`,
+              "PUT",
+            );
+          } else {
+            const token = localStorage.getItem("medicare_jwt_token");
+            await fetch(`${API_URL}/emergency/${id}/resolve`, {
+              method: "PUT",
+              headers: token ? { Authorization: `Bearer ${token}` } : {},
+            });
+          }
 
-        if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
-          result = await window.MediCareAPI.apiFetch('/emergency', 'POST', payload);
-        } else {
-          const token = localStorage.getItem('medicare_jwt_token');
-          const res = await fetch(`${API_URL}/emergency`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-            },
-            body: JSON.stringify(payload)
-          });
-          if (!res.ok) throw new Error('Failed to create emergency alert');
-          result = await res.json();
+          document
+            .getElementById("activeIncidentBanner")
+            .classList.remove("show");
+          document.getElementById("snapEmergencyStatus").innerText =
+            "Normal (Situation Resolved)";
+          document.getElementById("snapEmergencyStatus").style.color =
+            "var(--success)";
+          currentActiveAlertId = null;
+
+          alert(
+            "Emergency incident status updated to RESOLVED in MySQL database.",
+          );
+        } catch (err) {
+          console.error("[Emergency] Resolve failed:", err);
+          document
+            .getElementById("activeIncidentBanner")
+            .classList.remove("show");
+          alert("Situation marked resolved.");
+        }
+      }
+
+      document.addEventListener("DOMContentLoaded", () => {
+        // Role guard: Caregivers and Admins monitor from their dashboards and do not trigger SOS beacons
+        const currentRole = (
+          window.MediCareAPI && window.MediCareAPI.getUserRole
+            ? window.MediCareAPI.getUserRole()
+            : localStorage.getItem("medicare_role") || ""
+        ).toUpperCase();
+        if (currentRole === "CAREGIVER") {
+          window.location.replace("caregiver-dashboard.html");
+          return;
+        } else if (currentRole === "ADMIN") {
+          window.location.replace("admin-dashboard.html");
+          return;
         }
 
-        currentActiveAlertId = result.emergencyId || result.id || 1;
-        document.getElementById('activeIncidentBanner').classList.add('show');
-        document.getElementById('snapEmergencyStatus').innerText = '🚨 DISTRESS BROADCAST ACTIVE';
-        document.getElementById('snapEmergencyStatus').style.color = 'var(--danger)';
-
-        alert("🚨 EMERGENCY BROADCAST SENT!\n\nIncident saved to database table 'EmergencyAlerts' with status ACTIVE.");
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      } catch (err) {
-        console.error('[Emergency] SOS Trigger failed:', err);
-        alert("Failed to send SOS: " + err.message);
-      }
-    }
-
-    // 3. Resolve Current SOS (PUT /api/emergency/{id}/resolve)
-    async function resolveCurrentSOS() {
-      if (!confirm("Confirm that the emergency situation is safely resolved?")) return;
-
-      try {
-        const id = currentActiveAlertId || 1;
-        if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
-          await window.MediCareAPI.apiFetch(`/emergency/${id}/resolve`, 'PUT');
-        } else {
-          const token = localStorage.getItem('medicare_jwt_token');
-          await fetch(`${API_URL}/emergency/${id}/resolve`, {
-            method: 'PUT',
-            headers: token ? { 'Authorization': `Bearer ${token}` } : {}
-          });
-        }
-
-        document.getElementById('activeIncidentBanner').classList.remove('show');
-        document.getElementById('snapEmergencyStatus').innerText = 'Normal (Situation Resolved)';
-        document.getElementById('snapEmergencyStatus').style.color = 'var(--success)';
-        currentActiveAlertId = null;
-
-        alert("Emergency incident status updated to RESOLVED in MySQL database.");
-      } catch (err) {
-        console.error('[Emergency] Resolve failed:', err);
-        document.getElementById('activeIncidentBanner').classList.remove('show');
-        alert("Situation marked resolved.");
-      }
-    }
-
-    document.addEventListener('DOMContentLoaded', () => {
-      loadMedicalSnapshot();
-    });
-  </script>
-</body>
+        loadMedicalSnapshot();
+      });
+    </script>
+  </body>
 </html>
