@@ -1,808 +1,1083 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MediCare - Caregiver Monitoring Hub</title>
-  
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MediCare - Caregiver Monitoring Hub</title>
 
-  <!-- Common MediCare Design Tokens & Core Styles -->
-  <link rel="stylesheet" href="css/common.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
 
-  <style>
-    :root {
-      --primary: #0284c7;
-      --primary-dark: #0369a1;
-      --primary-light: #e0f2fe;
-      --danger: #dc2626;
-      --danger-light: #fee2e2;
-      --success: #16a34a;
-      --success-light: #dcfce7;
-      --warning: #d97706;
-      --warning-light: #fef3c7;
-      --text-main: #0f172a;
-      --text-muted: #64748b;
-      --bg: #f8fafc;
-      --surface: #ffffff;
-      --border: #e2e8f0;
-      --radius: 12px;
-      --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-      --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-      --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
-    }
+    <!-- Common MediCare Design Tokens & Core Styles -->
+    <link rel="stylesheet" href="css/common.css" />
+    <link rel="stylesheet" href="css/ai-chatbot.css" />
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: 'Plus Jakarta Sans', sans-serif;
-    }
+    <style>
+      :root {
+        --primary: #0284c7;
+        --primary-dark: #0369a1;
+        --primary-light: #e0f2fe;
+        --danger: #dc2626;
+        --danger-light: #fee2e2;
+        --success: #16a34a;
+        --success-light: #dcfce7;
+        --warning: #d97706;
+        --warning-light: #fef3c7;
+        --text-main: #0f172a;
+        --text-muted: #64748b;
+        --bg: #f8fafc;
+        --surface: #ffffff;
+        --border: #e2e8f0;
+        --radius: 12px;
+        --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+        --shadow-md:
+          0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+      }
 
-    body {
-      background-color: var(--bg);
-      color: var(--text-main);
-      min-height: 100vh;
-      overflow-x: hidden;
-      line-height: 1.5;
-    }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        font-family: "Plus Jakarta Sans", sans-serif;
+      }
 
-    /* =========================================================
+      body {
+        background-color: var(--bg);
+        color: var(--text-main);
+        min-height: 100vh;
+        overflow-x: hidden;
+        line-height: 1.5;
+      }
+
+      /* =========================================================
        HEADER / NAVBAR
        ========================================================= */
-    .site-header {
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      background: rgba(255, 255, 255, 0.95);
-      backdrop-filter: blur(10px);
-      border-bottom: 1px solid var(--border);
-      height: 70px;
-      display: flex;
-      align-items: center;
-      padding: 0 clamp(16px, 4vw, 40px);
-    }
+      .site-header {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-bottom: 1px solid var(--border);
+        height: 70px;
+        display: flex;
+        align-items: center;
+        padding: 0 clamp(16px, 4vw, 40px);
+      }
 
-    .nav-container {
-      width: 100%;
-      max-width: 1380px;
-      margin: 0 auto;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
+      .nav-container {
+        width: 100%;
+        max-width: 1380px;
+        margin: 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
 
-    .brand-logo {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      text-decoration: none;
-    }
+      .brand-logo {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        text-decoration: none;
+      }
 
-    .logo-icon {
-      width: 40px;
-      height: 40px;
-      background: linear-gradient(135deg, #0284c7, #0ea5e9);
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #ffffff;
-      font-weight: 800;
-      font-size: 20px;
-      box-shadow: 0 4px 10px rgba(2, 132, 199, 0.3);
-    }
+      .logo-icon {
+        width: 40px;
+        height: 40px;
+        background: linear-gradient(135deg, #0284c7, #0ea5e9);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #ffffff;
+        font-weight: 800;
+        font-size: 20px;
+        box-shadow: 0 4px 10px rgba(2, 132, 199, 0.3);
+      }
 
-    .brand-text h1 {
-      font-size: 19px;
-      font-weight: 800;
-      color: var(--text-main);
-      line-height: 1.1;
-    }
+      .brand-text h1 {
+        font-size: 19px;
+        font-weight: 800;
+        color: var(--text-main);
+        line-height: 1.1;
+      }
 
-    .brand-text span {
-      font-size: 11px;
-      font-weight: 600;
-      color: var(--primary);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
+      .brand-text span {
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--primary);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
 
-    .desktop-nav-links {
-      display: flex;
-      align-items: center;
-      gap: 24px;
-      list-style: none;
-    }
+      .desktop-nav-links {
+        display: flex;
+        align-items: center;
+        gap: 24px;
+        list-style: none;
+      }
 
-    .desktop-nav-links a {
-      text-decoration: none;
-      color: var(--text-muted);
-      font-size: 14px;
-      font-weight: 600;
-      transition: color 0.2s;
-    }
-    .desktop-nav-links a.active,
-    .desktop-nav-links a:hover {
-      color: var(--primary);
-    }
+      .desktop-nav-links a {
+        text-decoration: none;
+        color: var(--text-muted);
+        font-size: 14px;
+        font-weight: 600;
+        transition: color 0.2s;
+      }
+      .desktop-nav-links a.active,
+      .desktop-nav-links a:hover {
+        color: var(--primary);
+      }
 
-    .btn {
-      padding: 9px 16px;
-      border-radius: 8px;
-      font-size: 13.5px;
-      font-weight: 600;
-      cursor: pointer;
-      border: 1px solid transparent;
-      transition: all 0.2s;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      text-decoration: none;
-    }
+      .btn {
+        padding: 9px 16px;
+        border-radius: 8px;
+        font-size: 13.5px;
+        font-weight: 600;
+        cursor: pointer;
+        border: 1px solid transparent;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        text-decoration: none;
+      }
 
-    .btn-primary { background: var(--primary); color: #fff; }
-    .btn-primary:hover { background: var(--primary-dark); }
-    .btn-ghost { background: transparent; color: var(--text-main); border-color: var(--border); }
-    .btn-ghost:hover { background: #f1f5f9; }
-    .btn-danger-outline { background: transparent; color: var(--danger); border-color: #fecaca; }
-    .btn-danger-outline:hover { background: var(--danger-light); }
+      .btn-primary {
+        background: var(--primary);
+        color: #fff;
+      }
+      .btn-primary:hover {
+        background: var(--primary-dark);
+      }
+      .btn-ghost {
+        background: transparent;
+        color: var(--text-main);
+        border-color: var(--border);
+      }
+      .btn-ghost:hover {
+        background: #f1f5f9;
+      }
+      .btn-danger-outline {
+        background: transparent;
+        color: var(--danger);
+        border-color: #fecaca;
+      }
+      .btn-danger-outline:hover {
+        background: var(--danger-light);
+      }
 
-    .btn-sos {
-      background: var(--danger);
-      color: #fff;
-      padding: 8px 14px;
-      font-size: 13px;
-      border-radius: 8px;
-      animation: pulse-sos 2s infinite;
-    }
-    @keyframes pulse-sos {
-      0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.4); }
-      70% { box-shadow: 0 0 0 8px rgba(220, 38, 38, 0); }
-      100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
-    }
+      .btn-sos {
+        background: var(--danger);
+        color: #fff;
+        padding: 8px 14px;
+        font-size: 13px;
+        border-radius: 8px;
+        animation: pulse-sos 2s infinite;
+      }
+      @keyframes pulse-sos {
+        0% {
+          box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.4);
+        }
+        70% {
+          box-shadow: 0 0 0 8px rgba(220, 38, 38, 0);
+        }
+        100% {
+          box-shadow: 0 0 0 0 rgba(220, 38, 38, 0);
+        }
+      }
 
-    .mobile-actions {
-      display: none;
-      align-items: center;
-      gap: 8px;
-    }
+      .mobile-actions {
+        display: none;
+        align-items: center;
+        gap: 8px;
+      }
 
-    .hamburger-btn {
-      width: 40px;
-      height: 40px;
-      border-radius: 8px;
-      border: 1px solid var(--border);
-      background: #ffffff;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 5px;
-      cursor: pointer;
-    }
-    .hamburger-btn span {
-      width: 18px;
-      height: 2px;
-      background: var(--text-main);
-      border-radius: 2px;
-    }
+      .hamburger-btn {
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+        background: #ffffff;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+        cursor: pointer;
+      }
+      .hamburger-btn span {
+        width: 18px;
+        height: 2px;
+        background: var(--text-main);
+        border-radius: 2px;
+      }
 
-    /* Mobile Drawer */
-    .mobile-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(15, 23, 42, 0.45);
-      backdrop-filter: blur(4px);
-      z-index: 200;
-      opacity: 0;
-      visibility: hidden;
-      transition: all 0.3s;
-    }
-    .mobile-overlay.active { opacity: 1; visibility: visible; }
+      /* Mobile Drawer */
+      .mobile-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.45);
+        backdrop-filter: blur(4px);
+        z-index: 200;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s;
+      }
+      .mobile-overlay.active {
+        opacity: 1;
+        visibility: visible;
+      }
 
-    .mobile-drawer {
-      position: fixed;
-      top: 0;
-      right: -100%;
-      width: min(320px, 85vw);
-      height: 100%;
-      background: var(--surface);
-      z-index: 201;
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      transition: right 0.3s ease;
-    }
-    .mobile-drawer.active { right: 0; }
+      .mobile-drawer {
+        position: fixed;
+        top: 0;
+        right: -100%;
+        width: min(320px, 85vw);
+        height: 100%;
+        background: var(--surface);
+        z-index: 201;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        transition: right 0.3s ease;
+      }
+      .mobile-drawer.active {
+        right: 0;
+      }
 
-    .drawer-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding-bottom: 14px;
-      border-bottom: 1px solid var(--border);
-    }
-    .close-btn {
-      background: #f1f5f9;
-      border: none;
-      width: 34px;
-      height: 34px;
-      border-radius: 8px;
-      font-size: 18px;
-      cursor: pointer;
-    }
-    .drawer-links {
-      list-style: none;
-      padding: 16px 0;
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-    }
-    .drawer-links a {
-      text-decoration: none;
-      color: var(--text-main);
-      font-size: 15px;
-      font-weight: 600;
-    }
+      .drawer-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-bottom: 14px;
+        border-bottom: 1px solid var(--border);
+      }
+      .close-btn {
+        background: #f1f5f9;
+        border: none;
+        width: 34px;
+        height: 34px;
+        border-radius: 8px;
+        font-size: 18px;
+        cursor: pointer;
+      }
+      .drawer-links {
+        list-style: none;
+        padding: 16px 0;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+      }
+      .drawer-links a {
+        text-decoration: none;
+        color: var(--text-main);
+        font-size: 15px;
+        font-weight: 600;
+      }
 
-    /* =========================================================
+      /* =========================================================
        PAGE CONTENT CONTAINER
        ========================================================= */
-    .page-wrapper {
-      max-width: 1380px;
-      margin: 0 auto;
-      padding: clamp(16px, 3vw, 32px) clamp(16px, 4vw, 40px);
-    }
+      .page-wrapper {
+        max-width: 1380px;
+        margin: 0 auto;
+        padding: clamp(16px, 3vw, 32px) clamp(16px, 4vw, 40px);
+      }
 
-    /* Top Emergency Alert Banner */
-    .emergency-banner {
-      background: #fef2f2;
-      border: 1px solid #fecaca;
-      border-radius: var(--radius);
-      padding: 14px 18px;
-      margin-bottom: 24px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 12px;
-    }
-    .emergency-info {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-    .emergency-pulse-icon {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      background: var(--danger);
-      color: #fff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 18px;
-      animation: pulse-sos 1.5s infinite;
-    }
-    .emergency-text h4 {
-      font-size: 12px;
-      font-weight: 700;
-      color: #991b1b;
-    }
-    .emergency-text p {
-      font-size: 12.5px;
-      color: #b91c1c;
-    }
+      /* Top Emergency Alert Banner */
+      .emergency-banner {
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+        border-radius: var(--radius);
+        padding: 14px 18px;
+        margin-bottom: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 12px;
+      }
+      .emergency-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .emergency-pulse-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: var(--danger);
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        animation: pulse-sos 1.5s infinite;
+      }
+      .emergency-text h4 {
+        font-size: 12px;
+        font-weight: 700;
+        color: #991b1b;
+      }
+      .emergency-text p {
+        font-size: 12.5px;
+        color: #b91c1c;
+      }
 
-    /* Header & Action */
-    .section-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 16px;
-      margin-bottom: 24px;
-    }
-    .section-title h2 {
-      font-size: clamp(22px, 3.5vw, 28px);
-      font-weight: 800;
-      letter-spacing: -0.5px;
-    }
-    .section-title p {
-      font-size: 13px;
-      color: var(--text-muted);
-    }
+      /* Header & Action */
+      .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 16px;
+        margin-bottom: 24px;
+      }
+      .section-title h2 {
+        font-size: clamp(22px, 3.5vw, 28px);
+        font-weight: 800;
+        letter-spacing: -0.5px;
+      }
+      .section-title p {
+        font-size: 13px;
+        color: var(--text-muted);
+      }
 
-    /* 4 Stats Summary Cards */
-    .stats-row {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 16px;
-      margin-bottom: 28px;
-    }
-    .stat-card {
-      background: #fff;
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 18px;
-      box-shadow: var(--shadow-sm);
-    }
-    .stat-card .label {
-      font-size: 12.5px;
-      color: var(--text-muted);
-      font-weight: 600;
-      margin-bottom: 6px;
-    }
-    .stat-card .val {
-      font-size: 24px;
-      font-weight: 800;
-      color: var(--text-main);
-    }
-    .stat-card .sub {
-      font-size: 12px;
-      margin-top: 4px;
-    }
+      /* 4 Stats Summary Cards */
+      .stats-row {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        margin-bottom: 28px;
+      }
+      .stat-card {
+        background: #fff;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 18px;
+        box-shadow: var(--shadow-sm);
+      }
+      .stat-card .label {
+        font-size: 12.5px;
+        color: var(--text-muted);
+        font-weight: 600;
+        margin-bottom: 6px;
+      }
+      .stat-card .val {
+        font-size: 24px;
+        font-weight: 800;
+        color: var(--text-main);
+      }
+      .stat-card .sub {
+        font-size: 12px;
+        margin-top: 4px;
+      }
 
-    /* =========================================================
+      /* =========================================================
        PATIENT CARDS GRID
        ========================================================= */
-    .patients-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 18px;
-      margin-bottom: 36px;
-    }
+      .patients-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 18px;
+        margin-bottom: 36px;
+      }
 
-    .patient-card {
-      background: #fff;
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 20px;
-      box-shadow: var(--shadow-sm);
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      transition: all 0.2s;
-    }
-    .patient-card:hover {
-      box-shadow: var(--shadow-md);
-      border-color: #cbd5e1;
-    }
+      .patient-card {
+        background: #fff;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 20px;
+        box-shadow: var(--shadow-sm);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        transition: all 0.2s;
+      }
+      .patient-card:hover {
+        box-shadow: var(--shadow-md);
+        border-color: #cbd5e1;
+      }
 
-    .patient-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      margin-bottom: 14px;
-    }
-    .patient-avatar-wrap {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-    .patient-avatar {
-      width: 44px;
-      height: 44px;
-      border-radius: 50%;
-      background: var(--primary-light);
-      color: var(--primary-dark);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 700;
-      font-size: 16px;
-    }
-    .patient-name {
-      font-size: 16px;
-      font-weight: 700;
-      color: var(--text-main);
-    }
-    .patient-rel {
-      font-size: 12px;
-      color: var(--text-muted);
-    }
+      .patient-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 14px;
+      }
+      .patient-avatar-wrap {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .patient-avatar {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: var(--primary-light);
+        color: var(--primary-dark);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 16px;
+      }
+      .patient-name {
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--text-main);
+      }
+      .patient-rel {
+        font-size: 12px;
+        color: var(--text-muted);
+      }
 
-    .badge-adherence {
-      font-size: 11.5px;
-      font-weight: 700;
-      padding: 4px 10px;
-      border-radius: 20px;
-    }
-    .adh-good { background: var(--success-light); color: var(--success); }
-    .adh-warn { background: var(--warning-light); color: var(--warning); }
-    .adh-bad { background: var(--danger-light); color: var(--danger); }
+      .badge-adherence {
+        font-size: 11.5px;
+        font-weight: 700;
+        padding: 4px 10px;
+        border-radius: 20px;
+      }
+      .adh-good {
+        background: var(--success-light);
+        color: var(--success);
+      }
+      .adh-warn {
+        background: var(--warning-light);
+        color: var(--warning);
+      }
+      .adh-bad {
+        background: var(--danger-light);
+        color: var(--danger);
+      }
 
-    .patient-meta-list {
-      list-style: none;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      margin-bottom: 16px;
-      font-size: 13px;
-    }
-    .patient-meta-list li {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      color: #334155;
-    }
+      .patient-meta-list {
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-bottom: 16px;
+        font-size: 13px;
+      }
+      .patient-meta-list li {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: #334155;
+      }
 
-    .patient-dose-status {
-      background: #f8fafc;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 10px 12px;
-      margin-bottom: 16px;
-      font-size: 12px;
-    }
-    .status-row {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 4px;
-    }
-    .status-row:last-child { margin-bottom: 0; }
+      .patient-dose-status {
+        background: #f8fafc;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 10px 12px;
+        margin-bottom: 16px;
+        font-size: 12px;
+      }
+      .status-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 4px;
+      }
+      .status-row:last-child {
+        margin-bottom: 0;
+      }
 
-    .card-actions {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-    .card-actions .btn {
-      flex: 1;
-      font-size: 12.5px;
-      padding: 8px 10px;
-    }
+      .card-actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+      .card-actions .btn {
+        flex: 1;
+        font-size: 12.5px;
+        padding: 8px 10px;
+      }
 
-    /* =========================================================
+      /* =========================================================
        MISSED DOSES AUDIT LOG (TABLE)
        ========================================================= */
-    .table-card {
-      background: #fff;
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 22px;
-      box-shadow: var(--shadow-sm);
-      margin-bottom: 30px;
-    }
-    .table-card h3 {
-      font-size: 17px;
-      font-weight: 700;
-      margin-bottom: 4px;
-    }
-    .table-card p {
-      font-size: 12.5px;
-      color: var(--text-muted);
-      margin-bottom: 16px;
-    }
+      .table-card {
+        background: #fff;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 22px;
+        box-shadow: var(--shadow-sm);
+        margin-bottom: 30px;
+      }
+      .table-card h3 {
+        font-size: 17px;
+        font-weight: 700;
+        margin-bottom: 4px;
+      }
+      .table-card p {
+        font-size: 12.5px;
+        color: var(--text-muted);
+        margin-bottom: 16px;
+      }
 
-    .table-responsive {
-      width: 100%;
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      min-width: 580px;
-      text-align: left;
-    }
-    th {
-      font-size: 12px;
-      font-weight: 700;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      padding: 10px 12px;
-      border-bottom: 1px solid var(--border);
-    }
-    td {
-      padding: 12px;
-      font-size: 13.5px;
-      border-bottom: 1px solid var(--border);
-      vertical-align: middle;
-    }
+      .table-responsive {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 580px;
+        text-align: left;
+      }
+      th {
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        padding: 10px 12px;
+        border-bottom: 1px solid var(--border);
+      }
+      td {
+        padding: 12px;
+        font-size: 13.5px;
+        border-bottom: 1px solid var(--border);
+        vertical-align: middle;
+      }
 
-    /* =========================================================
+      /* =========================================================
        MODAL: LINK PATIENT
        ========================================================= */
-    .modal-backdrop {
-      position: fixed;
-      inset: 0;
-      background: rgba(15, 23, 42, 0.5);
-      backdrop-filter: blur(4px);
-      z-index: 300;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      padding: 16px;
-    }
-    .modal-backdrop.active { display: flex; }
+      .modal-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.5);
+        backdrop-filter: blur(4px);
+        z-index: 300;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+      }
+      .modal-backdrop.active {
+        display: flex;
+      }
 
-    .modal-box {
-      background: #fff;
-      width: 100%;
-      max-width: 440px;
-      border-radius: 16px;
-      padding: 24px;
-      border: 1px solid var(--border);
-      box-shadow: var(--shadow-lg);
-    }
-    .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 16px;
-    }
-    .modal-header h3 { font-size: 18px; font-weight: 700; }
+      .modal-box {
+        background: #fff;
+        width: 100%;
+        max-width: 440px;
+        border-radius: 16px;
+        padding: 24px;
+        border: 1px solid var(--border);
+        box-shadow: var(--shadow-lg);
+      }
+      .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+      }
+      .modal-header h3 {
+        font-size: 18px;
+        font-weight: 700;
+      }
 
-    .form-group { margin-bottom: 14px; }
-    .form-group label { display: block; font-size: 12.5px; font-weight: 600; margin-bottom: 5px; }
-    .form-control {
-      width: 100%;
-      padding: 9px 12px;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      font-size: 13.5px;
-      outline: none;
-    }
-    .form-control:focus { border-color: var(--primary); }
+      .form-group {
+        margin-bottom: 14px;
+      }
+      .form-group label {
+        display: block;
+        font-size: 12.5px;
+        font-weight: 600;
+        margin-bottom: 5px;
+      }
+      .form-control {
+        width: 100%;
+        padding: 9px 12px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        font-size: 13.5px;
+        outline: none;
+      }
+      .form-control:focus {
+        border-color: var(--primary);
+      }
 
-    /* =========================================================
+      /* =========================================================
        RESPONSIVE BREAKPOINTS (320px - 1366px+)
        ========================================================= */
-    @media (max-width: 1365px) {
-      .patients-grid { grid-template-columns: repeat(3, 1fr); }
-      .stats-row { grid-template-columns: repeat(4, 1fr); }
-    }
+      @media (max-width: 1365px) {
+        .patients-grid {
+          grid-template-columns: repeat(3, 1fr);
+        }
+        .stats-row {
+          grid-template-columns: repeat(4, 1fr);
+        }
+      }
 
-    @media (max-width: 1023px) {
-      .desktop-nav-links { display: none; }
-      .mobile-actions { display: flex; }
-      .patients-grid { grid-template-columns: repeat(2, 1fr); gap: 14px; }
-      .stats-row { grid-template-columns: repeat(2, 1fr); }
-    }
+      @media (max-width: 1023px) {
+        .desktop-nav-links {
+          display: none;
+        }
+        .mobile-actions {
+          display: flex;
+        }
+        .patients-grid {
+          grid-template-columns: repeat(2, 1fr);
+          gap: 14px;
+        }
+        .stats-row {
+          grid-template-columns: repeat(2, 1fr);
+        }
+      }
 
-    @media (max-width: 767px) {
-      .section-header { flex-direction: column; align-items: stretch; }
-      .section-header .btn { width: 100%; }
-      .patients-grid { grid-template-columns: 1fr; gap: 12px; }
-      .stats-row { grid-template-columns: 1fr; gap: 10px; }
-      .emergency-banner { flex-direction: column; align-items: stretch; text-align: left; }
-      .emergency-banner .btn { width: 100%; }
-      .card-actions { flex-direction: column; }
-      .card-actions .btn { width: 100%; }
-    }
+      @media (max-width: 767px) {
+        .section-header {
+          flex-direction: column;
+          align-items: stretch;
+          gap: 14px;
+        }
+        .section-header .btn {
+          width: auto !important;
+          align-self: center !important;
+          margin: 4px auto 0 !important;
+          padding: 7px 14px !important;
+          font-size: 12.5px !important;
+          min-height: 36px !important;
+          border-radius: 8px !important;
+        }
+        .patients-grid {
+          grid-template-columns: 1fr;
+          gap: 12px;
+        }
+        .stats-row {
+          grid-template-columns: 1fr;
+          gap: 10px;
+        }
+        .emergency-banner {
+          flex-direction: column;
+          align-items: stretch;
+          text-align: left;
+        }
+        .emergency-banner .btn {
+          width: 100%;
+        }
+        .card-actions {
+          flex-direction: column;
+        }
+        .card-actions .btn {
+          width: 100%;
+        }
+      }
 
-    @media (max-width: 374px) {
-      .brand-text h1 { font-size: 16px; }
-      .brand-text span { display: none; }
-      .stat-card .val { font-size: 20px; }
-    }
-  </style>
-</head>
-<body>
+      @media (max-width: 374px) {
+        .brand-text h1 {
+          font-size: 16px;
+        }
+        .brand-text span {
+          display: none;
+        }
+        .stat-card .val {
+          font-size: 20px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- ================= MODULAR GLOBAL HEADER ================= -->
+    <header id="global-header"></header>
 
-  <!-- ================= MODULAR GLOBAL HEADER ================= -->
-  <header id="global-header"></header>
-
-  <!-- ================= PAGE CONTENT ===================== -->
-  <div class="page-wrapper">
-
-    <!-- Active Emergency Banner (Shows ONLY if real active emergency exists in DB) -->
-    <div class="emergency-banner" id="emergencyBanner" style="display: none;">
-      <div class="emergency-info">
-        <div class="emergency-pulse-icon">🚨</div>
-        <div class="emergency-text">
-          <h4 id="cgEmergencyTitle">Active Emergency Incident</h4>
-          <p id="cgEmergencyMsg">Distress beacon recorded in database.</p>
+    <!-- ================= PAGE CONTENT ===================== -->
+    <div class="page-wrapper">
+      <!-- Active Emergency Banner (Shows ONLY if real active emergency exists in DB) -->
+      <div class="emergency-banner" id="emergencyBanner" style="display: none">
+        <div class="emergency-info">
+          <div class="emergency-pulse-icon">🚨</div>
+          <div class="emergency-text">
+            <h4 id="cgEmergencyTitle">Active Emergency Incident</h4>
+            <p id="cgEmergencyMsg">Distress beacon recorded in database.</p>
+          </div>
+        </div>
+        <div style="display: flex; gap: 8px">
+          <button
+            class="btn btn-ghost"
+            style="background: #fff; font-size: 12.5px"
+            onclick="resolveCaregiverEmergency()"
+          >
+            Mark Resolved
+          </button>
         </div>
       </div>
-      <div style="display: flex; gap: 8px;">
-        <button class="btn btn-ghost" style="background:#fff; font-size: 12.5px;" onclick="resolveCaregiverEmergency()">Mark Resolved</button>
-      </div>
-    </div>
 
-    <!-- Section Title & Link Action ------>
-    <div class="section-header">
-      <div class="section-title">
-        <h2>Linked Patient Directory</h2>
-        <p>Monitor patient compliance, daily missed intake alerts, and emergency contact details.</p>
+      <!-- Section Title & Link Action ------>
+      <div class="section-header">
+        <div class="section-title">
+          <h2>Linked Patient Directory</h2>
+          <p>
+            Monitor patient compliance, daily missed intake alerts, and
+            emergency contact details.
+          </p>
+        </div>
+        <button class="btn btn-primary" onclick="openLinkModal()">
+          + Link New Patient
+        </button>
       </div>
-      <button class="btn btn-primary" onclick="openLinkModal()">+ Link New Patient</button>
-    </div>
 
-    <!-- 4 Stats Summary Row -->
-    <div class="stats-row">
-      <div class="stat-card">
-        <div class="label">Total Linked Patients</div>
-        <div class="val" id="totalLinkedVal">0</div>
-        <div class="sub" style="color: var(--primary);">Active under your care</div>
+      <!-- 4 Stats Summary Row -->
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="label">Total Linked Patients</div>
+          <div class="val" id="totalLinkedVal">0</div>
+          <div class="sub" style="color: var(--primary)">
+            Active under your care
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="label">Average Compliance</div>
+          <div class="val" id="avgComplianceVal">--%</div>
+          <div class="sub" style="color: var(--success)" id="complianceSub">
+            🟢 Adherence Level
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="label">Today's Missed Doses</div>
+          <div class="val" style="color: var(--danger)" id="missedDosesVal">
+            0
+          </div>
+          <div class="sub" style="color: var(--danger)">Logged in database</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">Pill Refill Alerts</div>
+          <div class="val" style="color: var(--warning)" id="refillAlertsVal">
+            0
+          </div>
+          <div class="sub" style="color: var(--warning)">
+            Medicines ≤ 5 left
+          </div>
+        </div>
       </div>
-      <div class="stat-card">
-        <div class="label">Average Compliance</div>
-        <div class="val" id="avgComplianceVal">--%</div>
-        <div class="sub" style="color: var(--success);" id="complianceSub">🟢 Adherence Level</div>
-      </div>
-      <div class="stat-card">
-        <div class="label">Today's Missed Doses</div>
-        <div class="val" style="color: var(--danger);" id="missedDosesVal">0</div>
-        <div class="sub" style="color: var(--danger);">Logged in database</div>
-      </div>
-      <div class="stat-card">
-        <div class="label">Pill Refill Alerts</div>
-        <div class="val" style="color: var(--warning);" id="refillAlertsVal">0</div>
-        <div class="sub" style="color: var(--warning);">Medicines ≤ 5 left</div>
-      </div>
-    </div>
 
-    <!-- Linked Patients Grid (Live from MySQL) -->
-    <div class="patients-grid" id="patientsGrid">
-      <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--text-muted);">
-        Loading linked patient directory from database...
-      </div>
-    </div>
-
-    <!-- Live Patient Medication Activity & Today's Schedules (Live from MySQL) -->
-    <div class="table-card" style="margin-bottom: 25px;">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; flex-wrap: wrap; gap: 10px;">
+      <!-- Assigned Patients Section Header with Quick Search -->
+      <div
+        style="
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          flex-wrap: wrap;
+          gap: 14px;
+          margin-bottom: 18px;
+        "
+      >
         <div>
-          <h3 style="font-size: 18px; font-weight: 700; color: var(--text-main);">Live Medication Schedule & Intake Activity</h3>
-          <p style="font-size: 13px; color: var(--text-muted); margin: 0;">Today's scheduled doses, confirmations, and real-time intake statuses across all linked patients.</p>
+          <h3
+            style="font-size: 20px; font-weight: 800; color: var(--text-main)"
+          >
+            Assigned Patients Directory
+          </h3>
+          <p
+            style="font-size: 13.5px; color: var(--text-muted); margin-top: 2px"
+          >
+            Monitor daily medications, adherence, and active emergency alerts.
+          </p>
         </div>
-        <button class="btn btn-ghost" onclick="loadCaregiverDashboard()" style="border-color: var(--border); font-size: 12.5px;">🔄 Refresh Activity</button>
-      </div>
-      
-      <div class="table-responsive">
-        <table>
-          <thead>
-            <tr>
-              <th>Scheduled Time</th>
-              <th>Patient</th>
-              <th>Medicine Name</th>
-              <th>Dosage</th>
-              <th>Status</th>
-              <th>Actual Time Taken</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody id="cgActivityTableBody">
-            <tr>
-              <td colspan="7" style="text-align: center; padding: 30px; color: var(--text-muted);">
-                Loading live medication activity from database...
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- Recent Missed Doses Log Table (Live from MySQL) -->
-    <div class="table-card">
-      <h3>Recent Missed Medication Log</h3>
-      <p>Audit trail of all intake schedules that were skipped across linked patients.</p>
-      
-      <div class="table-responsive">
-        <table>
-          <thead>
-            <tr>
-              <th>Scheduled Time</th>
-              <th>Patient</th>
-              <th>Medicine</th>
-              <th>Status</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody id="cgMissedTableBody">
-            <tr>
-              <td colspan="5" style="text-align: center; padding: 30px; color: var(--text-muted);">
-                Checking database records...
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-  </div>
-
-  <!-- ================= MODAL: LINK NEW PATIENT ================= -->
-  <div class="modal-backdrop" id="linkModal">
-    <div class="modal-box">
-      <div class="modal-header">
-        <h3>Link Patient to Caregiver Hub</h3>
-        <button class="close-btn" onclick="closeLinkModal()">&times;</button>
+        <div
+          style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap"
+        >
+          <input
+            type="text"
+            id="patientSearchInput"
+            class="form-control"
+            placeholder="🔍 Search patient by name or email..."
+            oninput="filterCaregiverPatients()"
+            style="width: 280px; min-height: 44px; font-size: 14px"
+          />
+          <button
+            class="btn btn-primary"
+            onclick="openLinkModal()"
+            style="min-height: 44px; font-weight: 700"
+          >
+            + Link Patient
+          </button>
+        </div>
       </div>
 
-      <form id="linkForm" onsubmit="handleLinkSubmit(event)">
-        <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 14px;">
-          Enter the registered MediCare patient's email. Calls <code>POST /api/Caregiverpatient/link</code> to establish real database relation.
+      <!-- Linked Patients Grid (Live from MySQL) -->
+      <div class="patients-grid" id="patientsGrid">
+        <div
+          style="
+            grid-column: 1/-1;
+            text-align: center;
+            padding: 40px;
+            color: var(--text-muted);
+          "
+        >
+          Loading linked patient directory from database...
+        </div>
+      </div>
+      <div
+        id="patientSearchEmptyMsg"
+        style="
+          display: none;
+          text-align: center;
+          padding: 30px;
+          background: #fff;
+          border-radius: var(--radius);
+          border: 1px dashed var(--border);
+          margin-bottom: 24px;
+          color: var(--text-muted);
+        "
+      >
+        No patients matched your search. Clear the search box to view all
+        patients.
+      </div>
+
+      <!-- Live Patient Medication Activity & Today's Schedules (Live from MySQL) -->
+      <div class="table-card" style="margin-bottom: 25px">
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+            flex-wrap: wrap;
+            gap: 10px;
+          "
+        >
+          <div>
+            <h3
+              style="font-size: 18px; font-weight: 700; color: var(--text-main)"
+            >
+              Live Medication Schedule & Intake Activity
+            </h3>
+            <p style="font-size: 13px; color: var(--text-muted); margin: 0">
+              Today's scheduled doses, confirmations, and real-time intake
+              statuses across all linked patients.
+            </p>
+          </div>
+          <button
+            class="btn btn-ghost"
+            onclick="loadCaregiverDashboard()"
+            style="border-color: var(--border); font-size: 12.5px"
+          >
+            🔄 Refresh Activity
+          </button>
+        </div>
+
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>Scheduled Time</th>
+                <th>Patient</th>
+                <th>Medicine Name</th>
+                <th>Dosage</th>
+                <th>Status</th>
+                <th>Actual Time Taken</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="cgActivityTableBody">
+              <tr>
+                <td
+                  colspan="7"
+                  style="
+                    text-align: center;
+                    padding: 30px;
+                    color: var(--text-muted);
+                  "
+                >
+                  Loading live medication activity from database...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Recent Missed Doses Log Table (Live from MySQL) -->
+      <div class="table-card">
+        <h3>Recent Missed Medication Log</h3>
+        <p>
+          Audit trail of all intake schedules that were skipped across linked
+          patients.
         </p>
 
-        <div class="form-group">
-          <label>Patient Registered Email</label>
-          <input type="email" class="form-control" id="patientEmailInput" placeholder="patient@example.com" required>
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>Scheduled Time</th>
+                <th>Patient</th>
+                <th>Medicine</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="cgMissedTableBody">
+              <tr>
+                <td
+                  colspan="5"
+                  style="
+                    text-align: center;
+                    padding: 30px;
+                    color: var(--text-muted);
+                  "
+                >
+                  Checking database records...
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
-
-        <div class="form-group">
-          <label>Relationship Type</label>
-          <select class="form-control" id="relationshipInput" required>
-            <option value="Parent">Parent (Father / Mother)</option>
-            <option value="Spouse">Spouse</option>
-            <option value="Sibling">Sibling</option>
-            <option value="Guardian">Guardian / Nurse</option>
-          </select>
-        </div>
-
-        <div style="display: flex; gap: 10px; margin-top: 20px;">
-          <button type="button" class="btn btn-ghost" style="flex: 1;" onclick="closeLinkModal()">Cancel</button>
-          <button type="submit" class="btn btn-primary" id="linkSubmitBtn" style="flex: 2;">Verify & Link Patient</button>
-        </div>
-      </form>
+      </div>
     </div>
-  </div>
 
-  <!-- Shared MediCare API & Modular Navbar Utilities -->
-  <script src="js/api.js"></script>
-  <script src="js/navbar.js"></script>
+    <!-- ================= MODAL: LINK NEW PATIENT ================= -->
+    <div class="modal-backdrop" id="linkModal">
+      <div class="modal-box">
+        <div class="modal-header">
+          <h3>Link Patient to Caregiver Hub</h3>
+          <button class="close-btn" onclick="closeLinkModal()">&times;</button>
+        </div>
 
-  <!-- ================= LIVE CAREGIVER DATABASE SCRIPT ================= -->
-  <script>
-    const API_URL = (window.MediCareAPI && window.MediCareAPI.API_BASE_URL) || 'http://localhost:5000/api';
-    let activeEmergencyId = null;
+        <form id="linkForm" onsubmit="handleLinkSubmit(event)">
+          <p
+            style="
+              font-size: 13px;
+              color: var(--text-muted);
+              margin-bottom: 14px;
+            "
+          >
+            Enter the registered MediCare patient's email. Calls
+            <code>POST /api/Caregiverpatient/link</code> to establish real
+            database relation.
+          </p>
 
-    let currentCaregiverId = 0;
+          <div class="form-group">
+            <label>Patient Registered Email</label>
+            <input
+              type="email"
+              class="form-control"
+              id="patientEmailInput"
+              placeholder="patient@example.com"
+              required
+            />
+          </div>
 
-    async function loadCaregiverDashboard() {
-      await Promise.all([loadLinkedPatients(), loadCaregiverEmergencies()]);
-    }
+          <div class="form-group">
+            <label>Relationship Type</label>
+            <select class="form-control" id="relationshipInput" required>
+              <option value="Parent">Parent (Father / Mother)</option>
+              <option value="Spouse">Spouse</option>
+              <option value="Sibling">Sibling</option>
+              <option value="Guardian">Guardian / Nurse</option>
+            </select>
+          </div>
 
-    async function loadLinkedPatients() {
-      const grid = document.getElementById('patientsGrid');
-      const missedTbody = document.getElementById('cgMissedTableBody');
+          <div style="display: flex; gap: 10px; margin-top: 20px">
+            <button
+              type="button"
+              class="btn btn-ghost"
+              style="flex: 1"
+              onclick="closeLinkModal()"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              class="btn btn-primary"
+              id="linkSubmitBtn"
+              style="flex: 2"
+            >
+              Verify & Link Patient
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
 
-      try {
-        let dash = null;
-        let contactCards = [];
+    <!-- Shared MediCare API, Modular Navbar, and Global AI Chatbot -->
+    <script src="js/api.js"></script>
+    <script src="js/navbar.js"></script>
+    <script src="js/ai-chatbot.js"></script>
 
-        if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
-          try {
-            dash = await window.MediCareAPI.apiFetch('/dashboard/caregiver');
-          } catch (e) {
-            console.warn('[Caregiver] /dashboard/caregiver error:', e);
+    <!-- ================= LIVE CAREGIVER DATABASE SCRIPT ================= -->
+    <script>
+      const API_URL =
+        (window.MediCareAPI && window.MediCareAPI.API_BASE_URL) ||
+        "http://localhost:5000/api";
+      let activeEmergencyId = null;
+
+      let currentCaregiverId = 0;
+
+      async function loadCaregiverDashboard() {
+        await Promise.all([loadLinkedPatients(), loadCaregiverEmergencies()]);
+      }
+
+      async function loadLinkedPatients() {
+        const grid = document.getElementById("patientsGrid");
+        const missedTbody = document.getElementById("cgMissedTableBody");
+
+        try {
+          let dash = null;
+          let contactCards = [];
+
+          if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
+            try {
+              dash = await window.MediCareAPI.apiFetch("/dashboard/caregiver");
+            } catch (e) {
+              console.warn("[Caregiver] /dashboard/caregiver error:", e);
+            }
+            try {
+              contactCards = await window.MediCareAPI.apiFetch(
+                "/caregiver/patients-contact-cards",
+              );
+            } catch (e) {
+              console.warn(
+                "[Caregiver] /caregiver/patients-contact-cards fallback:",
+                e,
+              );
+            }
           }
-          try {
-            contactCards = await window.MediCareAPI.apiFetch('/caregiver/patients-contact-cards');
-          } catch (e) {
-            console.warn('[Caregiver] /caregiver/patients-contact-cards fallback:', e);
+
+          if (dash && dash.caregiver) {
+            currentCaregiverId = dash.caregiver.id || 0;
           }
-        }
 
-        if (dash && dash.caregiver) {
-          currentCaregiverId = dash.caregiver.id || 0;
-        }
+          const patients =
+            dash && Array.isArray(dash.patients) ? dash.patients : [];
+          const missedMeds =
+            dash && Array.isArray(dash.missedMedicines)
+              ? dash.missedMedicines
+              : [];
+          const adherenceList =
+            dash && Array.isArray(dash.adherence) ? dash.adherence : [];
 
-        const patients = (dash && Array.isArray(dash.patients)) ? dash.patients : [];
-        const missedMeds = (dash && Array.isArray(dash.missedMedicines)) ? dash.missedMedicines : [];
-        const adherenceList = (dash && Array.isArray(dash.adherence)) ? dash.adherence : [];
+          // Compute average adherence
+          let avgAdh = 100;
+          if (adherenceList.length > 0) {
+            const sum = adherenceList.reduce(
+              (acc, a) => acc + (a.adherencePercentage || 0),
+              0,
+            );
+            avgAdh = Math.round(sum / adherenceList.length);
+          }
 
-        // Compute average adherence
-        let avgAdh = 100;
-        if (adherenceList.length > 0) {
-          const sum = adherenceList.reduce((acc, a) => acc + (a.adherencePercentage || 0), 0);
-          avgAdh = Math.round(sum / adherenceList.length);
-        }
+          document.getElementById("totalLinkedVal").innerText = patients.length;
+          document.getElementById("missedDosesVal").innerText =
+            missedMeds.length;
+          document.getElementById("refillAlertsVal").innerText =
+            dash && dash.pendingMedicines ? dash.pendingMedicines.length : 0;
+          document.getElementById("avgComplianceVal").innerText = `${avgAdh}%`;
 
-        document.getElementById('totalLinkedVal').innerText = patients.length;
-        document.getElementById('missedDosesVal').innerText = missedMeds.length;
-        document.getElementById('refillAlertsVal').innerText = (dash && dash.pendingMedicines) ? dash.pendingMedicines.length : 0;
-        document.getElementById('avgComplianceVal').innerText = `${avgAdh}%`;
+          grid.innerHTML = "";
 
-        grid.innerHTML = '';
-
-        if (patients.length === 0) {
-          grid.innerHTML = `
+          if (patients.length === 0) {
+            grid.innerHTML = `
             <div style="grid-column: 1/-1; text-align: center; padding: 50px 20px; background: #fff; border-radius: var(--radius); border: 1px dashed var(--border);">
               <div style="font-size: 32px; margin-bottom: 8px;">👥</div>
               <div style="font-size: 16px; font-weight: 700;">No Linked Patients in Database</div>
@@ -812,107 +1087,258 @@
               <button class="btn btn-primary" onclick="openLinkModal()">+ Link Patient</button>
             </div>
           `;
-        } else {
-          patients.forEach(p => {
-            const pId = p.patientId || p.id;
-            const pName = p.name || 'Patient';
-            const pAdh = adherenceList.find(a => a.patientId === pId);
-            const cardData = Array.isArray(contactCards) ? contactCards.find(c => c.patientId === pId) : null;
-            const adhScore = cardData ? cardData.adherenceRate : (pAdh ? pAdh.adherencePercentage : 100);
+          } else {
+            patients.forEach((p) => {
+              const pId = p.patientId || p.id;
+              const pName = p.name || "Patient";
+              const pAdh = adherenceList.find((a) => a.patientId === pId);
+              const cardData = Array.isArray(contactCards)
+                ? contactCards.find((c) => c.patientId === pId)
+                : null;
+              const adhScore = cardData
+                ? cardData.adherenceRate
+                : pAdh
+                  ? pAdh.adherencePercentage
+                  : 100;
 
-            // Compute accurate live pending and missed counts
-            const pPending = (dash && Array.isArray(dash.pendingMedicines)) 
-              ? dash.pendingMedicines.filter(m => (m.patientId === pId || (m.medicine && m.medicine.patientId === pId))).length 
-              : (cardData ? cardData.pendingDosesToday : 0);
-            const pMissed = (dash && Array.isArray(dash.missedMedicines)) 
-              ? dash.missedMedicines.filter(m => (m.patientId === pId || (m.medicine && m.medicine.patientId === pId))).length 
-              : (cardData ? cardData.missedDosesToday : 0);
+              // Compute accurate live pending and missed counts
+              const pPending =
+                dash && Array.isArray(dash.pendingMedicines)
+                  ? dash.pendingMedicines.filter(
+                      (m) =>
+                        m.patientId === pId ||
+                        (m.medicine && m.medicine.patientId === pId),
+                    ).length
+                  : cardData
+                    ? cardData.pendingDosesToday
+                    : 0;
+              const pMissed =
+                dash && Array.isArray(dash.missedMedicines)
+                  ? dash.missedMedicines.filter(
+                      (m) =>
+                        m.patientId === pId ||
+                        (m.medicine && m.medicine.patientId === pId),
+                    ).length
+                  : cardData
+                    ? cardData.missedDosesToday
+                    : 0;
 
-            const phone = (cardData && cardData.phoneNumber) || p.emergencyContact || 'Not configured';
+              // Find upcoming dose for this patient
+              const patientPendingDoses =
+                dash && Array.isArray(dash.pendingMedicines)
+                  ? dash.pendingMedicines.filter(
+                      (m) =>
+                        m.patientId === pId ||
+                        (m.medicine && m.medicine.patientId === pId),
+                    )
+                  : [];
+              let nextDoseStr = "All doses completed for today";
+              if (patientPendingDoses.length > 0) {
+                const nextItem = patientPendingDoses[0];
+                const nextMedName = nextItem.medicine
+                  ? nextItem.medicine.name
+                  : `Medicine #${nextItem.medicineId}`;
+                const nextTime = nextItem.scheduledTime
+                  ? new Date(nextItem.scheduledTime).toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })
+                  : "Today";
+                nextDoseStr = `${nextMedName} at ${nextTime}`;
+              }
 
-            const card = document.createElement('div');
-            card.className = 'patient-card';
-            card.innerHTML = `
+              const phone =
+                (cardData && cardData.phoneNumber) ||
+                p.emergencyContact ||
+                "Not configured";
+
+              const card = document.createElement("div");
+              card.className = "patient-card";
+              card.setAttribute("data-patient-name", pName.toLowerCase());
+              card.setAttribute(
+                "data-patient-email",
+                (p.email || "").toLowerCase(),
+              );
+
+              card.innerHTML = `
               <div>
                 <div class="patient-top">
                   <div class="patient-avatar-wrap">
-                    <div class="patient-avatar">${escapeHtml(pName.substring(0, 2).toUpperCase())}</div>
+                    <div class="patient-avatar" style="width: 46px; height: 46px; font-size: 17px; font-weight: 800;">
+                      ${escapeHtml(pName.substring(0, 2).toUpperCase())}
+                    </div>
                     <div>
-                      <div class="patient-name">${escapeHtml(pName)}</div>
-                      <div class="patient-rel">Patient ID: #${pId}</div>
+                      <div class="patient-name" style="font-size: 17px; font-weight: 800; color: var(--text-main);">${escapeHtml(pName)}</div>
+                      <div class="patient-rel" style="font-size: 12.5px; color: var(--text-muted);">Patient ID: #${pId} • ${escapeHtml(p.relationType || "Patient")}</div>
                     </div>
                   </div>
-                  <span class="badge-adherence ${adhScore >= 80 ? 'adh-good' : 'adh-low'}">${adhScore}% Compliance</span>
+                  <span class="status-badge ${adhScore >= 80 ? "taken" : adhScore >= 60 ? "pending" : "missed"}">
+                    ${adhScore}% Adherence
+                  </span>
                 </div>
-                <ul class="patient-meta-list">
-                  <li>📧 ${escapeHtml(p.email || 'N/A')}</li>
-                  <li>📞 Contact: ${escapeHtml(phone)}</li>
-                  <li>⏳ Today: <strong>${pPending}</strong> Pending • <strong>${pMissed}</strong> Missed</li>
+
+                <!-- Missed dose alert banner if applicable -->
+                ${
+                  pMissed > 0
+                    ? `
+                  <div style="background: #fee2e2; border: 1.5px solid #fecaca; border-radius: var(--radius-sm); padding: 8px 12px; margin-bottom: 12px; font-size: 13px; color: #991b1b; font-weight: 700; display: flex; align-items: center; gap: 6px;">
+                    <span>⚠️</span> Missed Dose Alert: ${pMissed} dose${pMissed === 1 ? "" : "s"} missed today!
+                  </div>
+                `
+                    : ""
+                }
+
+                <!-- Upcoming Dose & Status Overview -->
+                <div style="background: #f8fafc; border: 1.5px solid var(--border); border-radius: var(--radius-sm); padding: 12px; margin-bottom: 16px;">
+                  <div style="font-size: 13px; color: var(--text-secondary); margin-bottom: 6px;">
+                    ⭐ <strong>Next Dose:</strong> <span style="color: var(--primary-dark); font-weight: 600;">${escapeHtml(nextDoseStr)}</span>
+                  </div>
+                  <div style="font-size: 13px; color: var(--text-secondary);">
+                    📊 <strong>Today's Status:</strong> 
+                    <span style="color: var(--warning); font-weight: 700;">${pPending} Pending</span> • 
+                    <span style="color: ${pMissed > 0 ? "var(--danger)" : "var(--text-muted)"}; font-weight: 700;">${pMissed} Missed</span>
+                  </div>
+                </div>
+
+                <ul class="patient-meta-list" style="margin-bottom: 16px; font-size: 13.5px;">
+                  <li>📧 Email: <strong>${escapeHtml(p.email || "N/A")}</strong></li>
+                  <li>📞 Phone: <strong>${escapeHtml(phone)}</strong></li>
                 </ul>
               </div>
-              <div class="card-actions">
-                <a href="history.html?patientId=${pId}" class="btn btn-primary" style="font-size: 12px; font-weight: 700;">📋 View History</a>
-                <a href="print-report.html?patientId=${pId}" class="btn btn-ghost" style="font-size: 12px;">📊 Dossier</a>
-                <a href="tel:${escapeHtml(phone)}" class="btn btn-ghost" style="font-size: 12px;">📞 Call</a>
-                <button class="btn btn-danger-outline" style="font-size: 12px;" onclick="unlinkPatientAction(${pId}, '${escapeHtml(pName)}')">Unlink</button>
+
+              <!-- Action Cluster (compact 36px touch targets) -->
+              <div class="card-actions" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px;">
+                <a href="history.html?patientId=${pId}" class="btn btn-primary" style="min-height: 36px; font-size: 12px; font-weight: 700; padding: 6px 8px;">
+                  📋 History
+                </a>
+                <a href="tel:${escapeHtml(phone)}" class="btn btn-ghost" style="min-height: 36px; font-size: 12px; font-weight: 600; padding: 6px 8px;">
+                  📞 Call
+                </a>
+                <a href="print-report.html?patientId=${pId}" class="btn btn-ghost" style="min-height: 36px; font-size: 12px; font-weight: 600; padding: 6px 8px;">
+                  📊 Report
+                </a>
+                <button class="btn btn-danger-outline" style="min-height: 36px; font-size: 12px; font-weight: 600; padding: 6px 8px;" onclick="unlinkPatientAction(${pId}, '${escapeHtml(pName)}')">
+                  Unlink
+                </button>
               </div>
             `;
-            grid.appendChild(card);
-          });
-        }
+              grid.appendChild(card);
+            });
+          }
 
-        // Render Live Medication Schedule & Intake Activity Table
-        const actTbody = document.getElementById('cgActivityTableBody');
-        if (actTbody) {
-          actTbody.innerHTML = '';
-          const recentLogs = (dash && Array.isArray(dash.recentLogs)) ? dash.recentLogs : [];
-          const pendingMeds = (dash && Array.isArray(dash.pendingMedicines)) ? dash.pendingMedicines : [];
+          // Fast patient search filter
+          window.filterCaregiverPatients = function () {
+            const query = (
+              document.getElementById("patientSearchInput")
+                ? document.getElementById("patientSearchInput").value
+                : ""
+            )
+              .trim()
+              .toLowerCase();
+            const cards = document.querySelectorAll(
+              "#patientsGrid .patient-card",
+            );
+            let matched = 0;
+            cards.forEach((card) => {
+              const name = card.getAttribute("data-patient-name") || "";
+              const email = card.getAttribute("data-patient-email") || "";
+              const fullText = card.textContent.toLowerCase();
+              const isMatch =
+                !query ||
+                name.includes(query) ||
+                email.includes(query) ||
+                fullText.includes(query);
+              card.style.display = isMatch ? "flex" : "none";
+              if (isMatch) matched++;
+            });
+            const emptyMsg = document.getElementById("patientSearchEmptyMsg");
+            if (emptyMsg) {
+              emptyMsg.style.display =
+                matched === 0 && cards.length > 0 ? "block" : "none";
+            }
+          };
 
-          // Merge pending doses and completed logs
-          const allActivity = [...pendingMeds, ...recentLogs];
+          // Render Live Medication Schedule & Intake Activity Table
+          const actTbody = document.getElementById("cgActivityTableBody");
+          if (actTbody) {
+            actTbody.innerHTML = "";
+            const recentLogs =
+              dash && Array.isArray(dash.recentLogs) ? dash.recentLogs : [];
+            const pendingMeds =
+              dash && Array.isArray(dash.pendingMedicines)
+                ? dash.pendingMedicines
+                : [];
 
-          if (allActivity.length === 0) {
-            actTbody.innerHTML = `
+            // Merge pending doses and completed logs
+            const allActivity = [...pendingMeds, ...recentLogs];
+
+            if (allActivity.length === 0) {
+              actTbody.innerHTML = `
               <tr><td colspan="7" style="text-align:center; color: var(--text-muted); padding: 30px;">No medication schedules or intake logs found for linked patients.</td></tr>
             `;
-          } else {
-            allActivity.forEach(item => {
-              const medName = item.medicine ? item.medicine.name : `Medicine #${item.medicineId}`;
-              const dosage = item.medicine ? (item.medicine.dosage || '1 Dose') : '1 Dose';
-              const pItem = patients.find(pat => (pat.patientId || pat.id) === item.patientId) || (item.patient ? (item.patient.user || item.patient) : null);
-              const patName = pItem ? (pItem.name || pItem.Name || `Patient #${item.patientId}`) : `Patient #${item.patientId}`;
-              
-              const schedTime = item.scheduledTime ? new Date(item.scheduledTime).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '-';
-              const takenTime = item.takenTime ? new Date(item.takenTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '-';
-              
-              const schedD = item.scheduledTime ? new Date(item.scheduledTime) : null;
-              const past15 = schedD && (Date.now() > (schedD.getTime() + 15 * 60 * 1000));
+            } else {
+              allActivity.forEach((item) => {
+                const medName = item.medicine
+                  ? item.medicine.name
+                  : `Medicine #${item.medicineId}`;
+                const dosage = item.medicine
+                  ? item.medicine.dosage || "1 Dose"
+                  : "1 Dose";
+                const pItem =
+                  patients.find(
+                    (pat) => (pat.patientId || pat.id) === item.patientId,
+                  ) ||
+                  (item.patient ? item.patient.user || item.patient : null);
+                const patName = pItem
+                  ? pItem.name || pItem.Name || `Patient #${item.patientId}`
+                  : `Patient #${item.patientId}`;
 
-              let st = (item.status || 'Pending').toLowerCase();
-              if (st !== 'taken' && past15) {
-                st = 'missed';
-              }
+                const schedTime = item.scheduledTime
+                  ? new Date(item.scheduledTime).toLocaleString([], {
+                      month: "short",
+                      day: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })
+                  : "-";
+                const takenTime = item.takenTime
+                  ? new Date(item.takenTime).toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })
+                  : "-";
 
-              let badgeColor = '#d97706';
-              let badgeBg = '#fef3c7';
-              let badgeLabel = '⏳ Pending';
+                const schedD = item.scheduledTime
+                  ? new Date(item.scheduledTime)
+                  : null;
+                const past15 =
+                  schedD && Date.now() > schedD.getTime() + 15 * 60 * 1000;
 
-              if (st === 'taken') {
-                badgeColor = '#16a34a';
-                badgeBg = '#dcfce7';
-                badgeLabel = '✅ Taken';
-              } else if (st === 'missed') {
-                badgeColor = '#dc2626';
-                badgeBg = '#fee2e2';
-                badgeLabel = '❌ Missed';
-              } else if (st === 'snoozed') {
-                badgeColor = '#d97706';
-                badgeBg = '#fef3c7';
-                badgeLabel = '⏳ Snoozed';
-              }
+                let st = (item.status || "Pending").toLowerCase();
+                if (st !== "taken" && past15) {
+                  st = "missed";
+                }
 
-              const tr = document.createElement('tr');
-              tr.innerHTML = `
+                let badgeColor = "#d97706";
+                let badgeBg = "#fef3c7";
+                let badgeLabel = "⏳ Pending";
+
+                if (st === "taken") {
+                  badgeColor = "#16a34a";
+                  badgeBg = "#dcfce7";
+                  badgeLabel = "✅ Taken";
+                } else if (st === "missed") {
+                  badgeColor = "#dc2626";
+                  badgeBg = "#fee2e2";
+                  badgeLabel = "❌ Missed";
+                } else if (st === "snoozed") {
+                  badgeColor = "#d97706";
+                  badgeBg = "#fef3c7";
+                  badgeLabel = "⏳ Snoozed";
+                }
+
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
                 <td><strong>${schedTime}</strong></td>
                 <td><span style="font-weight: 700; color: var(--primary);">${escapeHtml(patName)}</span></td>
                 <td>${escapeHtml(medName)}</td>
@@ -921,134 +1347,167 @@
                 <td>${takenTime}</td>
                 <td><a href="history.html?patientId=${item.patientId}" class="btn btn-ghost" style="padding: 4px 10px; font-size: 11.5px; font-weight: 600;">📋 Audit Trail</a></td>
               `;
-              actTbody.appendChild(tr);
-            });
+                actTbody.appendChild(tr);
+              });
+            }
           }
-        }
 
-        // Render Missed Table
-        missedTbody.innerHTML = '';
-        if (missedMeds.length === 0) {
-          missedTbody.innerHTML = `
+          // Render Missed Table
+          missedTbody.innerHTML = "";
+          if (missedMeds.length === 0) {
+            missedTbody.innerHTML = `
             <tr><td colspan="5" style="text-align:center; color: var(--success); padding: 25px; font-weight:600;">✅ No missed medication doses recorded in database.</td></tr>
           `;
-        } else {
-          missedMeds.forEach(m => {
-            const medName = m.medicine ? m.medicine.name : `Medicine #${m.medicineId}`;
-            const patName = (m.patient && m.patient.user) ? m.patient.user.name : `Patient #${m.patientId}`;
-            const contact = m.patient ? m.patient.emergencyContact : '';
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-              <td>${new Date(m.scheduledTime).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</td>
+          } else {
+            missedMeds.forEach((m) => {
+              const medName = m.medicine
+                ? m.medicine.name
+                : `Medicine #${m.medicineId}`;
+              const patName =
+                m.patient && m.patient.user
+                  ? m.patient.user.name
+                  : `Patient #${m.patientId}`;
+              const contact = m.patient ? m.patient.emergencyContact : "";
+              const tr = document.createElement("tr");
+              tr.innerHTML = `
+              <td>${new Date(m.scheduledTime).toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}</td>
               <td><strong>${escapeHtml(patName)}</strong></td>
               <td>${escapeHtml(medName)}</td>
               <td><span style="color: var(--danger); font-weight: 700;">Missed</span></td>
               <td><a href="tel:${escapeHtml(contact)}" class="btn btn-ghost" style="padding: 4px 10px; font-size: 12px;">Call</a></td>
             `;
-            missedTbody.appendChild(tr);
-          });
+              missedTbody.appendChild(tr);
+            });
+          }
+        } catch (err) {
+          console.error("[Caregiver] Load error:", err);
         }
-      } catch (err) {
-        console.error('[Caregiver] Load error:', err);
       }
-    }
 
-    async function loadCaregiverEmergencies() {
-      try {
-        let alerts = [];
-        if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
-          alerts = await window.MediCareAPI.apiFetch('/emergency');
-        }
-        const active = (Array.isArray(alerts) ? alerts : []).find(a => (a.status || '').toUpperCase() === 'ACTIVE');
-        const banner = document.getElementById('emergencyBanner');
-        if (active) {
-          activeEmergencyId = active.id;
-          const patientName = (active.patient && active.patient.user) ? active.patient.user.name : (active.patient ? active.patient.name : `Patient #${active.patientId}`);
-          document.getElementById('cgEmergencyTitle').innerText = `🚨 Active Emergency: ${patientName}`;
-          document.getElementById('cgEmergencyMsg').innerText = active.message || 'Distress signal received';
-          banner.style.display = 'flex';
-        } else {
-          banner.style.display = 'none';
-        }
-      } catch (e) {}
-    }
-
-    async function resolveCaregiverEmergency() {
-      if (!confirm("Are you sure this emergency incident is resolved?")) return;
-      try {
-        const id = activeEmergencyId || 1;
-        if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
-          await window.MediCareAPI.apiFetch(`/emergency/${id}/resolve`, 'PUT');
-        }
-        document.getElementById('emergencyBanner').style.display = 'none';
-        alert('Emergency marked as resolved in MySQL database.');
-        await loadCaregiverDashboard();
-      } catch (err) {
-        alert('Resolution recorded.');
-        await loadCaregiverDashboard();
+      async function loadCaregiverEmergencies() {
+        try {
+          let alerts = [];
+          if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
+            alerts = await window.MediCareAPI.apiFetch("/emergency");
+          }
+          const active = (Array.isArray(alerts) ? alerts : []).find(
+            (a) => (a.status || "").toUpperCase() === "ACTIVE",
+          );
+          const banner = document.getElementById("emergencyBanner");
+          if (active) {
+            activeEmergencyId = active.id;
+            const patientName =
+              active.patient && active.patient.user
+                ? active.patient.user.name
+                : active.patient
+                  ? active.patient.name
+                  : `Patient #${active.patientId}`;
+            document.getElementById("cgEmergencyTitle").innerText =
+              `🚨 Active Emergency: ${patientName}`;
+            document.getElementById("cgEmergencyMsg").innerText =
+              active.message || "Distress signal received";
+            banner.style.display = "flex";
+          } else {
+            banner.style.display = "none";
+          }
+        } catch (e) {}
       }
-    }
 
-    const linkModal = document.getElementById('linkModal');
-    function openLinkModal() {
-      document.getElementById('linkForm').reset();
-      linkModal.classList.add('active');
-    }
-    function closeLinkModal() {
-      linkModal.classList.remove('active');
-    }
-
-    async function handleLinkSubmit(e) {
-      e.preventDefault();
-      const btn = document.getElementById('linkSubmitBtn');
-      btn.disabled = true;
-      btn.innerText = 'Linking...';
-
-      const email = document.getElementById('patientEmailInput').value.trim();
-      const rel = document.getElementById('relationshipInput').value;
-
-      try {
-        if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
-          await window.MediCareAPI.apiFetch('/Caregiverpatient/link', 'POST', {
-            caregiverId: currentCaregiverId || 1,
-            patientEmail: email,
-            relationType: rel
-          });
+      async function resolveCaregiverEmergency() {
+        if (!confirm("Are you sure this emergency incident is resolved?"))
+          return;
+        try {
+          const id = activeEmergencyId || 1;
+          if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
+            await window.MediCareAPI.apiFetch(
+              `/emergency/${id}/resolve`,
+              "PUT",
+            );
+          }
+          document.getElementById("emergencyBanner").style.display = "none";
+          alert("Emergency marked as resolved in MySQL database.");
+          await loadCaregiverDashboard();
+        } catch (err) {
+          alert("Resolution recorded.");
+          await loadCaregiverDashboard();
         }
-        alert(`Patient with email "${email}" linked successfully in database!`);
-        closeLinkModal();
-        await loadCaregiverDashboard();
-      } catch (err) {
-        alert('Failed to link patient: ' + (err.message || 'Verification failed'));
-      } finally {
-        btn.disabled = false;
-        btn.innerText = 'Verify & Link Patient';
       }
-    }
 
-    async function unlinkPatientAction(patientId, name) {
-      if (!confirm(`Are you sure you want to unlink ${name}?`)) return;
-      try {
-        if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
-          const cId = currentCaregiverId || 1;
-          await window.MediCareAPI.apiFetch(`/Caregiverpatient/unlink?caregiverId=${cId}&patientId=${patientId}`, 'DELETE');
+      const linkModal = document.getElementById("linkModal");
+      function openLinkModal() {
+        document.getElementById("linkForm").reset();
+        linkModal.classList.add("active");
+      }
+      function closeLinkModal() {
+        linkModal.classList.remove("active");
+      }
+
+      async function handleLinkSubmit(e) {
+        e.preventDefault();
+        const btn = document.getElementById("linkSubmitBtn");
+        btn.disabled = true;
+        btn.innerText = "Linking...";
+
+        const email = document.getElementById("patientEmailInput").value.trim();
+        const rel = document.getElementById("relationshipInput").value;
+
+        try {
+          if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
+            await window.MediCareAPI.apiFetch(
+              "/Caregiverpatient/link",
+              "POST",
+              {
+                caregiverId: currentCaregiverId || 1,
+                patientEmail: email,
+                relationType: rel,
+              },
+            );
+          }
+          alert(
+            `Patient with email "${email}" linked successfully in database!`,
+          );
+          closeLinkModal();
+          await loadCaregiverDashboard();
+        } catch (err) {
+          alert(
+            "Failed to link patient: " + (err.message || "Verification failed"),
+          );
+        } finally {
+          btn.disabled = false;
+          btn.innerText = "Verify & Link Patient";
         }
-        alert(`Patient ${name} unlinked successfully from database.`);
-        await loadCaregiverDashboard();
-      } catch (err) {
-        alert('Unlinked: ' + (err.message || 'Operation completed'));
-        await loadCaregiverDashboard();
       }
-    }
 
-    function escapeHtml(str) {
-      if (!str) return '';
-      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-    }
+      async function unlinkPatientAction(patientId, name) {
+        if (!confirm(`Are you sure you want to unlink ${name}?`)) return;
+        try {
+          if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
+            const cId = currentCaregiverId || 1;
+            await window.MediCareAPI.apiFetch(
+              `/Caregiverpatient/unlink?caregiverId=${cId}&patientId=${patientId}`,
+              "DELETE",
+            );
+          }
+          alert(`Patient ${name} unlinked successfully from database.`);
+          await loadCaregiverDashboard();
+        } catch (err) {
+          alert("Unlinked: " + (err.message || "Operation completed"));
+          await loadCaregiverDashboard();
+        }
+      }
 
-    document.addEventListener('DOMContentLoaded', () => {
-      loadCaregiverDashboard();
-    });
-  </script>
-</body>
+      function escapeHtml(str) {
+        if (!str) return "";
+        return String(str)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;");
+      }
+
+      document.addEventListener("DOMContentLoaded", () => {
+        loadCaregiverDashboard();
+      });
+    </script>
+  </body>
 </html>
