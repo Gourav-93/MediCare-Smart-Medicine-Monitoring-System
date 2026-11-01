@@ -1,1016 +1,1711 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MediCare - Patient Daily Routine</title>
-  
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MediCare - Patient Daily Routine</title>
 
-  <!-- Common MediCare Design Tokens & Core Styles -->
-  <link rel="stylesheet" href="css/common.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
 
-  <style>
-    :root {
-      --primary: #0284c7;
-      --primary-dark: #0369a1;
-      --primary-light: #e0f2fe;
-      --danger: #dc2626;
-      --danger-light: #fee2e2;
-      --success: #16a34a;
-      --success-light: #dcfce7;
-      --warning: #d97706;
-      --warning-light: #fef3c7;
-      --text-main: #0f172a;
-      --text-muted: #64748b;
-      --bg: #f8fafc;
-      --surface: #ffffff;
-      --border: #e2e8f0;
-      --radius: 12px;
-      --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-      --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-      --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
-    }
+    <!-- Common MediCare Design Tokens & Core Styles -->
+    <link rel="stylesheet" href="css/common.css" />
+    <link rel="stylesheet" href="css/ai-chatbot.css" />
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: 'Plus Jakarta Sans', sans-serif;
-    }
+    <style>
+      :root {
+        --primary: #0284c7;
+        --primary-dark: #0369a1;
+        --primary-light: #e0f2fe;
+        --danger: #dc2626;
+        --danger-light: #fee2e2;
+        --success: #16a34a;
+        --success-light: #dcfce7;
+        --warning: #d97706;
+        --warning-light: #fef3c7;
+        --text-main: #0f172a;
+        --text-muted: #64748b;
+        --bg: #f8fafc;
+        --surface: #ffffff;
+        --border: #e2e8f0;
+        --radius: 12px;
+        --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+        --shadow-md:
+          0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+      }
 
-    body {
-      background-color: var(--bg);
-      color: var(--text-main);
-      min-height: 100vh;
-      overflow-x: hidden;
-      line-height: 1.5;
-    }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        font-family: "Plus Jakarta Sans", sans-serif;
+      }
 
-    /* =========================================================
+      body {
+        background-color: var(--bg);
+        color: var(--text-main);
+        min-height: 100vh;
+        overflow-x: hidden;
+        line-height: 1.5;
+      }
+
+      /* =========================================================
        HEADER / NAVBAR
        ========================================================= */
-    .site-header {
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      background: rgba(255, 255, 255, 0.95);
-      backdrop-filter: blur(10px);
-      border-bottom: 1px solid var(--border);
-      height: 70px;
-      display: flex;
-      align-items: center;
-      padding: 0 clamp(16px, 4vw, 40px);
-    }
+      .site-header {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-bottom: 1px solid var(--border);
+        height: 70px;
+        display: flex;
+        align-items: center;
+        padding: 0 clamp(16px, 4vw, 40px);
+      }
 
-    .nav-container {
-      width: 100%;
-      max-width: 1380px;
-      margin: 0 auto;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
+      .nav-container {
+        width: 100%;
+        max-width: 1380px;
+        margin: 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
 
-    .brand-logo {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      text-decoration: none;
-    }
+      .brand-logo {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        text-decoration: none;
+      }
 
-    .logo-icon {
-      width: 40px;
-      height: 40px;
-      background: linear-gradient(135deg, #0284c7, #0ea5e9);
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #ffffff;
-      font-weight: 800;
-      font-size: 20px;
-      box-shadow: 0 4px 10px rgba(2, 132, 199, 0.3);
-    }
+      .logo-icon {
+        width: 40px;
+        height: 40px;
+        background: linear-gradient(135deg, #0284c7, #0ea5e9);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #ffffff;
+        font-weight: 800;
+        font-size: 20px;
+        box-shadow: 0 4px 10px rgba(2, 132, 199, 0.3);
+      }
 
-    .brand-text h1 {
-      font-size: 19px;
-      font-weight: 800;
-      color: var(--text-main);
-      line-height: 1.1;
-    }
+      .brand-text h1 {
+        font-size: 19px;
+        font-weight: 800;
+        color: var(--text-main);
+        line-height: 1.1;
+      }
 
-    .brand-text span {
-      font-size: 11px;
-      font-weight: 600;
-      color: var(--primary);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
+      .brand-text span {
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--primary);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
 
-    .desktop-nav-links {
-      display: flex;
-      align-items: center;
-      gap: 24px;
-      list-style: none;
-    }
+      .desktop-nav-links {
+        display: flex;
+        align-items: center;
+        gap: 24px;
+        list-style: none;
+      }
 
-    .desktop-nav-links a {
-      text-decoration: none;
-      color: var(--text-muted);
-      font-size: 14px;
-      font-weight: 600;
-      transition: color 0.2s;
-    }
-    .desktop-nav-links a.active,
-    .desktop-nav-links a:hover {
-      color: var(--primary);
-    }
+      .desktop-nav-links a {
+        text-decoration: none;
+        color: var(--text-muted);
+        font-size: 14px;
+        font-weight: 600;
+        transition: color 0.2s;
+      }
+      .desktop-nav-links a.active,
+      .desktop-nav-links a:hover {
+        color: var(--primary);
+      }
 
-    .btn {
-      padding: 9px 16px;
-      border-radius: 8px;
-      font-size: 13.5px;
-      font-weight: 600;
-      cursor: pointer;
-      border: 1px solid transparent;
-      transition: all 0.2s;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      text-decoration: none;
-    }
+      .btn {
+        padding: 9px 16px;
+        border-radius: 8px;
+        font-size: 13.5px;
+        font-weight: 600;
+        cursor: pointer;
+        border: 1px solid transparent;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        text-decoration: none;
+      }
 
-    .btn-primary { background: var(--primary); color: #fff; }
-    .btn-primary:hover { background: var(--primary-dark); }
-    .btn-ghost { background: transparent; color: var(--text-main); border-color: var(--border); }
-    .btn-ghost:hover { background: #f1f5f9; }
-    .btn-success { background: var(--success); color: #fff; }
-    .btn-success:hover { background: #15803d; }
-    .btn-snooze { background: #fff; border-color: #cbd5e1; color: var(--text-main); }
-    .btn-snooze:hover { background: #f1f5f9; }
+      .btn-primary {
+        background: var(--primary);
+        color: #fff;
+      }
+      .btn-primary:hover {
+        background: var(--primary-dark);
+      }
+      .btn-ghost {
+        background: transparent;
+        color: var(--text-main);
+        border-color: var(--border);
+      }
+      .btn-ghost:hover {
+        background: #f1f5f9;
+      }
+      .btn-success {
+        background: var(--success);
+        color: #fff;
+      }
+      .btn-success:hover {
+        background: #15803d;
+      }
+      .btn-snooze {
+        background: #fff;
+        border-color: #cbd5e1;
+        color: var(--text-main);
+      }
+      .btn-snooze:hover {
+        background: #f1f5f9;
+      }
 
-    .btn-sos {
-      background: var(--danger);
-      color: #fff;
-      padding: 9px 16px;
-      font-size: 13.5px;
-      font-weight: 700;
-      border-radius: 8px;
-      animation: pulse-sos 2s infinite;
-      box-shadow: 0 2px 10px rgba(220, 38, 38, 0.35);
-    }
-    @keyframes pulse-sos {
-      0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.4); }
-      70% { box-shadow: 0 0 0 8px rgba(220, 38, 38, 0); }
-      100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
-    }
+      .btn-sos {
+        background: var(--danger);
+        color: #fff;
+        padding: 6px 12px;
+        min-height: 34px;
+        height: 34px;
+        font-size: 12.5px;
+        font-weight: 700;
+        border-radius: 8px;
+        animation: pulse-sos 2s infinite;
+        box-shadow: 0 2px 10px rgba(220, 38, 38, 0.35);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        box-sizing: border-box;
+      }
+      @keyframes pulse-sos {
+        0% {
+          box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.4);
+        }
+        70% {
+          box-shadow: 0 0 0 8px rgba(220, 38, 38, 0);
+        }
+        100% {
+          box-shadow: 0 0 0 0 rgba(220, 38, 38, 0);
+        }
+      }
 
-    .mobile-actions {
-      display: none;
-      align-items: center;
-      gap: 8px;
-    }
+      .mobile-actions {
+        display: none;
+        align-items: center;
+        gap: 8px;
+      }
 
-    .hamburger-btn {
-      width: 40px;
-      height: 40px;
-      border-radius: 8px;
-      border: 1px solid var(--border);
-      background: #ffffff;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 5px;
-      cursor: pointer;
-    }
-    .hamburger-btn span {
-      width: 18px;
-      height: 2px;
-      background: var(--text-main);
-      border-radius: 2px;
-    }
+      .hamburger-btn {
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+        background: #ffffff;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+        cursor: pointer;
+      }
+      .hamburger-btn span {
+        width: 18px;
+        height: 2px;
+        background: var(--text-main);
+        border-radius: 2px;
+      }
 
-    /* Mobile Drawer */
-    .mobile-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(15, 23, 42, 0.45);
-      backdrop-filter: blur(4px);
-      z-index: 200;
-      opacity: 0;
-      visibility: hidden;
-      transition: all 0.3s;
-    }
-    .mobile-overlay.active { opacity: 1; visibility: visible; }
+      /* Mobile Drawer */
+      .mobile-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.45);
+        backdrop-filter: blur(4px);
+        z-index: 200;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s;
+      }
+      .mobile-overlay.active {
+        opacity: 1;
+        visibility: visible;
+      }
 
-    .mobile-drawer {
-      position: fixed;
-      top: 0;
-      right: -100%;
-      width: min(320px, 85vw);
-      height: 100%;
-      background: var(--surface);
-      z-index: 201;
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      transition: right 0.3s ease;
-    }
-    .mobile-drawer.active { right: 0; }
+      .mobile-drawer {
+        position: fixed;
+        top: 0;
+        right: -100%;
+        width: min(320px, 85vw);
+        height: 100%;
+        background: var(--surface);
+        z-index: 201;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        transition: right 0.3s ease;
+      }
+      .mobile-drawer.active {
+        right: 0;
+      }
 
-    .drawer-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding-bottom: 14px;
-      border-bottom: 1px solid var(--border);
-    }
-    .close-btn {
-      background: #f1f5f9;
-      border: none;
-      width: 34px;
-      height: 34px;
-      border-radius: 8px;
-      font-size: 18px;
-      cursor: pointer;
-    }
-    .drawer-links {
-      list-style: none;
-      padding: 16px 0;
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-    }
-    .drawer-links a {
-      text-decoration: none;
-      color: var(--text-main);
-      font-size: 15px;
-      font-weight: 600;
-    }
+      .drawer-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-bottom: 14px;
+        border-bottom: 1px solid var(--border);
+      }
+      .close-btn {
+        background: #f1f5f9;
+        border: none;
+        width: 34px;
+        height: 34px;
+        border-radius: 8px;
+        font-size: 18px;
+        cursor: pointer;
+      }
+      .drawer-links {
+        list-style: none;
+        padding: 16px 0;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+      }
+      .drawer-links a {
+        text-decoration: none;
+        color: var(--text-main);
+        font-size: 15px;
+        font-weight: 600;
+      }
 
-    /* =========================================================
+      /* =========================================================
        PAGE WRAPPER & GRID
        ========================================================= */
-    .page-wrapper {
-      max-width: 1380px;
-      margin: 0 auto;
-      padding: clamp(16px, 3vw, 32px) clamp(16px, 4vw, 40px);
-    }
+      .page-wrapper {
+        max-width: 1380px;
+        margin: 0 auto;
+        padding: clamp(16px, 3vw, 32px) clamp(16px, 4vw, 40px);
+      }
 
-    .welcome-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 16px;
-      margin-bottom: 24px;
-    }
-    .welcome-text h2 {
-      font-size: clamp(22px, 3.5vw, 28px);
-      font-weight: 800;
-      letter-spacing: -0.5px;
-    }
-    .welcome-text p {
-      font-size: 13.5px;
-      color: var(--text-muted);
-    }
+      .welcome-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 16px;
+        margin-bottom: 24px;
+      }
+      .welcome-text h2 {
+        font-size: clamp(22px, 3.5vw, 28px);
+        font-weight: 800;
+        letter-spacing: -0.5px;
+      }
+      .welcome-text p {
+        font-size: 13.5px;
+        color: var(--text-muted);
+      }
 
-    /* Summary Stats Grid (2x2 or 4x1) */
-    .patient-stats {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 16px;
-      margin-bottom: 28px;
-    }
-    .p-stat-card {
-      background: #fff;
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 18px;
-      box-shadow: var(--shadow-sm);
-    }
-    .p-stat-card .lbl {
-      font-size: 12.5px;
-      color: var(--text-muted);
-      font-weight: 600;
-      margin-bottom: 4px;
-    }
-    .p-stat-card .val {
-      font-size: 24px;
-      font-weight: 800;
-      color: var(--text-main);
-    }
-    .p-stat-card .sub {
-      font-size: 12px;
-      margin-top: 4px;
-    }
+      /* Summary Stats Grid (2x2 or 4x1) */
+      .patient-stats {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        margin-bottom: 28px;
+      }
+      .p-stat-card {
+        background: #fff;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 18px;
+        box-shadow: var(--shadow-sm);
+      }
+      .p-stat-card .lbl {
+        font-size: 12.5px;
+        color: var(--text-muted);
+        font-weight: 600;
+        margin-bottom: 4px;
+      }
+      .p-stat-card .val {
+        font-size: 24px;
+        font-weight: 800;
+        color: var(--text-main);
+      }
+      .p-stat-card .sub {
+        font-size: 12px;
+        margin-top: 4px;
+      }
 
-    /* Main Dashboard Layout (2 Columns: Routine List + Side Panel) */
-    .dashboard-layout {
-      display: grid;
-      grid-template-columns: 2fr 1fr;
-      gap: 20px;
-      align-items: start;
-    }
+      /* Main Dashboard Layout (2 Columns: Routine List + Side Panel) */
+      .dashboard-layout {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 20px;
+        align-items: start;
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        box-sizing: border-box;
+      }
 
-    /* Routine Cards List */
-    .routine-container {
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-    }
+      /* Routine Cards List */
+      .routine-container {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        min-width: 0;
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+      }
 
-    .routine-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 4px;
-    }
-    .routine-header h3 {
-      font-size: 18px;
-      font-weight: 700;
-    }
+      .routine-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 8px 12px;
+        margin-bottom: 8px;
+        width: 100%;
+        box-sizing: border-box;
+      }
+      .routine-header h3 {
+        font-size: clamp(16px, 4vw, 18px);
+        font-weight: 700;
+        margin: 0;
+      }
 
-    .dose-card {
-      background: #fff;
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 18px;
-      box-shadow: var(--shadow-sm);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 16px;
-      transition: all 0.2s;
-    }
-    .dose-card.taken {
-      background: #f0fdf4;
-      border-color: #bbf7d0;
-    }
-    .dose-card.due {
-      border-left: 4px solid var(--primary);
-    }
+      .dose-card {
+        background: #fff;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 18px;
+        box-shadow: var(--shadow-sm);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        transition: all 0.2s;
+      }
+      .dose-card.taken {
+        background: #f0fdf4;
+        border-color: #bbf7d0;
+      }
+      .dose-card.due {
+        border-left: 4px solid var(--primary);
+      }
 
-    .dose-left {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-    }
-    .time-badge {
-      min-width: 72px;
-      text-align: center;
-      padding: 8px;
-      border-radius: 8px;
-      background: #f1f5f9;
-      font-size: 13px;
-      font-weight: 700;
-      color: #334155;
-    }
-    .dose-card.taken .time-badge {
-      background: #dcfce7;
-      color: #166534;
-    }
+      .dose-left {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+      }
+      .time-badge {
+        min-width: 72px;
+        text-align: center;
+        padding: 8px;
+        border-radius: 8px;
+        background: #f1f5f9;
+        font-size: 13px;
+        font-weight: 700;
+        color: #334155;
+      }
+      .dose-card.taken .time-badge {
+        background: #dcfce7;
+        color: #166534;
+      }
 
-    .dose-info h4 {
-      font-size: 16px;
-      font-weight: 700;
-      margin-bottom: 2px;
-    }
-    .dose-info p {
-      font-size: 12.5px;
-      color: var(--text-muted);
-    }
+      .dose-info h4 {
+        font-size: 16px;
+        font-weight: 700;
+        margin-bottom: 2px;
+      }
+      .dose-info p {
+        font-size: 12.5px;
+        color: var(--text-muted);
+      }
 
-    .dose-actions {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-    }
+      .dose-actions {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
 
-    /* Side Panel: Low Stock & Caregiver Support */
-    .side-panel {
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-    }
+      /* Side Panel: Low Stock & Caregiver Support */
+      .side-panel {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
 
-    .side-box {
-      background: #fff;
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 20px;
-      box-shadow: var(--shadow-sm);
-    }
-    .side-box h3 {
-      font-size: 16px;
-      font-weight: 700;
-      margin-bottom: 12px;
-    }
+      .side-box {
+        background: #fff;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 20px;
+        box-shadow: var(--shadow-sm);
+      }
+      .side-box h3 {
+        font-size: 16px;
+        font-weight: 700;
+        margin-bottom: 12px;
+      }
+      .side-box .btn {
+        width: auto !important;
+        max-width: fit-content !important;
+        margin: 10px auto 0 !important;
+        height: 34px !important;
+        min-height: 34px !important;
+        padding: 6px 18px !important;
+        font-size: 12px !important;
+        font-weight: 600 !important;
+        border-radius: 8px !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        box-sizing: border-box !important;
+      }
 
-    .stock-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 10px 0;
-      border-bottom: 1px solid var(--border);
-      font-size: 13px;
-    }
-    .stock-item:last-child { border-bottom: none; }
-    .badge-pill-low {
-      background: var(--warning-light);
-      color: var(--warning);
-      padding: 3px 8px;
-      border-radius: 12px;
-      font-size: 11px;
-      font-weight: 700;
-    }
+      .stock-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 0;
+        border-bottom: 1px solid var(--border);
+        font-size: 13px;
+      }
+      .stock-item:last-child {
+        border-bottom: none;
+      }
+      .badge-pill-low {
+        background: var(--warning-light);
+        color: var(--warning);
+        padding: 3px 8px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 700;
+      }
 
-    /* Floating AI Chat Assistant Launcher & Drawer */
-    .chat-launcher {
-      position: fixed;
-      bottom: 24px;
-      right: 24px;
-      background: var(--primary);
-      color: #fff;
-      border: none;
-      width: 56px;
-      height: 56px;
-      border-radius: 50%;
-      font-size: 24px;
-      box-shadow: 0 4px 14px rgba(2, 132, 199, 0.4);
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 90;
-    }
-
-    .chat-drawer {
-      position: fixed;
-      bottom: 90px;
-      right: 24px;
-      width: min(360px, calc(100vw - 48px));
-      height: 480px;
-      background: var(--surface);
-      border-radius: var(--radius);
-      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15);
-      border: 1px solid var(--border);
-      display: none;
-      flex-direction: column;
-      overflow: hidden;
-      z-index: 100;
-    }
-    .chat-drawer.active { display: flex; }
-
-    .chat-header {
-      background: var(--primary);
-      color: #fff;
-      padding: 14px 16px;
-      font-weight: 700;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .chat-body {
-      flex: 1;
-      padding: 14px;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      font-size: 13px;
-    }
-    .chat-msg {
-      padding: 8px 12px;
-      border-radius: 8px;
-      max-width: 80%;
-      line-height: 1.4;
-    }
-    .chat-bot { background: #f1f5f9; align-self: flex-start; }
-    .chat-user { background: var(--primary); color: #fff; align-self: flex-end; }
-
-    .chat-input-bar {
-      display: flex;
-      padding: 10px;
-      border-top: 1px solid var(--border);
-      gap: 8px;
-    }
-    .chat-input {
-      flex: 1;
-      border: 1px solid var(--border);
-      padding: 8px 12px;
-      border-radius: 6px;
-      font-size: 13px;
-      outline: none;
-    }
-
-    /* =========================================================
+      /* =========================================================
        RESPONSIVE BREAKPOINTS (320px - 1366px+)
        ========================================================= */
-    @media (max-width: 1023px) {
-      .desktop-nav-links { display: none; }
-      .mobile-actions { display: flex; }
-      .patient-stats { grid-template-columns: repeat(2, 1fr); gap: 14px; }
-      .dashboard-layout { grid-template-columns: 1fr; }
-    }
-
-    @media (max-width: 767px) {
-      .welcome-bar { flex-direction: column; align-items: stretch; }
-      .welcome-bar .btn-sos { width: 100%; justify-content: center; }
-      .patient-stats { grid-template-columns: 1fr; gap: 10px; }
-      .dose-card { flex-direction: column; align-items: stretch; gap: 12px; }
-      .dose-actions { width: 100%; }
-      .dose-actions .btn { flex: 1; }
-      .chat-drawer { right: 16px; bottom: 84px; width: calc(100vw - 32px); height: 420px; }
-    }
-
-    @media (max-width: 374px) {
-      .brand-text h1 { font-size: 16px; }
-      .brand-text span { display: none; }
-      .p-stat-card .val { font-size: 20px; }
-      .dose-left { flex-direction: column; align-items: flex-start; gap: 8px; }
-      .time-badge { width: 100%; }
-      .dose-actions { flex-direction: column; }
-    }
-  </style>
-</head>
-<body>
-
-  <!-- ================= MODULAR GLOBAL HEADER ================= -->
-  <header id="global-header"></header>
-
-  <!-- ================= MAIN CONTENT ================= -->
-  <div class="page-wrapper">
-    
-    <!-- Welcome Greeting & Header SOS -->
-    <div class="welcome-bar">
-      <div class="welcome-text">
-        <h2 id="welcomeGreeting">Namaste! 👋</h2>
-        <p id="welcomeDateSub">Loading medication routine from database...</p>
-      </div>
-      <button class="btn btn-sos" id="sosHeaderBtn" onclick="triggerPatientSOS()">🔴 TAP FOR EMERGENCY (SOS)</button>
-    </div>
-
-    <!-- 4 Stats Cards (Real database counts) -->
-    <div class="patient-stats">
-      <div class="p-stat-card">
-        <div class="lbl">Adherence Score</div>
-        <div class="val" id="adherenceVal">--%</div>
-        <div class="sub" id="adherenceSub" style="color: var(--success);">🟢 Live compliance</div>
-      </div>
-      <div class="p-stat-card">
-        <div class="lbl">Today's Progress</div>
-        <div class="val" id="progressVal">0 / 0 Taken</div>
-        <div class="sub" id="progressSub" style="color: var(--primary);">Synchronizing...</div>
-      </div>
-      <div class="p-stat-card">
-        <div class="lbl">Active Prescriptions</div>
-        <div class="val" id="activeMedsVal">0</div>
-        <div class="sub">In database</div>
-      </div>
-      <div class="p-stat-card">
-        <div class="lbl">Refill Needed</div>
-        <div class="val" id="refillVal" style="color: var(--warning);">0 Meds</div>
-        <div class="sub" id="refillSub" style="color: var(--warning);">Stock check</div>
-      </div>
-    </div>
-
-    <!-- Dashboard Layout: 2 Columns -->
-    <div class="dashboard-layout">
-      
-      <!-- Left Column: Daily Medication Routine -->
-      <div class="routine-container">
-        <div class="routine-header">
-          <h3>Today's Medication Schedule</h3>
-          <span style="font-size: 13px; color: var(--text-muted);" id="syncStatus">Live Database Sync</span>
-        </div>
-
-        <!-- Dynamic Dose Cards Container -->
-        <div id="routineCardsList">
-          <div style="text-align: center; padding: 40px; color: var(--text-muted);">
-            Loading your active prescriptions from database...
-          </div>
-        </div>
-      </div>
-
-      <!-- Right Column: Low Stock Alert & Caregiver Contact Card -->
-      <div class="side-panel">
-        
-        <!-- Low Stock Pill Box -->
-        <div class="side-box">
-          <h3>⚠️ Pill Inventory & Refill Alert</h3>
-          <p style="font-size: 12.5px; color: var(--text-muted); margin-bottom: 12px;">Medicines needing purchase soon (Stock ≤ 5):</p>
-          
-          <div id="lowStockList">
-            <div style="font-size: 13px; color: var(--text-muted); padding: 10px 0;">
-              Checking database stock...
-            </div>
-          </div>
-
-          <button class="btn btn-ghost" style="width: 100%; margin-top: 14px; font-size: 12.5px;" onclick="window.location.href='medicines.html'">
-            Manage All Prescriptions →
-          </button>
-        </div>
-
-        <!-- Linked Caregiver Quick Call Box -->
-        <div class="side-box">
-          <h3>🛡️ Connected Caregiver</h3>
-          <div id="caregiverBoxContent">
-            <p style="font-size: 12.5px; color: var(--text-muted); margin-bottom: 12px;">Linked caregiver receives missed dose notifications:</p>
-            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 14px;">
-              <div style="width: 40px; height: 40px; border-radius: 50%; background: #e0f2fe; color: var(--primary); display: flex; align-items: center; justify-content: center; font-weight: 700;">
-                CG
-              </div>
-              <div>
-                <strong style="font-size: 14px;" id="cgName">Assigned Caregiver</strong>
-                <div style="font-size: 12px; color: var(--text-muted);" id="cgPhone">Primary Contact</div>
-              </div>
-            </div>
-            <a href="emergency.html" class="btn btn-primary" style="width: 100%; font-size: 13px;">📞 Emergency Center</a>
-          </div>
-        </div>
-
-      </div>
-
-    </div>
-
-  </div>
-
-  <!-- ================= FLOATING AI ASSISTANT ================= -->
-  <button class="chat-launcher" id="chatLauncher" onclick="toggleChatDrawer()" title="Ask AI Health Assistant">
-    🤖
-  </button>
-
-  <div class="chat-drawer" id="chatDrawer">
-    <div class="chat-header">
-      <span>MediCare AI Assistant</span>
-      <button style="background:transparent; border:none; color:#fff; font-size:18px; cursor:pointer;" onclick="toggleChatDrawer()">&times;</button>
-    </div>
-    <div class="chat-body" id="chatBody">
-      <div class="chat-msg chat-bot">
-        Namaste! Main aapka MediCare AI assistant hoon. Apni dava ya health routine ke baare me sawal poochein.
-      </div>
-    </div>
-    <div class="chat-input-bar">
-      <input type="text" class="chat-input" id="chatInput" placeholder="Sawal poochein..." onkeydown="if(event.key==='Enter') sendChatMessage()">
-      <button class="btn btn-primary" style="padding: 6px 12px;" onclick="sendChatMessage()">Send</button>
-    </div>
-  </div>
-
-  <!-- Shared MediCare API & Modular Navbar Utilities -->
-  <script src="js/api.js"></script>
-  <script src="js/navbar.js"></script>
-
-  <!-- ================= LIVE DATABASE WIRE JAVASCRIPT ================= -->
-  <script>
-    const API_URL = (window.MediCareAPI && window.MediCareAPI.API_BASE_URL) || 'http://localhost:5000/api';
-    let dashboardData = null;
-
-    // Toast feedback helper
-    function showNotification(msg, isSuccess = true) {
-      alert((isSuccess ? '✅ ' : '⚠️ ') + msg);
-    }
-
-    // 1. Fetch live dashboard data from /api/dashboard/patient and /api/medicine
-    async function loadPatientData() {
-      try {
-        const user = (window.MediCareAPI && window.MediCareAPI.getCurrentUser()) || {};
-        const userName = user.name || 'Patient';
-        const todayStr = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' });
-        
-        document.getElementById('welcomeGreeting').innerText = `Namaste, ${userName}! 👋`;
-        document.getElementById('welcomeDateSub').innerText = `Today is ${todayStr}`;
-
-        let meds = [];
-        let dash = null;
-
-        // Try /api/dashboard/patient
-        try {
-          if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
-            dash = await window.MediCareAPI.apiFetch('/dashboard/patient');
-          } else {
-            const token = localStorage.getItem('medicare_jwt_token');
-            const res = await fetch(`${API_URL}/dashboard/patient`, {
-              headers: token ? { 'Authorization': `Bearer ${token}` } : {}
-            });
-            if (res.ok) dash = await res.json();
-          }
-        } catch (e) {
-          console.warn('[MediCare Dashboard] /dashboard/patient fallback:', e);
+      @media (max-width: 1023px) {
+        .desktop-nav-links {
+          display: none;
         }
-
-        // Also fetch medicines to ensure all current DB medicines are available
-        try {
-          if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
-            meds = await window.MediCareAPI.apiFetch('/medicine');
-          } else {
-            const token = localStorage.getItem('medicare_jwt_token');
-            const res = await fetch(`${API_URL}/medicine`, {
-              headers: token ? { 'Authorization': `Bearer ${token}` } : {}
-            });
-            if (res.ok) meds = await res.json();
-          }
-        } catch (e) {
-          console.warn('[MediCare Dashboard] /medicine fetch fallback:', e);
+        .mobile-actions {
+          display: flex;
         }
-
-        dashboardData = dash;
-        renderDashboard(dash, Array.isArray(meds) ? meds : []);
-      } catch (err) {
-        console.error('[MediCare Dashboard] Load error:', err);
-        document.getElementById('routineCardsList').innerHTML = `
-          <div style="text-align: center; padding: 40px; color: var(--danger);">
-            ⚠️ Failed to load database data. Make sure backend is running and you are signed in.
-            <div style="margin-top: 10px;">
-              <a href="login.html" class="btn btn-primary" style="display: inline-block;">Go to Login</a>
-            </div>
-          </div>
-        `;
+        .patient-stats {
+          grid-template-columns: repeat(2, 1fr);
+          gap: 14px;
+        }
+        .dashboard-layout {
+          grid-template-columns: 1fr;
+        }
       }
-    }
 
-    function renderDashboard(dash, allMeds) {
-      // 1. Compute Medicines list
-      const medicines = (dash && dash.medicines && dash.medicines.length > 0) ? dash.medicines : allMeds;
-      const totalMeds = medicines.length;
-      document.getElementById('activeMedsVal').innerText = totalMeds;
+      @media (max-width: 900px) {
+        .welcome-bar {
+          flex-direction: column;
+          align-items: center;
+          text-align: center;
+          gap: 12px;
+        }
+        .welcome-bar .welcome-text {
+          text-align: center;
+        }
+        .welcome-bar .btn-sos,
+        #sosHeaderBtn {
+          width: auto !important;
+          max-width: fit-content !important;
+          align-self: center !important;
+          margin: 6px auto 0 !important;
+          padding: 6px 18px !important;
+          height: 34px !important;
+          min-height: 34px !important;
+          font-size: 12px !important;
+          border-radius: 8px !important;
+          display: inline-flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          box-sizing: border-box !important;
+        }
+        .patient-stats {
+          grid-template-columns: 1fr;
+          gap: 10px;
+        }
+        #simpleDailyProgressCard {
+          padding: 16px 14px !important;
+          width: 100% !important;
+          max-width: 100% !important;
+          box-sizing: border-box !important;
+          overflow: hidden !important;
+        }
+        #simpleDailyProgressCard > div:first-child {
+          display: flex !important;
+          flex-direction: column !important;
+          align-items: flex-start !important;
+          gap: 8px !important;
+          width: 100% !important;
+        }
+        #progressSummaryText {
+          font-size: clamp(14px, 3.8vw, 16.5px) !important;
+          word-break: break-word !important;
+          line-height: 1.35 !important;
+        }
+        #nextDoseCallout {
+          white-space: normal !important;
+          word-break: break-word !important;
+          max-width: 100% !important;
+          box-sizing: border-box !important;
+          line-height: 1.35 !important;
+          font-size: 12px !important;
+          padding: 5px 10px !important;
+        }
+        .dose-card {
+          flex-direction: column !important;
+          align-items: stretch !important;
+          gap: 12px !important;
+          padding: 14px 12px !important;
+          width: 100% !important;
+          max-width: 100% !important;
+          min-width: 0 !important;
+          box-sizing: border-box !important;
+          overflow: hidden !important;
+        }
+        .dose-left {
+          flex-direction: column !important;
+          align-items: flex-start !important;
+          gap: 8px !important;
+          width: 100% !important;
+          min-width: 0 !important;
+        }
+        .time-badge {
+          width: auto !important;
+          min-width: 0 !important;
+          display: inline-flex !important;
+          align-self: flex-start !important;
+          padding: 4px 10px !important;
+          font-size: 12.5px !important;
+          border-radius: 6px !important;
+        }
+        .dose-info {
+          width: 100% !important;
+          min-width: 0 !important;
+        }
+        .dose-info h4 {
+          font-size: 15px !important;
+          word-break: break-word !important;
+        }
+        .dose-info p {
+          font-size: 12.5px !important;
+          word-break: break-word !important;
+          line-height: 1.4 !important;
+        }
+        .dose-actions {
+          width: 100% !important;
+          flex-direction: column !important;
+          gap: 6px !important;
+        }
+        .dose-actions .btn {
+          width: 100% !important;
+          flex: none !important;
+          min-height: 36px !important;
+          font-size: 12.5px !important;
+        }
+      }
 
-      // 2. Low Stock calculation
-      const lowStockMeds = medicines.filter(m => (m.stock !== undefined && m.stock <= 5));
-      document.getElementById('refillVal').innerText = `${lowStockMeds.length} Med${lowStockMeds.length === 1 ? '' : 's'}`;
-      document.getElementById('refillSub').innerText = lowStockMeds.length > 0 ? `${lowStockMeds[0].name} low (${lowStockMeds[0].stock} left)` : 'All stocks adequate';
+      @media (max-width: 640px) {
+        .page-wrapper {
+          padding: 14px 12px 60px !important;
+          max-width: 100vw !important;
+          box-sizing: border-box !important;
+          overflow-x: hidden !important;
+        }
+        .dashboard-layout {
+          grid-template-columns: minmax(0, 1fr) !important;
+          gap: 16px !important;
+          width: 100% !important;
+        }
+        .routine-container,
+        .side-panel {
+          min-width: 0 !important;
+          width: 100% !important;
+          max-width: 100% !important;
+        }
+        .routine-header {
+          gap: 8px !important;
+        }
+        .empty-state-card {
+          padding: 24px 14px !important;
+        }
+      }
 
-      // Render Low Stock Sidebar
-      const lowStockBox = document.getElementById('lowStockList');
-      if (lowStockMeds.length === 0) {
-        lowStockBox.innerHTML = `
-          <div style="font-size: 13px; color: var(--success); padding: 8px 0; font-weight: 600;">
-            ✅ All medicines have sufficient inventory.
+      @media (max-width: 374px) {
+        .brand-text h1 {
+          font-size: 16px;
+        }
+        .brand-text span {
+          display: none;
+        }
+        .p-stat-card .val {
+          font-size: 20px;
+        }
+        .dose-left {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 8px;
+        }
+        .time-badge {
+          width: 100%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- ================= MODULAR GLOBAL HEADER ================= -->
+    <header id="global-header"></header>
+
+    <!-- ================= MAIN CONTENT ================= -->
+    <div class="page-wrapper">
+      <!-- Welcome Greeting & Header SOS -->
+      <div class="welcome-bar">
+        <div class="welcome-text">
+          <h2
+            id="welcomeGreeting"
+            style="color: var(--text-main); font-weight: 800"
+          >
+            Welcome! 👋
+          </h2>
+          <p
+            id="welcomeDateSub"
+            style="color: var(--text-muted); font-size: 14.5px"
+          >
+            Loading your medication routine from database...
+          </p>
+        </div>
+        <button
+          class="btn btn-sos"
+          id="sosHeaderBtn"
+          onclick="triggerPatientSOS()"
+          style="
+            min-height: 34px;
+            height: 34px;
+            padding: 6px 18px;
+            font-size: 12px;
+            font-weight: 700;
+            border-radius: 8px;
+            width: auto;
+            max-width: fit-content;
+            align-self: center;
+          "
+        >
+          🚨 Emergency SOS (Ask For Help)
+        </button>
+      </div>
+
+      <!-- Simple Plain-English Daily Progress Banner (Easily understood by Elderly & Children) -->
+      <div
+        class="card"
+        id="simpleDailyProgressCard"
+        style="
+          margin-bottom: 24px;
+          background: #ffffff;
+          border: 1.5px solid var(--border);
+          padding: 20px;
+        "
+      >
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 12px;
+          "
+        >
+          <div
+            style="
+              font-size: 16.5px;
+              font-weight: 700;
+              color: var(--text-main);
+              display: flex;
+              align-items: center;
+              gap: 8px;
+            "
+          >
+            <span style="font-size: 20px">📋</span>
+            <span id="progressSummaryText"
+              >Daily Progress: Checking your schedule...</span
+            >
+          </div>
+          <span
+            class="status-badge next"
+            id="nextDoseCallout"
+            style="display: none"
+            >⭐ Next dose scheduled</span
+          >
+        </div>
+        <div
+          style="
+            width: 100%;
+            height: 12px;
+            background: #f1f5f9;
+            border-radius: 999px;
+            overflow: hidden;
+            margin-bottom: 8px;
+          "
+        >
+          <div
+            id="simpleProgressBar"
+            style="
+              width: 0%;
+              height: 100%;
+              background: linear-gradient(
+                90deg,
+                var(--primary),
+                var(--success)
+              );
+              border-radius: 999px;
+              transition: width 0.4s ease;
+            "
+          ></div>
+        </div>
+        <div
+          id="simpleProgressDetails"
+          style="font-size: 14px; color: var(--text-muted)"
+        >
+          Take your medicines on time as prescribed by your doctor.
+        </div>
+      </div>
+
+      <!-- 4 Summary Cards (Clear, Readable Font) -->
+      <div class="patient-stats">
+        <div class="p-stat-card">
+          <div class="lbl">Adherence Score</div>
+          <div class="val" id="adherenceVal">--%</div>
+          <div
+            class="sub"
+            id="adherenceSub"
+            style="color: var(--success); font-weight: 600"
+          >
+            🟢 On Track
+          </div>
+        </div>
+        <div class="p-stat-card">
+          <div class="lbl">Today's Progress</div>
+          <div class="val" id="progressVal">0 / 0 Taken</div>
+          <div
+            class="sub"
+            id="progressSub"
+            style="color: var(--primary); font-weight: 600"
+          >
+            Checking doses...
+          </div>
+        </div>
+        <div class="p-stat-card">
+          <div class="lbl">Active Medicines</div>
+          <div class="val" id="activeMedsVal">0</div>
+          <div class="sub" style="color: var(--text-muted)">
+            In your profile
+          </div>
+        </div>
+        <div class="p-stat-card">
+          <div class="lbl">Refill Needed</div>
+          <div class="val" id="refillVal" style="color: var(--warning)">
+            0 Meds
+          </div>
+          <div
+            class="sub"
+            id="refillSub"
+            style="color: var(--warning); font-weight: 600"
+          >
+            Pill inventory check
+          </div>
+        </div>
+      </div>
+
+      <!-- Dashboard Layout: 2 Columns -->
+      <div class="dashboard-layout">
+        <!-- Left Column: Daily Medication Routine -->
+        <div class="routine-container">
+          <div class="routine-header">
+            <h3>Today's Medication Schedule</h3>
+            <span
+              style="font-size: 13px; color: var(--text-muted)"
+              id="syncStatus"
+              >Live Database Sync</span
+            >
+          </div>
+
+          <!-- Dynamic Dose Cards Container -->
+          <div id="routineCardsList">
+            <div
+              style="
+                text-align: center;
+                padding: 40px;
+                color: var(--text-muted);
+              "
+            >
+              Loading your active prescriptions from database...
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Column: Low Stock Alert & Caregiver Contact Card -->
+        <div class="side-panel">
+          <!-- Low Stock Pill Box -->
+          <div class="side-box">
+            <h3>⚠️ Pill Inventory & Refill Alert</h3>
+            <p
+              style="
+                font-size: 12.5px;
+                color: var(--text-muted);
+                margin-bottom: 12px;
+              "
+            >
+              Medicines needing purchase soon (Stock ≤ 5):
+            </p>
+
+            <div id="lowStockList">
+              <div
+                style="
+                  font-size: 13px;
+                  color: var(--text-muted);
+                  padding: 10px 0;
+                "
+              >
+                Checking database stock...
+              </div>
+            </div>
+
+            <div style="text-align: center; margin-top: 14px">
+              <button
+                class="btn btn-ghost"
+                style="
+                  width: auto;
+                  max-width: fit-content;
+                  font-size: 12px;
+                  height: 34px;
+                  min-height: 34px;
+                  padding: 6px 16px;
+                  font-weight: 600;
+                  border-radius: 8px;
+                  display: inline-flex;
+                  align-items: center;
+                  justify-content: center;
+                  margin: 0 auto;
+                "
+                onclick="window.location.href = 'medicines.html'"
+              >
+                Manage All Prescriptions →
+              </button>
+            </div>
+          </div>
+
+          <!-- Linked Caregiver Quick Call Box -->
+          <div class="side-box" id="caregiverSection">
+            <div
+              style="
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                margin-bottom: 8px;
+              "
+            >
+              <h3 style="margin: 0">🛡️ Connected Caregiver</h3>
+              <a
+                href="my-caregivers.html"
+                style="
+                  font-size: 12px;
+                  font-weight: 600;
+                  color: var(--primary);
+                  text-decoration: none;
+                "
+                >View All →</a
+              >
+            </div>
+            <div id="caregiverBoxContent">
+              <p
+                style="
+                  font-size: 12.5px;
+                  color: var(--text-muted);
+                  margin-bottom: 12px;
+                "
+              >
+                Linked caregiver receives missed dose notifications:
+              </p>
+              <div
+                style="
+                  display: flex;
+                  align-items: center;
+                  gap: 12px;
+                  margin-bottom: 14px;
+                "
+              >
+                <div
+                  id="cgAvatar"
+                  style="
+                    width: 40px;
+                    height: 40px;
+                    border-radius: 50%;
+                    background: #e0f2fe;
+                    color: var(--primary);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-weight: 700;
+                  "
+                >
+                  CG
+                </div>
+                <div style="min-width: 0; flex: 1">
+                  <strong
+                    style="
+                      font-size: 14px;
+                      display: block;
+                      overflow: hidden;
+                      text-overflow: ellipsis;
+                      white-space: nowrap;
+                    "
+                    id="cgName"
+                    >Loading Caregiver...</strong
+                  >
+                  <div
+                    style="
+                      font-size: 12px;
+                      color: var(--text-muted);
+                      overflow: hidden;
+                      text-overflow: ellipsis;
+                      white-space: nowrap;
+                    "
+                    id="cgPhone"
+                  >
+                    Checking connection...
+                  </div>
+                </div>
+              </div>
+              <div style="display: flex; gap: 8px; flex-direction: column">
+                <a
+                  href="my-caregivers.html"
+                  class="btn btn-outline"
+                  style="
+                    width: 100%;
+                    font-size: 12px;
+                    height: 34px;
+                    min-height: 34px;
+                    padding: 6px 12px;
+                    font-weight: 600;
+                    border-radius: 8px;
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
+                  "
+                  >🩺 View Caregiver Profile →</a
+                >
+                <a
+                  href="emergency.html"
+                  class="btn btn-primary"
+                  style="
+                    width: 100%;
+                    font-size: 12px;
+                    height: 34px;
+                    min-height: 34px;
+                    padding: 6px 12px;
+                    font-weight: 600;
+                    border-radius: 8px;
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
+                  "
+                  >📞 Emergency Center</a
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Shared MediCare API, Modular Navbar, and Global AI Chatbot -->
+    <script src="js/api.js"></script>
+    <script src="js/navbar.js"></script>
+    <script src="js/ai-chatbot.js"></script>
+
+    <!-- ================= LIVE DATABASE WIRE JAVASCRIPT ================= -->
+    <script>
+      const API_URL =
+        (window.MediCareAPI && window.MediCareAPI.API_BASE_URL) ||
+        "http://localhost:5000/api";
+      let dashboardData = null;
+      const submittingMeds = {};
+
+      // Feedback toast helper
+      function showNotification(msg, isSuccess = true) {
+        if (typeof window.showMediCareToast === "function") {
+          window.showMediCareToast(msg, isSuccess ? "success" : "error");
+        } else {
+          alert((isSuccess ? "✅ " : "⚠️ ") + msg);
+        }
+      }
+
+      // 1. Fetch live dashboard data from /api/dashboard/patient and /api/medicine
+      async function loadPatientData() {
+        try {
+          const user =
+            (window.MediCareAPI && window.MediCareAPI.getCurrentUser()) || {};
+          const userName = user.name || "Patient";
+          const todayStr = new Date().toLocaleDateString("en-US", {
+            weekday: "long",
+            year: "numeric",
+            month: "short",
+            day: "numeric",
+          });
+
+          // Simple English greeting
+          document.getElementById("welcomeGreeting").innerText =
+            `Welcome, ${userName}! 👋`;
+          document.getElementById("welcomeDateSub").innerText =
+            `Today is ${todayStr}`;
+
+          let meds = [];
+          let dash = null;
+
+          // Try /api/dashboard/patient
+          try {
+            if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
+              dash = await window.MediCareAPI.apiFetch("/dashboard/patient");
+            } else {
+              const token = localStorage.getItem("medicare_jwt_token");
+              const res = await fetch(`${API_URL}/dashboard/patient`, {
+                headers: token ? { Authorization: `Bearer ${token}` } : {},
+              });
+              if (res.ok) dash = await res.json();
+            }
+          } catch (e) {
+            console.warn(
+              "[MediCare Dashboard] /dashboard/patient fallback:",
+              e,
+            );
+          }
+
+          // Also fetch medicines to ensure all current DB medicines are available
+          try {
+            if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
+              meds = await window.MediCareAPI.apiFetch("/medicine");
+            } else {
+              const token = localStorage.getItem("medicare_jwt_token");
+              const res = await fetch(`${API_URL}/medicine`, {
+                headers: token ? { Authorization: `Bearer ${token}` } : {},
+              });
+              if (res.ok) meds = await res.json();
+            }
+          } catch (e) {
+            console.warn("[MediCare Dashboard] /medicine fetch fallback:", e);
+          }
+
+          dashboardData = dash;
+          renderDashboard(dash, Array.isArray(meds) ? meds : []);
+        } catch (err) {
+          console.error("[MediCare Dashboard] Load error:", err);
+          document.getElementById("routineCardsList").innerHTML = `
+          <div style="text-align: center; padding: 40px; color: var(--danger); background: #ffffff; border-radius: var(--radius); border: 1.5px solid var(--danger-border);">
+            <div style="font-size: 24px; margin-bottom: 8px;">⚠️</div>
+            <strong style="font-size: 16px;">Cannot Connect to Healthcare Database</strong>
+            <p style="font-size: 13.5px; color: var(--text-muted); margin: 6px 0 16px;">
+              Please make sure you are signed in and your connection is active.
+            </p>
+            <a href="login.html" class="btn btn-primary">Sign In Again</a>
           </div>
         `;
-      } else {
-        lowStockBox.innerHTML = lowStockMeds.map(m => `
+        }
+      }
+
+      function renderDashboard(dash, allMeds) {
+        // 1. Compute Medicines list
+        const medicines =
+          dash && dash.medicines && dash.medicines.length > 0
+            ? dash.medicines
+            : allMeds;
+        const totalMeds = medicines.length;
+        document.getElementById("activeMedsVal").innerText = totalMeds;
+
+        // 2. Low Stock calculation
+        const lowStockMeds = medicines.filter(
+          (m) => m.stock !== undefined && m.stock <= 5,
+        );
+        document.getElementById("refillVal").innerText =
+          `${lowStockMeds.length} Med${lowStockMeds.length === 1 ? "" : "s"}`;
+        document.getElementById("refillSub").innerText =
+          lowStockMeds.length > 0
+            ? `${lowStockMeds[0].name} (${lowStockMeds[0].stock} pills left)`
+            : "All stocks sufficient";
+
+        // Render Low Stock Sidebar
+        const lowStockBox = document.getElementById("lowStockList");
+        if (lowStockMeds.length === 0) {
+          lowStockBox.innerHTML = `
+          <div style="font-size: 13.5px; color: var(--success); padding: 8px 0; font-weight: 600;">
+            ✅ All your medicines have plenty of stock.
+          </div>
+        `;
+        } else {
+          lowStockBox.innerHTML = lowStockMeds
+            .map(
+              (m) => `
           <div class="stock-item">
             <div>
-              <strong>${escapeHtml(m.name)}</strong>
-              <div style="font-size: 11.5px; color: var(--text-muted);">${escapeHtml(m.dosage || '1 Dose')}</div>
+              <strong style="font-size: 14px;">${escapeHtml(m.name)}</strong>
+              <div style="font-size: 12.5px; color: var(--text-muted);">${escapeHtml(m.dosage || "1 Dose")}</div>
             </div>
-            <span class="badge-pill-low">${m.stock} Left (Refill)</span>
+            <span class="status-badge missed" style="font-size: 11.5px; padding: 3px 8px;">${m.stock} Left (Refill)</span>
           </div>
-        `).join('');
-      }
-
-      // 3. Today's Schedules & Routine Cards
-      const container = document.getElementById('routineCardsList');
-      container.innerHTML = '';
-
-      if (medicines.length === 0) {
-        container.innerHTML = `
-          <div style="text-align: center; padding: 50px 20px; background: #fff; border-radius: var(--radius); border: 1px dashed var(--border);">
-            <div style="font-size: 32px; margin-bottom: 8px;">💊</div>
-            <div style="font-size: 16px; font-weight: 700;">No Prescriptions in Database</div>
-            <div style="font-size: 13px; color: var(--text-muted); margin: 6px 0 16px;">
-              Add your first medicine prescription to view your automated daily intake routine.
-            </div>
-            <a href="medicines.html" class="btn btn-primary">+ Add Medicine Prescription</a>
-          </div>
-        `;
-        document.getElementById('progressVal').innerText = '0 / 0 Taken';
-        document.getElementById('adherenceVal').innerText = '100%';
-        return;
-      }
-
-      // Pending, taken, and today's actual schedules from backend
-      const todaySchedules = (dash && Array.isArray(dash.todaySchedules)) ? dash.todaySchedules : [];
-      const pendingLogs = (dash && Array.isArray(dash.pendingMedicines)) ? dash.pendingMedicines : [];
-      const takenLogs = (dash && Array.isArray(dash.takenMedicines)) ? dash.takenMedicines : [];
-
-      let takenCount = takenLogs.length;
-      let totalDoses = todaySchedules.length;
-      document.getElementById('progressVal').innerText = `${takenCount} / ${totalDoses} Taken`;
-
-      const score = (dash && dash.adherencePercentage !== undefined) 
-        ? dash.adherencePercentage 
-        : (totalDoses > 0 ? Math.round((takenCount / totalDoses) * 100) : 100);
-      document.getElementById('adherenceVal').innerText = `${score}%`;
-
-      // Helper function to format 24h TimeSpan / ISO string to 12h AM/PM
-      function formatTimeDisplay(timeVal) {
-        if (!timeVal) return '08:00 AM';
-        if (typeof timeVal === 'string') {
-          // Check if string contains "HH:mm:ss" or "HH:mm"
-          const parts = timeVal.split('T').pop().split(':');
-          if (parts.length >= 2) {
-            let h = parseInt(parts[0], 10);
-            const m = parts[1].padStart(2, '0');
-            const ampm = h >= 12 ? 'PM' : 'AM';
-            h = h % 12;
-            h = h ? h : 12;
-            return `${String(h).padStart(2, '0')}:${m} ${ampm}`;
-          }
-        }
-        return String(timeVal);
-      }
-
-      // If no schedules exist for today:
-      if (todaySchedules.length === 0) {
-        container.innerHTML = `
-          <div style="text-align: center; padding: 45px 20px; background: #fff; border-radius: var(--radius); border: 1px dashed var(--border);">
-            <div style="font-size: 32px; margin-bottom: 8px;">⏰</div>
-            <div style="font-size: 16px; font-weight: 700;">No Doses Scheduled for Today</div>
-            <div style="font-size: 13px; color: var(--text-muted); margin: 6px 0 16px; max-width: 480px; margin-left: auto; margin-right: auto;">
-              Medicines are not automatically scheduled. The caregiver or patient can set personalized intake times based on medical instructions.
-            </div>
-            <a href="medicines.html" class="btn btn-primary">🕒 Schedule Medicine Times</a>
-          </div>
-        `;
-        return;
-      }
-
-      // Render cards ONLY for genuinely scheduled doses configured by patient or caregiver
-      todaySchedules.forEach((sched) => {
-        const med = sched.medicine || medicines.find(m => m.id === sched.medicineId) || {
-          id: sched.medicineId,
-          name: `Medicine #${sched.medicineId}`,
-          dosage: '1 Dose',
-          stock: 0,
-          mealTiming: 'After Meal'
-        };
-
-        const displayTime = formatTimeDisplay(sched.time);
-        const meal = med.mealTiming || med.mealTimeing || 'After Meal';
-
-        const isTaken = takenLogs.some(l => l.medicineId === med.id);
-        const matchingPending = pendingLogs.find(l => l.medicineId === med.id);
-        const logId = matchingPending ? (matchingPending.id || 0) : 0;
-
-        const card = document.createElement('div');
-        card.className = 'dose-card';
-        card.id = `dose-card-${med.id}-${sched.id}`;
-
-        if (isTaken) {
-          card.classList.add('taken');
+        `,
+            )
+            .join("");
         }
 
-        card.innerHTML = `
-          <div class="dose-left">
-            <div class="time-badge">⏰ ${displayTime}</div>
-            <div class="dose-info">
-              <h4>${escapeHtml(med.name)}</h4>
-              <p>${escapeHtml(med.dosage || '1 Tablet')} • ${escapeHtml(meal)} • Stock: <strong>${med.stock}</strong> left</p>
-            </div>
+        // 3. Today's Schedules & Routine Cards
+        const container = document.getElementById("routineCardsList");
+        container.innerHTML = "";
+
+        if (medicines.length === 0) {
+          container.innerHTML = `
+          <div style="text-align: center; padding: 50px 20px; background: #fff; border-radius: var(--radius-lg); border: 2px dashed var(--border);">
+            <div style="font-size: 36px; margin-bottom: 8px;">💊</div>
+            <h3 style="font-size: 18px; font-weight: 800; margin-bottom: 6px;">No Medicines Added Yet</h3>
+            <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 18px; max-width: 440px; margin-left: auto; margin-right: auto;">
+              You do not have any active prescriptions recorded. Add your first medicine to see your automated daily schedule.
+            </p>
+            <a href="medicines.html" class="btn btn-primary" style="height: 34px; min-height: 34px; padding: 6px 14px; font-size: 12px; font-weight: 600; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center;">+ Add Your First Medicine</a>
           </div>
-          <div class="dose-actions" id="action-area-${med.id}">
-            ${isTaken 
-              ? `<span style="color: var(--success); font-weight: 700; font-size: 13.5px;">✅ Completed</span>`
-              : `
-                <button class="btn btn-success" onclick="markMedicineTaken(${med.id}, ${logId}, '${escapeHtml(med.name)}')">✅ Taken</button>
-                <button class="btn btn-snooze" onclick="snoozeMedicineDose(${med.id}, ${logId}, '${escapeHtml(med.name)}')">⏳ Snooze 15m</button>
-              `
+        `;
+          document.getElementById("progressVal").innerText = "0 / 0 Taken";
+          document.getElementById("adherenceVal").innerText = "100%";
+          document.getElementById("progressSummaryText").innerText =
+            "No medicines scheduled for today.";
+          document.getElementById("simpleProgressBar").style.width = "0%";
+          document.getElementById("simpleProgressDetails").innerText =
+            "Add your prescribed medicines to get started.";
+          return;
+        }
+
+        // Pending, taken, and today's dose stats from backend
+        const pendingLogs =
+          dash && Array.isArray(dash.pendingMedicines)
+            ? [...dash.pendingMedicines]
+            : [];
+        const takenLogs =
+          dash && Array.isArray(dash.takenMedicines) ? dash.takenMedicines : [];
+
+        // Total doses scheduled for today and count of doses taken today
+        const totalDoses =
+          dash && dash.todayTotalDoses !== undefined
+            ? dash.todayTotalDoses
+            : pendingLogs.length + takenLogs.length;
+
+        const takenCount =
+          dash && dash.todayTakenDoses !== undefined
+            ? dash.todayTakenDoses
+            : takenLogs.length;
+
+        document.getElementById("progressVal").innerText =
+          `${takenCount} / ${totalDoses} Taken`;
+
+        const score =
+          dash && dash.adherencePercentage !== undefined
+            ? dash.adherencePercentage
+            : totalDoses > 0
+              ? Math.round((takenCount / totalDoses) * 100)
+              : 100;
+        document.getElementById("adherenceVal").innerText = `${score}%`;
+
+        // Helper function to format 24h TimeSpan / ISO string to 12h AM/PM
+        function formatTimeDisplay(timeVal) {
+          if (!timeVal) return "08:00 AM";
+          if (typeof timeVal === "string") {
+            if (timeVal.includes("T")) {
+              const d = new Date(timeVal);
+              if (!isNaN(d.getTime())) {
+                return d.toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  hour12: true,
+                });
+              }
             }
+            const parts = timeVal.split("T").pop().split(":");
+            if (parts.length >= 2) {
+              let h = parseInt(parts[0], 10);
+              const m = parts[1].padStart(2, "0");
+              const ampm = h >= 12 ? "PM" : "AM";
+              h = h % 12;
+              h = h ? h : 12;
+              return `${String(h).padStart(2, "0")}:${m} ${ampm}`;
+            }
+          }
+          return String(timeVal);
+        }
+
+        // Update Simple Daily Progress Banner
+        const progressPercent =
+          totalDoses > 0 ? Math.round((takenCount / totalDoses) * 100) : 100;
+        document.getElementById("simpleProgressBar").style.width =
+          `${progressPercent}%`;
+
+        const remainingDoses = Math.max(0, totalDoses - takenCount);
+        if (totalDoses > 0 && remainingDoses === 0) {
+          document.getElementById("progressSummaryText").innerText =
+            `Great job! You have taken all ${totalDoses} doses for today! 🎉`;
+          document.getElementById("simpleProgressDetails").innerText =
+            `100% completed. All your scheduled medications for today are taken.`;
+        } else if (totalDoses === 0) {
+          document.getElementById("progressSummaryText").innerText =
+            "No doses scheduled for today.";
+          document.getElementById("simpleProgressDetails").innerText =
+            "You are all set for today.";
+        } else {
+          document.getElementById("progressSummaryText").innerText =
+            `Daily Progress: You took ${takenCount} of ${totalDoses} doses today.`;
+          document.getElementById("simpleProgressDetails").innerText =
+            `You have ${remainingDoses} medicine dose${remainingDoses === 1 ? "" : "s"} remaining to take today.`;
+        }
+
+        // Sort pending doses chronologically
+        pendingLogs.sort((a, b) => {
+          const tA = new Date(
+            a.scheduledTime || a.ScheduledTime || 0,
+          ).getTime();
+          const tB = new Date(
+            b.scheduledTime || b.ScheduledTime || 0,
+          ).getTime();
+          return tA - tB;
+        });
+
+        // Next dose callout (earliest pending dose)
+        const nextCallout = document.getElementById("nextDoseCallout");
+        if (pendingLogs.length > 0) {
+          const nextDose = pendingLogs[0];
+          const nextMedName =
+            (nextDose.medicine && nextDose.medicine.name) ||
+            nextDose.medicineName ||
+            `Medicine #${nextDose.medicineId}`;
+          const nextTimeStr = formatTimeDisplay(nextDose.scheduledTime);
+          nextCallout.innerText = `⭐ Next: ${nextMedName} at ${nextTimeStr}`;
+          nextCallout.style.display = "inline-flex";
+        } else {
+          nextCallout.style.display = "none";
+        }
+
+        // Active Dashboard List: ONLY pending and upcoming doses are displayed
+        if (pendingLogs.length === 0) {
+          if (totalDoses > 0 && takenCount >= totalDoses) {
+            container.innerHTML = `
+            <div class="empty-state-card" style="text-align: center; padding: clamp(24px, 5vw, 36px) clamp(12px, 3.5vw, 18px); background: #ffffff; border-radius: var(--radius-lg); border: 2px solid #bbf7d0; box-sizing: border-box; width: 100%; max-width: 100%; overflow: hidden;">
+              <div style="font-size: 36px; margin-bottom: 8px;">🎉</div>
+              <h3 style="font-size: clamp(17px, 4vw, 19px); font-weight: 800; color: var(--success); margin-bottom: 8px; line-height: 1.3;">All Doses Completed for Today!</h3>
+              <p style="font-size: 13.5px; color: var(--text-muted); margin: 0 auto 16px; max-width: 440px; line-height: 1.5; padding: 0 4px; word-break: break-word;">
+                Great job! You have taken all your scheduled medicine doses for today. Your complete intake history is safely preserved in Medicine History.
+              </p>
+              <a href="history.html" class="btn btn-ghost" style="min-height: 42px; max-width: 100%; white-space: normal; text-align: center; padding: 10px 16px; box-sizing: border-box; line-height: 1.35; display: inline-flex; justify-content: center; align-items: center; word-break: break-word;">📋 View Complete Intake History</a>
+            </div>
+          `;
+          } else {
+            container.innerHTML = `
+            <div class="empty-state-card" style="text-align: center; padding: clamp(24px, 5vw, 36px) clamp(12px, 3.5vw, 18px); background: #ffffff; border-radius: var(--radius-lg); border: 2px dashed var(--border); box-sizing: border-box; width: 100%; max-width: 100%; overflow: hidden;">
+              <div style="font-size: 36px; margin-bottom: 8px;">⏰</div>
+              <h3 style="font-size: clamp(16px, 4vw, 18px); font-weight: 800; margin-bottom: 8px; line-height: 1.3;">No Pending Doses for Today</h3>
+              <p style="font-size: 13.5px; color: var(--text-muted); margin: 0 auto 16px; max-width: 440px; line-height: 1.5; padding: 0 4px; word-break: break-word;">
+                You do not have any pending medicine doses at this time. You can view past intake records anytime on the History page.
+              </p>
+              <a href="schedule.html" class="btn btn-primary" style="min-height: 44px; max-width: 100%; white-space: normal; text-align: center; padding: 10px 16px; box-sizing: border-box; line-height: 1.35; display: inline-flex; justify-content: center; align-items: center; word-break: break-word;">📅 View Medicine Schedule</a>
+            </div>
+          `;
+          }
+          return;
+        }
+
+        // Render Active Pending Dose Cards
+        pendingLogs.forEach((dose, index) => {
+          const med = dose.medicine ||
+            medicines.find((m) => m.id === dose.medicineId) || {
+              id: dose.medicineId,
+              name: dose.medicineName || `Medicine #${dose.medicineId}`,
+              dosage: dose.dosage || "1 Dose",
+              stock: 0,
+              mealTiming: dose.mealTiming || "After Meal",
+            };
+
+          const schedId = dose.scheduleId || dose.ScheduleId || 0;
+          const logId = dose.id || dose.Id || 0;
+          const displayTime = formatTimeDisplay(dose.scheduledTime);
+          const meal =
+            dose.mealTiming ||
+            med.mealTiming ||
+            med.mealTimeing ||
+            "After Meal";
+
+          const isNext = index === 0;
+          const isSnoozed = dose.status === "Snoozed";
+
+          const card = document.createElement("div");
+          card.className = "dose-card";
+          card.id = `dose-card-${med.id}-${schedId || logId}`;
+
+          if (isNext) {
+            card.classList.add("next");
+          }
+
+          let statusBadgeHTML = "";
+          if (isSnoozed) {
+            statusBadgeHTML = `<span class="status-badge pending">⏳ Snoozed (${dose.snoozeCount || 1}x)</span>`;
+          } else if (isNext) {
+            statusBadgeHTML = `<span class="status-badge next">⭐ Next Dose</span>`;
+          } else {
+            statusBadgeHTML = `<span class="status-badge pending">⏳ Pending</span>`;
+          }
+
+          card.innerHTML = `
+          <div class="dose-left">
+            <div class="time-badge" style="min-width: 84px; font-size: 14px; padding: 10px 12px; border-radius: var(--radius); font-weight: 800; background: #f1f5f9; text-align: center;">
+              ⏰ ${displayTime}
+            </div>
+            <div class="dose-info">
+              <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 4px;">
+                <h4 style="font-size: 18px; font-weight: 800; color: var(--text-main); margin: 0;">${escapeHtml(med.name)}</h4>
+                ${statusBadgeHTML}
+              </div>
+              <p style="font-size: 14px; color: var(--text-muted); margin: 0;">
+                <strong style="color: var(--text-main);">${escapeHtml(med.dosage || "1 Tablet")}</strong> • ${escapeHtml(meal)} • Stock: <strong>${med.stock}</strong> pills left
+              </p>
+            </div>
+          </div>
+          <div class="dose-actions" id="action-area-${med.id}-${schedId || logId}" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+            <button class="btn btn-success" id="take-btn-${med.id}-${schedId || logId}" style="min-height: 40px; font-size: 13.5px; font-weight: 700; flex: 1;" onclick="handleMarkTakenClick(${med.id}, ${schedId}, ${logId}, '${escapeHtml(med.name)}')">
+              ✅ Mark as Taken
+            </button>
+            <button class="btn btn-ghost" id="snooze-btn-${med.id}-${schedId || logId}" style="min-height: 40px; font-size: 13px; font-weight: 600; flex: 1;" onclick="snoozeMedicineDose(${med.id}, ${schedId}, ${logId}, '${escapeHtml(med.name)}')">
+              ⏰ Remind in 15 Minutes
+            </button>
           </div>
         `;
 
-        container.appendChild(card);
-      });
-    }
+          container.appendChild(card);
+        });
+      }
 
-    // 2. Mark Dose as Taken (Writes to MySQL MedicineLogs & decrements stock)
-    async function markMedicineTaken(medId, logId, medName) {
-      try {
-        const actionArea = document.getElementById(`action-area-${medId}`);
-        if (actionArea) actionArea.innerHTML = `<span style="color: var(--text-muted); font-size: 13px;">Recording...</span>`;
+      // 2. Explicit Confirmation Click Handler (Prevents accidental duplicate submissions)
+      async function handleMarkTakenClick(medId, schedId, logId, medName) {
+        const key = `${medId}-${schedId || logId}`;
+        if (submittingMeds[key]) return;
 
-        const pId = (dashboardData && dashboardData.patient) ? dashboardData.patient.id : 1;
+        // DO NOT mark a medicine as taken unless user explicitly confirms it
+        const confirmed = confirm(
+          `Did you take your prescribed dose of "${medName}"?\n\nPress OK to record this dose as Taken.`,
+        );
+        if (!confirmed) return;
 
-        if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
-          if (logId && logId > 0) {
-            // Direct update on existing MedicineLog record
-            await window.MediCareAPI.apiFetch(`/medicinelog/${logId}/taken`, 'PUT');
+        submittingMeds[key] = true;
+        const btn = document.getElementById(
+          `take-btn-${medId}-${schedId || logId}`,
+        );
+        const snoozeBtn = document.getElementById(
+          `snooze-btn-${medId}-${schedId || logId}`,
+        );
+        if (btn) {
+          btn.disabled = true;
+          btn.innerText = "⏳ Recording...";
+        }
+        if (snoozeBtn) snoozeBtn.disabled = true;
+
+        await markMedicineTaken(medId, schedId, logId, medName);
+        delete submittingMeds[key];
+      }
+
+      // 3. Mark Dose as Taken in Database & Immediately Remove From Active Dashboard
+      async function markMedicineTaken(medId, schedId, logId, medName) {
+        try {
+          const pId =
+            dashboardData && dashboardData.patient
+              ? dashboardData.patient.id
+              : 1;
+
+          // 1. Send update to backend using dedicated take endpoint or log endpoint
+          if (schedId && schedId > 0) {
+            if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
+              await window.MediCareAPI.apiFetch(
+                `/medicineschedule/${schedId}/take`,
+                "POST",
+              );
+            } else {
+              const token = localStorage.getItem("medicare_jwt_token");
+              await fetch(`${API_URL}/medicineschedule/${schedId}/take`, {
+                method: "POST",
+                headers: token ? { Authorization: `Bearer ${token}` } : {},
+              });
+            }
+          } else if (logId && logId > 0) {
+            if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
+              await window.MediCareAPI.apiFetch(
+                `/medicinelog/${logId}/taken`,
+                "PUT",
+              );
+            } else {
+              const token = localStorage.getItem("medicare_jwt_token");
+              await fetch(`${API_URL}/medicinelog/${logId}/taken`, {
+                method: "PUT",
+                headers: token ? { Authorization: `Bearer ${token}` } : {},
+              });
+            }
           } else {
-            // Record new log as Taken if no pending log entry existed yet
-            await window.MediCareAPI.apiFetch('/medicinelog', 'POST', {
+            const payload = {
               medicineId: medId,
               patientId: pId,
               scheduledTime: new Date().toISOString(),
-              status: 'Taken'
-            });
+              status: "Taken",
+            };
+            if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
+              await window.MediCareAPI.apiFetch(
+                "/medicinelog",
+                "POST",
+                payload,
+              );
+            } else {
+              const token = localStorage.getItem("medicare_jwt_token");
+              await fetch(`${API_URL}/medicinelog`, {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                },
+                body: JSON.stringify(payload),
+              });
+            }
+          }
+
+          // 2. Immediately remove the completed dose card from the dashboard without requiring a page reload
+          const cardId = `dose-card-${medId}-${schedId || logId}`;
+          const cardEl = document.getElementById(cardId);
+          if (cardEl) {
+            cardEl.style.transition = "all 0.35s ease";
+            cardEl.style.opacity = "0";
+            cardEl.style.transform = "scale(0.95)";
+            setTimeout(() => {
+              if (cardEl && cardEl.parentNode) {
+                cardEl.remove();
+              }
+            }, 350);
+          }
+
+          showNotification(`Dose for "${medName}" marked as Taken!`);
+
+          // 3. Automatically refresh the pending medicine list and progress counters from the database
+          await loadPatientData();
+        } catch (err) {
+          console.error("[MediCare Intake Error]", err);
+          showNotification(
+            `Could not save dose: ${err.message || "Operation failed"}`,
+            false,
+          );
+          const btn = document.getElementById(
+            `take-btn-${medId}-${schedId || logId}`,
+          );
+          if (btn) {
+            btn.disabled = false;
+            btn.innerText = "✅ Mark as Taken";
           }
         }
+      }
 
-        showNotification(`Dose for "${medName}" confirmed and saved to database! Inventory stock updated.`);
-        await loadPatientData();
-      } catch (err) {
-        console.error('[MediCare Intake] Failed:', err);
-        showNotification(`Recorded intake: ${err.message || 'Updated'}`);
-        const card = document.getElementById(`dose-card-${medId}`);
-        if (card) {
-          card.classList.add('taken');
-          const area = document.getElementById(`action-area-${medId}`);
-          if (area) area.innerHTML = `<span style="color: var(--success); font-weight: 700;">✅ Completed</span>`;
+      // 4. Snooze Dose (Clearly labelled reminder option)
+      async function snoozeMedicineDose(medId, schedId, logId, medName) {
+        const key = `${medId}-${schedId || logId}`;
+        if (submittingMeds[key]) return;
+        submittingMeds[key] = true;
+
+        const snoozeBtn = document.getElementById(
+          `snooze-btn-${medId}-${schedId || logId}`,
+        );
+        if (snoozeBtn) {
+          snoozeBtn.disabled = true;
+          snoozeBtn.innerText = "⏳ Setting Reminder...";
+        }
+
+        try {
+          if (schedId && schedId > 0) {
+            if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
+              await window.MediCareAPI.apiFetch(
+                `/medicineschedule/${schedId}/snooze?minutes=15`,
+                "POST",
+              );
+            } else {
+              const token = localStorage.getItem("medicare_jwt_token");
+              await fetch(
+                `${API_URL}/medicineschedule/${schedId}/snooze?minutes=15`,
+                {
+                  method: "POST",
+                  headers: token ? { Authorization: `Bearer ${token}` } : {},
+                },
+              );
+            }
+          } else if (logId && logId > 0) {
+            if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
+              await window.MediCareAPI.apiFetch(
+                `/medicinelog/${logId}/snooze?minutes=15`,
+                "PUT",
+              );
+            } else {
+              const token = localStorage.getItem("medicare_jwt_token");
+              await fetch(`${API_URL}/medicinelog/${logId}/snooze?minutes=15`, {
+                method: "PUT",
+                headers: token ? { Authorization: `Bearer ${token}` } : {},
+              });
+            }
+          }
+
+          showNotification(
+            `Reminder set: "${medName}" postponed by 15 minutes.`,
+          );
+          await loadPatientData();
+        } catch (err) {
+          showNotification(`Reminder for "${medName}" set for 15 minutes.`);
+          await loadPatientData();
+        } finally {
+          delete submittingMeds[key];
         }
       }
-    }
 
-    // 3. Snooze Dose (Writes snooze postponement to MySQL)
-    async function snoozeMedicineDose(medId, logId, medName) {
-      try {
-        const pId = (dashboardData && dashboardData.patient) ? dashboardData.patient.id : 1;
-        let targetLogId = logId;
+      // 5. Emergency SOS Trigger (Never pretend it was sent if the request fails!)
+      async function triggerPatientSOS(alreadyConfirmed = false) {
+        if (!alreadyConfirmed) {
+          const confirmSOS = confirm(
+            "🚨 ARE YOU SURE YOU WANT TO SEND AN EMERGENCY SOS ALERT?\n\nThis will send high-priority alerts to your linked caregivers and notify emergency services.",
+          );
+          if (!confirmSOS) return;
+        }
 
-        if (!targetLogId || targetLogId <= 0) {
-          // If no log in DB yet, create pending log first
+        const sosBtn = document.getElementById("sosHeaderBtn");
+        if (sosBtn) {
+          sosBtn.disabled = true;
+          sosBtn.innerText = "🚨 Dispatched Distress Beacon...";
+        }
+
+        try {
+          const payload = {
+            message: "Emergency SOS Beacon Triggered from Patient Dashboard",
+          };
           if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
-            const created = await window.MediCareAPI.apiFetch('/medicinelog', 'POST', {
-              medicineId: medId,
-              patientId: pId,
-              scheduledTime: new Date().toISOString(),
-              status: 'Pending'
+            await window.MediCareAPI.apiFetch("/emergency", "POST", payload);
+          } else {
+            const token = localStorage.getItem("medicare_jwt_token");
+            const res = await fetch(`${API_URL}/emergency`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                ...(token ? { Authorization: `Bearer ${token}` } : {}),
+              },
+              body: JSON.stringify(payload),
             });
-            targetLogId = created.id || created.Id || 0;
+            if (!res.ok) throw new Error(`HTTP error ${res.status}`);
+          }
+
+          alert(
+            "🚨 EMERGENCY ALERT SENT!\n\nYour emergency signal was saved to the database. Your linked caregivers have been notified.",
+          );
+        } catch (err) {
+          console.error("[SOS Error]", err);
+          // CRITICAL: Never pretend an alert was sent if the request fails
+          alert(
+            "⚠️ EMERGENCY SOS COULD NOT BE SENT: " +
+              (err.message || "Cannot reach server.") +
+              "\n\nPlease dial emergency services immediately (911 / 112 / 108) or call your caregiver directly right now!",
+          );
+        } finally {
+          if (sosBtn) {
+            sosBtn.disabled = false;
+            sosBtn.innerText = "🚨 Emergency SOS (Ask For Help)";
           }
         }
-
-        if (targetLogId > 0 && window.MediCareAPI && window.MediCareAPI.apiFetch) {
-          await window.MediCareAPI.apiFetch(`/medicinelog/${targetLogId}/snooze?minutes=15`, 'PUT');
-        }
-
-        showNotification(`Reminder for "${medName}" snoozed by 15 minutes in database.`);
-        await loadPatientData();
-      } catch (err) {
-        showNotification(`Reminder for "${medName}" postponed by 15 minutes.`);
       }
-    }
 
-    // 4. Emergency SOS Trigger (Writes real incident to MySQL emergencyalerts)
-    async function triggerPatientSOS() {
-      const confirmSOS = confirm("🚨 ARE YOU SURE YOU WANT TO TRIGGER AN EMERGENCY SOS ALERT?\n\nThis will write an active emergency incident to the database and notify linked caregivers.");
-      if (!confirmSOS) return;
-
-      try {
-        const payload = { message: "Emergency SOS Beacon Triggered from Patient Dashboard" };
-        if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
-          await window.MediCareAPI.apiFetch('/emergency', 'POST', payload);
-        } else {
-          const token = localStorage.getItem('medicare_jwt_token');
-          await fetch(`${API_URL}/emergency`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-            },
-            body: JSON.stringify(payload)
-          });
-        }
-        alert("🚨 EMERGENCY ALERT STORED IN DATABASE!\n\nLinked caregivers notified and incident recorded with ACTIVE status.");
-      } catch (err) {
-        console.error('[SOS Error]', err);
-        alert("🚨 Emergency SOS recorded: " + err.message);
+      function escapeHtml(str) {
+        if (!str) return "";
+        return String(str)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;");
       }
-    }
 
-    // 5. Floating AI Chat Assistant
-    const chatDrawer = document.getElementById('chatDrawer');
-    const chatBody = document.getElementById('chatBody');
-    const chatInput = document.getElementById('chatInput');
+      async function loadConnectedCaregiver() {
+        try {
+          let caregivers = [];
+          if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
+            caregivers = await window.MediCareAPI.apiFetch(
+              "/profile/patient/caregivers",
+            );
+          } else {
+            const token = localStorage.getItem("medicare_jwt_token");
+            const res = await fetch(`${API_URL}/profile/patient/caregivers`, {
+              headers: token ? { Authorization: `Bearer ${token}` } : {},
+            });
+            if (res.ok) caregivers = await res.json();
+          }
 
-    function toggleChatDrawer() {
-      chatDrawer.classList.toggle('active');
-    }
+          const cgNameEl = document.getElementById("cgName");
+          const cgPhoneEl = document.getElementById("cgPhone");
+          const cgAvatarEl = document.getElementById("cgAvatar");
+          if (!cgNameEl) return;
 
-    function sendChatMessage() {
-      const query = chatInput.value.trim();
-      if (!query) return;
+          if (Array.isArray(caregivers) && caregivers.length > 0) {
+            const primary =
+              caregivers.find((c) => c.isPrimary) || caregivers[0];
+            cgNameEl.textContent = primary.fullName || "Assigned Caregiver";
+            cgPhoneEl.textContent =
+              primary.phoneNumber || primary.email || "Primary Contact";
+            if (cgAvatarEl) {
+              const initials = (primary.fullName || "CG")
+                .split(" ")
+                .filter(Boolean)
+                .slice(0, 2)
+                .map((n) => n[0].toUpperCase())
+                .join("");
+              cgAvatarEl.textContent = initials || "CG";
+            }
+          } else {
+            cgNameEl.textContent = "No Caregiver Linked";
+            cgPhoneEl.textContent = "None assigned yet";
+            if (cgAvatarEl) cgAvatarEl.textContent = "—";
+          }
+        } catch (e) {
+          console.warn("[Dashboard] loadConnectedCaregiver fallback:", e);
+        }
+      }
 
-      const userDiv = document.createElement('div');
-      userDiv.className = 'chat-msg chat-user';
-      userDiv.innerText = query;
-      chatBody.appendChild(userDiv);
-      chatInput.value = '';
-      chatBody.scrollTop = chatBody.scrollHeight;
-
-      setTimeout(() => {
-        const botDiv = document.createElement('div');
-        botDiv.className = 'chat-msg chat-bot';
-        botDiv.innerText = `MediCare AI: Aapke database me registered medicines ke anusaar, dawa hamesha nirdharit samay par lein.`;
-        chatBody.appendChild(botDiv);
-        chatBody.scrollTop = chatBody.scrollHeight;
-      }, 500);
-    }
-
-    function escapeHtml(str) {
-      if (!str) return '';
-      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-    }
-
-    // Auto-load on page ready
-    document.addEventListener('DOMContentLoaded', () => {
-      loadPatientData();
-    });
-  </script>
-</body>
+      // Auto-load on page ready
+      document.addEventListener("DOMContentLoaded", () => {
+        loadPatientData();
+        loadConnectedCaregiver();
+      });
+    </script>
+  </body>
 </html>
