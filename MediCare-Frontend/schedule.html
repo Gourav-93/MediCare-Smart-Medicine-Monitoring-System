@@ -1,0 +1,1779 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MediCare - Medicine Schedule Management</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Common MediCare Design Tokens & Core Styles -->
+  <link rel="stylesheet" href="css/common.css" />
+  <link rel="stylesheet" href="css/ai-chatbot.css" />
+
+  <style>
+    :root {
+      --primary: #0284c7;
+      --primary-dark: #0369a1;
+      --primary-light: #e0f2fe;
+      --danger: #dc2626;
+      --danger-light: #fee2e2;
+      --success: #16a34a;
+      --success-light: #dcfce7;
+      --warning: #d97706;
+      --warning-light: #fef3c7;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --border: #e2e8f0;
+      --radius: 12px;
+      --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+      --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+      --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text-main);
+      min-height: 100vh;
+      overflow-x: hidden;
+      line-height: 1.5;
+    }
+
+    .page-wrapper {
+      max-width: 1380px;
+      margin: 0 auto;
+      padding: 30px clamp(16px, 4vw, 40px) 80px;
+    }
+
+    /* Hero Header */
+    .schedule-header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+      margin-bottom: 24px;
+    }
+
+    .schedule-title h1 {
+      font-size: 26px;
+      font-weight: 800;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .schedule-title p {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    /* Buttons */
+    .btn {
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-size: 13.5px;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid transparent;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+    }
+    .btn-primary:hover:not(:disabled) {
+      background: var(--primary-dark);
+      box-shadow: var(--shadow-sm);
+    }
+    .btn-ghost {
+      background: #fff;
+      color: var(--text-main);
+      border-color: var(--border);
+    }
+    .btn-ghost:hover:not(:disabled) {
+      background: #f1f5f9;
+    }
+    .btn-success {
+      background: var(--success);
+      color: #fff;
+    }
+    .btn-success:hover:not(:disabled) {
+      background: #15803d;
+    }
+    .btn-warning {
+      background: var(--warning);
+      color: #fff;
+    }
+    .btn-warning:hover:not(:disabled) {
+      background: #b45309;
+    }
+    .btn-danger {
+      background: var(--danger);
+      color: #fff;
+    }
+    .btn-danger:hover:not(:disabled) {
+      background: #b91c1c;
+    }
+
+    /* Summary Stats Grid */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+
+    .stat-card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .stat-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: var(--card-accent, var(--primary));
+    }
+    .stat-label {
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .stat-value {
+      font-size: 26px;
+      font-weight: 800;
+      color: var(--text-main);
+    }
+    .stat-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    /* Patient Selector Bar (for Caregivers / Admins) */
+    .caregiver-patient-bar {
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      border-radius: var(--radius);
+      padding: 14px 20px;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 14px;
+    }
+    .caregiver-patient-bar .info {
+      font-size: 13.5px;
+      color: #166534;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .caregiver-patient-bar select {
+      padding: 8px 14px;
+      border-radius: 8px;
+      border: 1px solid #86efac;
+      background: #ffffff;
+      font-weight: 600;
+      color: #166534;
+      outline: none;
+      cursor: pointer;
+    }
+
+    /* Filter & Controls Toolbar */
+    .controls-card {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      margin-bottom: 24px;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .filter-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      flex: 1;
+    }
+
+    .search-wrap {
+      position: relative;
+      min-width: 260px;
+      max-width: 380px;
+      flex: 1;
+    }
+    .search-wrap input {
+      width: 100%;
+      padding: 9px 14px 9px 36px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 13.5px;
+      background: #f8fafc;
+      outline: none;
+      transition: border-color 0.2s ease;
+    }
+    .search-wrap input:focus {
+      border-color: var(--primary);
+      background: #fff;
+    }
+    .search-wrap .search-icon {
+      position: absolute;
+      left: 11px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 14px;
+      color: var(--text-muted);
+      pointer-events: none;
+    }
+
+    .tab-pills {
+      display: flex;
+      background: #f1f5f9;
+      border-radius: 8px;
+      padding: 4px;
+      gap: 4px;
+      flex-wrap: wrap;
+    }
+    .tab-btn {
+      padding: 7px 14px;
+      border: none;
+      background: transparent;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .tab-btn.active {
+      background: #fff;
+      color: var(--primary);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    }
+
+    /* Section Subheaders */
+    .view-switch-tabs {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 12px;
+    }
+    .view-tab-btn {
+      padding: 8px 18px;
+      border: none;
+      background: transparent;
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-muted);
+      cursor: pointer;
+      border-radius: 8px;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .view-tab-btn.active {
+      background: var(--primary-light);
+      color: var(--primary-dark);
+    }
+
+    /* Today's Schedule Dose Cards - 3 Boxes Per Row */
+    .schedule-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+      margin-bottom: 36px;
+    }
+
+    .dose-card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      transition: all 0.2s ease;
+    }
+    .dose-card:hover {
+      box-shadow: var(--shadow-md);
+      border-color: #cbd5e1;
+    }
+    .dose-card.status-card-taken {
+      border-left: 4px solid var(--success);
+      background: #fafdfa;
+    }
+    .dose-card.status-card-missed {
+      border-left: 4px solid var(--danger);
+      background: #fffafa;
+    }
+    .dose-card.status-card-snoozed {
+      border-left: 4px solid var(--warning);
+      background: #fffdfa;
+    }
+    .dose-card.status-card-upcoming {
+      border-left: 4px solid var(--primary);
+    }
+
+    .dose-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      gap: 8px;
+    }
+    .time-slot-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: #e0f2fe;
+      color: #0369a1;
+      font-size: 13px;
+      font-weight: 800;
+      padding: 5px 10px;
+      border-radius: 8px;
+    }
+    .time-slot-badge.badge-snoozed {
+      background: #fef3c7;
+      color: #b45309;
+    }
+
+    /* Status Badges */
+    .status-badge {
+      font-size: 11.5px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 20px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      white-space: nowrap;
+    }
+    .status-badge.upcoming {
+      background: #e0f2fe;
+      color: #0284c7;
+    }
+    .status-badge.taken {
+      background: #dcfce7;
+      color: #15803d;
+    }
+    .status-badge.missed {
+      background: #fee2e2;
+      color: #b91c1c;
+    }
+    .status-badge.snoozed {
+      background: #fef3c7;
+      color: #d97706;
+    }
+
+    .dose-main h3 {
+      font-size: 16.5px;
+      font-weight: 800;
+      color: var(--text-main);
+      margin-bottom: 3px;
+    }
+    .dose-dosage {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+
+    .dose-details-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      font-size: 12.5px;
+      color: #334155;
+      margin-bottom: 14px;
+      background: #f8fafc;
+      padding: 9px 12px;
+      border-radius: 8px;
+      border: 1px solid #f1f5f9;
+    }
+    .dose-detail-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 6px;
+    }
+    .dose-detail-item .lbl {
+      color: var(--text-muted);
+      font-weight: 500;
+      white-space: nowrap;
+    }
+    .dose-detail-item .val {
+      font-weight: 700;
+      color: var(--text-main);
+      text-align: right;
+    }
+
+    .meal-pill {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2.5px 8px;
+      border-radius: 6px;
+      background: #f1f5f9;
+      color: #475569;
+    }
+    .meal-pill.after {
+      background: #ecfdf5;
+      color: #047857;
+    }
+    .meal-pill.before {
+      background: #eff6ff;
+      color: #1d4ed8;
+    }
+    .meal-pill.empty {
+      background: #faf5ff;
+      color: #7e22ce;
+    }
+
+    .stock-tag {
+      font-size: 11.5px;
+      font-weight: 700;
+      padding: 2.5px 7px;
+      border-radius: 6px;
+    }
+    .stock-good {
+      background: #dcfce7;
+      color: #166534;
+    }
+    .stock-low {
+      background: #fee2e2;
+      color: #991b1b;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.75; }
+    }
+
+    .dose-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      margin-top: auto;
+      padding-top: 12px;
+      border-top: 1px dashed var(--border);
+    }
+    .dose-actions .btn {
+      flex: 1;
+      justify-content: center;
+      padding: 7px 10px;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    /* All Schedules Table View */
+    .table-container {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+      margin-bottom: 40px;
+    }
+    .table-responsive {
+      overflow-x: auto;
+      width: 100%;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 13.5px;
+    }
+    thead {
+      background: #f8fafc;
+      border-bottom: 1px solid var(--border);
+    }
+    th {
+      padding: 14px 18px;
+      font-weight: 700;
+      color: var(--text-muted);
+      font-size: 12.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    td {
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+    }
+    tr:last-child td {
+      border-bottom: none;
+    }
+    tr:hover td {
+      background: #f8fafc;
+    }
+
+    /* Toast Notification */
+    .toast-notification {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #0f172a;
+      color: #ffffff;
+      padding: 14px 22px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: var(--shadow-lg);
+      z-index: 1000;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: all 0.3s ease;
+      pointer-events: none;
+      border-left: 4px solid var(--success);
+      max-width: 440px;
+    }
+    .toast-notification.show {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+
+    /* Modals */
+    .modal-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 999;
+      padding: 20px;
+    }
+    .modal-backdrop.active {
+      display: flex;
+    }
+    .modal-box {
+      background: #fff;
+      border-radius: var(--radius);
+      width: 100%;
+      max-width: 540px;
+      padding: 26px;
+      box-shadow: var(--shadow-lg);
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    .modal-header h3 {
+      font-size: 19px;
+      font-weight: 800;
+    }
+    .close-btn {
+      background: transparent;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      color: var(--text-muted);
+      line-height: 1;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+    .form-group label {
+      display: block;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 6px;
+    }
+    .form-control {
+      width: 100%;
+      padding: 10px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s ease;
+    }
+    .form-control:focus {
+      border-color: var(--primary);
+    }
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .quick-preset-chips {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+    .preset-chip {
+      padding: 5px 12px;
+      font-size: 12px;
+      font-weight: 700;
+      border-radius: 20px;
+      background: #f1f5f9;
+      color: var(--text-main);
+      border: 1px solid var(--border);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .preset-chip:hover {
+      background: var(--primary-light);
+      color: var(--primary-dark);
+      border-color: #bae6fd;
+    }
+
+    /* Empty States */
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      background: #fff;
+      border-radius: var(--radius);
+      border: 1px dashed var(--border);
+    }
+    .empty-state .icon {
+      font-size: 42px;
+      margin-bottom: 12px;
+    }
+    .empty-state h3 {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--text-main);
+      margin-bottom: 6px;
+    }
+    .empty-state p {
+      font-size: 13.5px;
+      color: var(--text-muted);
+      max-width: 460px;
+      margin: 0 auto 20px;
+    }
+
+    @media (max-width: 1024px) {
+      .schedule-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 768px) {
+      .schedule-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 16px;
+      }
+      .header-actions {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin: 8px 0 0;
+      }
+      .header-actions .btn {
+        margin: 0 !important;
+        padding: 6px 12px !important;
+        font-size: 12px !important;
+        font-weight: 600 !important;
+        min-height: 34px !important;
+        height: 34px !important;
+        border-radius: 8px !important;
+        width: auto !important;
+        max-width: fit-content !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        white-space: nowrap !important;
+        box-sizing: border-box !important;
+      }
+      .empty-state .btn {
+        padding: 6px 14px !important;
+        font-size: 12px !important;
+        min-height: 34px !important;
+        height: 34px !important;
+        border-radius: 8px !important;
+      }
+      .schedule-grid {
+        grid-template-columns: 1fr;
+      }
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+      .controls-card {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .search-wrap {
+        max-width: 100%;
+      }
+      .tab-pills {
+        width: 100%;
+        overflow-x: auto;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Modular Global Header injected by navbar.js -->
+  <header id="global-header"></header>
+
+  <div class="page-wrapper">
+    
+    <!-- Top Header -->
+    <div class="schedule-header">
+      <div class="schedule-title">
+        <h1>📅 Central Medicine Schedule Management</h1>
+        <p>Real-time intake tracking, dose confirmations, snooze controls, and daily schedule management.</p>
+      </div>
+      <div class="header-actions">
+        <button class="btn btn-ghost" onclick="loadAllScheduleData(true)">🔄 Refresh</button>
+        <button class="btn btn-primary" onclick="openAddSlotModal()">+ Add Time Slot</button>
+        <button class="btn btn-success" onclick="openAddMedicineModal()">+ Add New Medicine</button>
+      </div>
+    </div>
+
+    <!-- Caregiver Patient Selector (Shown dynamically if role is CAREGIVER or ADMIN) -->
+    <div class="caregiver-patient-bar" id="patientSelectorBar" style="display: none;">
+      <div class="info">
+        <span>🛡️ Viewing Schedule For Patient:</span>
+        <select id="patientSelectDropdown" onchange="onPatientSelectionChange()">
+          <option value="">Loading linked patients...</option>
+        </select>
+      </div>
+      <div style="font-size: 12.5px; color: #15803d; font-weight: 600;">
+        Actions taken here will update the patient's official medication logs in MySQL.
+      </div>
+    </div>
+
+    <!-- Live Statistics Cards -->
+    <div class="stats-row">
+      <div class="stat-card" style="--card-accent: var(--primary);">
+        <div class="stat-label">Total Doses Today</div>
+        <div class="stat-value" id="statTotalDoses">0</div>
+        <div class="stat-desc">Scheduled for today's intake</div>
+      </div>
+      <div class="stat-card" style="--card-accent: var(--primary);">
+        <div class="stat-label">Upcoming / Due Now</div>
+        <div class="stat-value" style="color: var(--primary);" id="statUpcoming">0</div>
+        <div class="stat-desc">Pending patient ingestion</div>
+      </div>
+      <div class="stat-card" style="--card-accent: var(--success);">
+        <div class="stat-label">Completed Doses</div>
+        <div class="stat-value" style="color: var(--success);" id="statTaken">0</div>
+        <div class="stat-desc">Confirmed & stock deducted</div>
+      </div>
+      <div class="stat-card" style="--card-accent: var(--warning);">
+        <div class="stat-label">Snoozed Doses</div>
+        <div class="stat-value" style="color: var(--warning);" id="statSnoozed">0</div>
+        <div class="stat-desc">Postponed by 15 minutes</div>
+      </div>
+      <div class="stat-card" style="--card-accent: var(--danger);">
+        <div class="stat-label">Missed Doses</div>
+        <div class="stat-value" style="color: var(--danger);" id="statMissed">0</div>
+        <div class="stat-desc">Exceeded 15m window</div>
+      </div>
+    </div>
+
+    <!-- View Mode Switcher -->
+    <div class="view-switch-tabs">
+      <button class="view-tab-btn active" id="viewModeTodayBtn" onclick="switchViewMode('today')">
+        ⏰ Today's Active Doses & Actions (<span id="todayCountBadge">0</span>)
+      </button>
+      <button class="view-tab-btn" id="viewModeAllBtn" onclick="switchViewMode('all')">
+        📋 All Configured Prescriptions & Slots (<span id="allSlotsCountBadge">0</span>)
+      </button>
+    </div>
+
+    <!-- Filter & Search Toolbar -->
+    <div class="controls-card">
+      <div class="filter-group">
+        <div class="search-wrap">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="searchInput" placeholder="Search medicine, dosage..." onkeyup="applyFilters()">
+        </div>
+
+        <div class="tab-pills" id="statusFilterPills">
+          <button class="tab-btn active" onclick="setStatusFilter('all', this)">All</button>
+          <button class="tab-btn" onclick="setStatusFilter('upcoming', this)">Upcoming</button>
+          <button class="tab-btn" onclick="setStatusFilter('taken', this)">Taken</button>
+          <button class="tab-btn" onclick="setStatusFilter('snoozed', this)">Snoozed</button>
+          <button class="tab-btn" onclick="setStatusFilter('missed', this)">Missed</button>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 8px; align-items: center;">
+        <label for="mealFilter" style="font-size: 13px; font-weight: 700; color: var(--text-muted);">Meal:</label>
+        <select class="form-control" id="mealFilter" style="width: auto; padding: 7px 12px;" onchange="applyFilters()">
+          <option value="all">All Timings</option>
+          <option value="AfterMeal">After Meal</option>
+          <option value="BeforeMeal">Before Meal</option>
+          <option value="EmptyStomach">Empty Stomach</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- 1. TODAY'S ACTIVE DOSES VIEW -->
+    <div id="todayViewSection">
+      <div class="schedule-grid" id="todayScheduleGrid">
+        <div style="grid-column: 1/-1; text-align: center; padding: 50px; color: var(--text-muted);">
+          Loading today's live schedules from database...
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. ALL CONFIGURED PRESCRIPTIONS & TIMING SLOTS VIEW -->
+    <div id="allViewSection" style="display: none;">
+      <div class="table-container">
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>Medicine Name</th>
+                <th>Dosage / Strength</th>
+                <th>Meal Timing</th>
+                <th>Daily Schedule Slots</th>
+                <th>Validity Range</th>
+                <th>Current Stock</th>
+                <th style="text-align: center;">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="allSchedulesTableBody">
+              <tr>
+                <td colspan="7" style="text-align: center; padding: 40px; color: var(--text-muted);">
+                  Loading configured prescription slots...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toastNotification" class="toast-notification">
+    <span id="toastIcon" style="font-size: 18px;">✅</span>
+    <span id="toastMsg">Action completed successfully</span>
+  </div>
+
+  <!-- ================= MODAL: ADD TIME SLOT TO MEDICINE ================= -->
+  <div class="modal-backdrop" id="addSlotModal">
+    <div class="modal-box" style="max-width: 460px;">
+      <div class="modal-header">
+        <h3 id="slotModalTitle">Set Daily Schedule Time</h3>
+        <button class="close-btn" onclick="closeAddSlotModal()">&times;</button>
+      </div>
+
+      <form id="slotForm" onsubmit="handleSlotSubmit(event)">
+        <div class="form-group">
+          <label for="slotMedicineSelect">Select Prescription Medicine</label>
+          <select class="form-control" id="slotMedicineSelect" required>
+            <option value="">-- Choose Medicine --</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Daily Scheduled Intake Time (12-Hour)</label>
+          <div style="display: flex; gap: 8px;">
+            <select class="form-control" id="slotHour" style="flex: 1;">
+              <option value="1">01</option><option value="2">02</option><option value="3">03</option>
+              <option value="4">04</option><option value="5">05</option><option value="6">06</option>
+              <option value="7">07</option><option value="8" selected>08</option><option value="9">09</option>
+              <option value="10">10</option><option value="11">11</option><option value="12">12</option>
+            </select>
+            <span style="align-self: center; font-weight: bold; font-size: 18px;">:</span>
+            <input type="number" min="0" max="59" step="1" class="form-control" id="slotMinute" value="00" placeholder="00" style="flex: 1; text-align: center; font-weight: 700;" title="Enter manual minute (00-59)">
+            <select class="form-control" id="slotAmPm" style="flex: 1;">
+              <option value="AM" selected>AM</option>
+              <option value="PM">PM</option>
+            </select>
+          </div>
+
+          <div class="quick-preset-chips">
+            <span class="preset-chip" onclick="setSlotPreset(8, '00', 'AM')">🌅 Morning 08:00 AM</span>
+            <span class="preset-chip" onclick="setSlotPreset(1, '30', 'PM')">☀️ Afternoon 01:30 PM</span>
+            <span class="preset-chip" onclick="setSlotPreset(8, '30', 'PM')">🌙 Night 08:30 PM</span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="slotFrequency">Frequency</label>
+          <select class="form-control" id="slotFrequency">
+            <option value="Daily" selected>Daily Routine</option>
+          </select>
+        </div>
+
+        <div style="display: flex; gap: 10px; margin-top: 24px;">
+          <button type="button" class="btn btn-ghost" style="flex: 1;" onclick="closeAddSlotModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="saveSlotBtn" style="flex: 2;">Save Schedule Slot</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= MODAL: ADD NEW MEDICINE WITH SCHEDULE ================= -->
+  <div class="modal-backdrop" id="addMedModal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3>+ Add Medicine & Configure Schedule</h3>
+        <button class="close-btn" onclick="closeAddMedModal()">&times;</button>
+      </div>
+
+      <form id="scheduleMedForm" onsubmit="handleNewMedScheduleSubmit(event)">
+        <!-- Medicine Name -->
+        <div class="form-group">
+          <label for="newMedName">Medicine Name</label>
+          <input type="text" class="form-control" id="newMedName" placeholder="e.g., Amoxicillin 500mg" required>
+        </div>
+
+        <!-- Dosage & Quantity -->
+        <div class="form-row">
+          <div class="form-group">
+            <label for="newMedDose">Dosage / Strength</label>
+            <input type="text" class="form-control" id="newMedDose" placeholder="e.g., 1 Tablet" value="1 Tablet" required>
+          </div>
+          <div class="form-group">
+            <label for="newMedStock">Quantity / Units in Stock</label>
+            <input type="number" class="form-control" id="newMedStock" placeholder="30" min="1" value="30" required>
+          </div>
+        </div>
+
+        <!-- Meal Timing & Schedule Time -->
+        <div class="form-row">
+          <div class="form-group">
+            <label for="newMedMealTiming">Meal Timing</label>
+            <select class="form-control" id="newMedMealTiming" required>
+              <option value="AfterMeal" selected>After Meal (Recommended)</option>
+              <option value="BeforeMeal">Before Meal</option>
+              <option value="EmptyStomach">Empty Stomach</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Daily Scheduled Time</label>
+            <div style="display: flex; gap: 6px;">
+              <select class="form-control" id="newSchedHour" style="flex: 1;">
+                <option value="1">01</option><option value="2">02</option><option value="3">03</option>
+                <option value="4">04</option><option value="5">05</option><option value="6">06</option>
+                <option value="7">07</option><option value="8" selected>08</option><option value="9">09</option>
+                <option value="10">10</option><option value="11">11</option><option value="12">12</option>
+              </select>
+              <span style="align-self: center; font-weight: bold;">:</span>
+              <input type="number" min="0" max="59" step="1" class="form-control" id="newSchedMinute" value="00" placeholder="00" style="flex: 1; text-align: center; font-weight: 700;" title="Enter manual minute (00-59)">
+              <select class="form-control" id="newSchedAmPm" style="flex: 1;">
+                <option value="AM" selected>AM</option>
+                <option value="PM">PM</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Start Date & End Date -->
+        <div class="form-row">
+          <div class="form-group">
+            <label for="newStartDate">Start Date</label>
+            <input type="date" class="form-control" id="newStartDate" required>
+          </div>
+          <div class="form-group">
+            <label for="newEndDate">End Date / Duration</label>
+            <input type="date" class="form-control" id="newEndDate" required>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 10px; margin-top: 24px;">
+          <button type="button" class="btn btn-ghost" style="flex: 1;" onclick="closeAddMedModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="saveNewMedBtn" style="flex: 2;">Save Medicine & Schedule</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Shared MediCare Modular Navbar, API SDK, and Global AI Chatbot -->
+  <script src="js/api.js"></script>
+  <script src="js/navbar.js"></script>
+  <script src="js/ai-chatbot.js"></script>
+
+  <script>
+    // State Variables
+    let todaySchedules = [];
+    let allMedicines = [];
+    let allScheduleSlots = [];
+    let activeStatusFilter = 'all';
+    let currentViewMode = 'today';
+    let selectedCaregiverPatientId = null;
+
+    // Show Toast Notification
+    function showToast(message, isSuccess = true) {
+      const toast = document.getElementById('toastNotification');
+      const msg = document.getElementById('toastMsg');
+      const icon = document.getElementById('toastIcon');
+      if (!toast || !msg) return;
+
+      msg.innerText = message;
+      icon.innerText = isSuccess ? '✅' : '⚠️';
+      toast.style.borderLeftColor = isSuccess ? '#16a34a' : '#d97706';
+      toast.classList.add('show');
+
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 4000);
+    }
+
+    // Format 24-hr TimeSpan or DateTime to 12-Hour AM/PM
+    function formatTime12H(timeObj) {
+      if (!timeObj) return '08:00 AM';
+      if (typeof timeObj === 'string' && timeObj.includes('T')) {
+        const d = new Date(timeObj);
+        return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
+      }
+      if (typeof timeObj === 'string') {
+        const parts = timeObj.split(':');
+        let h = parseInt(parts[0], 10) || 0;
+        const m = parts[1] || '00';
+        const ampm = h >= 12 ? 'PM' : 'AM';
+        h = h % 12;
+        if (h === 0) h = 12;
+        return `${String(h).padStart(2, '0')}:${m} ${ampm}`;
+      }
+      return String(timeObj);
+    }
+
+    // Switch View Mode (Today vs All Configured)
+    function switchViewMode(mode) {
+      currentViewMode = mode;
+      document.getElementById('viewModeTodayBtn').classList.toggle('active', mode === 'today');
+      document.getElementById('viewModeAllBtn').classList.toggle('active', mode === 'all');
+      document.getElementById('todayViewSection').style.display = (mode === 'today') ? 'block' : 'none';
+      document.getElementById('allViewSection').style.display = (mode === 'all') ? 'block' : 'none';
+    }
+
+    // Status Filter Selection
+    function setStatusFilter(status, btn) {
+      activeStatusFilter = status.toLowerCase();
+      document.querySelectorAll('#statusFilterPills .tab-btn').forEach(b => b.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+      applyFilters();
+    }
+
+    // Main Data Fetcher
+    async function loadAllScheduleData(showRefreshToast = false) {
+      try {
+        const user = window.MediCareAPI ? window.MediCareAPI.getCurrentUser() : null;
+        const role = (window.MediCareAPI ? window.MediCareAPI.getUserRole() : '') || 'PATIENT';
+
+        // Check if Caregiver / Admin: populate patient selector if needed
+        if (role === 'CAREGIVER' || role === 'ADMIN') {
+          await setupCaregiverPatientDropdown();
+        }
+
+        // Build query string if viewing specific patient
+        const pidQuery = selectedCaregiverPatientId ? `?patientId=${selectedCaregiverPatientId}` : '';
+
+        // 1. Fetch Today's enriched live schedules
+        let todayData = [];
+        try {
+          if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
+            todayData = await window.MediCareAPI.apiFetch(`/medicineschedule/today${pidQuery}`);
+          }
+        } catch (e) {
+          console.warn('[Schedule] Today fetch error:', e);
+        }
+        todaySchedules = Array.isArray(todayData) ? todayData : [];
+
+        // 2. Fetch All Medicines
+        let medData = [];
+        try {
+          if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
+            medData = await window.MediCareAPI.apiFetch('/medicine');
+          }
+        } catch (e) {
+          console.warn('[Schedule] Medicine fetch error:', e);
+        }
+        allMedicines = Array.isArray(medData) ? medData : [];
+
+        // 3. Fetch All Schedule Slots
+        let slotData = [];
+        try {
+          if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
+            slotData = await window.MediCareAPI.apiFetch('/medicineschedule');
+          }
+        } catch (e) {
+          console.warn('[Schedule] Slot fetch error:', e);
+        }
+        allScheduleSlots = Array.isArray(slotData) ? slotData : [];
+
+        // Populate Medicine Dropdown in Modal
+        populateMedicineSelect();
+
+        // Update Statistics Counters
+        updateStatsCounters();
+
+        // Render Views
+        renderTodayDoses(todaySchedules);
+        renderAllSchedulesTable(allMedicines, allScheduleSlots);
+
+        if (showRefreshToast) {
+          showToast('Schedule data synchronized with live database.');
+        }
+      } catch (err) {
+        console.error('[Schedule] Failed loading schedule data:', err);
+        document.getElementById('todayScheduleGrid').innerHTML = `
+          <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--danger);">
+            ⚠️ Error loading schedule data from backend API. Please make sure you are logged in.
+          </div>
+        `;
+      }
+    }
+
+    // Setup Caregiver / Admin Patient Dropdown
+    async function setupCaregiverPatientDropdown() {
+      const bar = document.getElementById('patientSelectorBar');
+      const select = document.getElementById('patientSelectDropdown');
+      bar.style.display = 'flex';
+
+      try {
+        if (select.children.length <= 1) {
+          let patients = [];
+          if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
+            const role = window.MediCareAPI.getUserRole();
+            if (role === 'CAREGIVER') {
+              const cgDash = await window.MediCareAPI.apiFetch('/dashboard/caregiver').catch(() => null);
+              if (cgDash && Array.isArray(cgDash.patients)) {
+                patients = cgDash.patients;
+              }
+            }
+          }
+
+          if (patients.length > 0) {
+            select.innerHTML = patients.map(p => `
+              <option value="${p.id}">${escapeHtml(p.name || `Patient #${p.id}`)} (${p.email || 'Linked'})</option>
+            `).join('');
+            if (!selectedCaregiverPatientId) {
+              selectedCaregiverPatientId = patients[0].id;
+            }
+          } else {
+            select.innerHTML = `<option value="">Primary Patient</option>`;
+          }
+        }
+      } catch (e) {
+        console.warn('[Schedule] Caregiver patient selector fallback:', e);
+      }
+    }
+
+    function onPatientSelectionChange() {
+      const select = document.getElementById('patientSelectDropdown');
+      selectedCaregiverPatientId = select.value ? parseInt(select.value, 10) : null;
+      loadAllScheduleData(true);
+    }
+
+    // Update Statistics Counters
+    function updateStatsCounters() {
+      let upcoming = 0;
+      let taken = 0;
+      let snoozed = 0;
+      let missed = 0;
+
+      todaySchedules.forEach(item => {
+        const st = (item.status || '').toLowerCase();
+        if (st === 'taken') taken++;
+        else if (st === 'missed') missed++;
+        else if (st === 'snoozed') snoozed++;
+        else upcoming++;
+      });
+
+      document.getElementById('statTotalDoses').innerText = todaySchedules.length;
+      document.getElementById('statUpcoming').innerText = upcoming;
+      document.getElementById('statTaken').innerText = taken;
+      document.getElementById('statSnoozed').innerText = snoozed;
+      document.getElementById('statMissed').innerText = missed;
+
+      document.getElementById('todayCountBadge').innerText = todaySchedules.length;
+      document.getElementById('allSlotsCountBadge').innerText = allMedicines.length;
+    }
+
+    // Populate Medicine Dropdown for Add Time Slot Modal
+    function populateMedicineSelect() {
+      const sel = document.getElementById('slotMedicineSelect');
+      if (!sel) return;
+
+      if (!allMedicines || allMedicines.length === 0) {
+        sel.innerHTML = `<option value="">No medicines found. Please add a medicine first.</option>`;
+        return;
+      }
+
+      sel.innerHTML = `<option value="">-- Choose Prescription Medicine --</option>` +
+        allMedicines.map(m => `
+          <option value="${m.id}">${escapeHtml(m.name)} (${escapeHtml(m.dosage || '1 Dose')} • Stock: ${m.stock})</option>
+        `).join('');
+    }
+
+    // 1. Render Today's Dose Cards
+    function renderTodayDoses(list) {
+      const grid = document.getElementById('todayScheduleGrid');
+      grid.innerHTML = '';
+
+      if (!list || list.length === 0) {
+        grid.innerHTML = `
+          <div class="empty-state" style="grid-column: 1/-1;">
+            <div class="icon">⏰</div>
+            <h3>No Medication Doses Scheduled for Today</h3>
+            <p>You have no active medicine doses scheduled for today's intake. You can add new schedule reminder slots or register a new prescription.</p>
+            <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+              <button class="btn btn-primary" onclick="openAddSlotModal()">+ Set 12-Hour Schedule Slot</button>
+              <button class="btn btn-success" onclick="openAddMedicineModal()">+ Add New Prescription</button>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      list.forEach(item => {
+        const status = (item.status || 'Upcoming').toLowerCase();
+        const isTaken = status === 'taken';
+        const isMissed = status === 'missed';
+        const isSnoozed = status === 'snoozed';
+        const isUpcoming = !isTaken && !isMissed && !isSnoozed;
+
+        let statusClass = 'upcoming';
+        let statusText = '🔵 Upcoming';
+        let cardStatusClass = 'status-card-upcoming';
+
+        if (isTaken) {
+          statusClass = 'taken';
+          statusText = '✅ Taken';
+          cardStatusClass = 'status-card-taken';
+        } else if (isMissed) {
+          statusClass = 'missed';
+          statusText = '❌ Missed';
+          cardStatusClass = 'status-card-missed';
+        } else if (isSnoozed) {
+          statusClass = 'snoozed';
+          statusText = `⏳ Snoozed (${item.snoozeCount || 1}/2)`;
+          cardStatusClass = 'status-card-snoozed';
+        }
+
+        const time12 = formatTime12H(item.scheduledTime || item.time);
+        const meal = item.mealTiming || 'AfterMeal';
+        let mealClass = 'after';
+        let mealLabel = '🥣 After Meal';
+        if (meal.toLowerCase().includes('before')) {
+          mealClass = 'before';
+          mealLabel = '🍽️ Before Meal';
+        } else if (meal.toLowerCase().includes('empty')) {
+          mealClass = 'empty';
+          mealLabel = '🫗 Empty Stomach';
+        }
+
+        const isLowStock = item.stock <= 5;
+        const stockHtml = isLowStock
+          ? `<span class="stock-tag stock-low">⚠️ ${item.stock} left (Low Stock)</span>`
+          : `<span class="stock-tag stock-good">${item.stock} in stock</span>`;
+
+        // Start & End dates
+        let dateRange = 'Ongoing Routine';
+        if (item.startDate && item.endDate) {
+          const s = new Date(item.startDate).toLocaleDateString([], { month: 'short', day: 'numeric' });
+          const e = new Date(item.endDate).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' });
+          dateRange = `${s} — ${e}`;
+        }
+
+        let takenTimeDisplay = '';
+        if (isTaken && item.takenTime) {
+          takenTimeDisplay = ` • Taken at ${new Date(item.takenTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+        }
+
+        const card = document.createElement('div');
+        card.className = `dose-card ${cardStatusClass}`;
+        card.id = `dose-card-sched-${item.scheduleId}`;
+        card.setAttribute('data-name', (item.medicineName || '').toLowerCase());
+        card.setAttribute('data-status', status);
+        card.setAttribute('data-meal', meal);
+
+        card.innerHTML = `
+          <div class="dose-top">
+            <div class="time-slot-badge ${isSnoozed ? 'badge-snoozed' : ''}">
+              ⏰ ${time12}
+            </div>
+            <span class="status-badge ${statusClass}">
+              ${statusText}
+            </span>
+          </div>
+
+          <div class="dose-main">
+            <h3>${escapeHtml(item.medicineName)}</h3>
+            <div class="dose-dosage">${escapeHtml(item.dosage || '1 Dose')}</div>
+          </div>
+
+          <div class="dose-details-list">
+            <div class="dose-detail-item">
+              <span class="lbl">Meal Timing:</span>
+              <span class="meal-pill ${mealClass}">${mealLabel}</span>
+            </div>
+            <div class="dose-detail-item">
+              <span class="lbl">Inventory:</span>
+              <span class="val">${stockHtml}</span>
+            </div>
+            <div class="dose-detail-item">
+              <span class="lbl">Prescription Period:</span>
+              <span class="val" style="font-size: 12px;">📅 ${dateRange}</span>
+            </div>
+            ${isTaken ? `
+              <div class="dose-detail-item">
+                <span class="lbl">Actual Intake:</span>
+                <span class="val" style="color: var(--success); font-size: 12px;">${takenTimeDisplay || 'Confirmed Taken'}</span>
+              </div>
+            ` : ''}
+          </div>
+
+          <div class="dose-actions" id="actions-area-${item.scheduleId}">
+            ${isTaken ? `
+              <span style="color: var(--success); font-weight: 700; font-size: 12.5px; width: 100%; text-align: center; background: #dcfce7; padding: 7px 10px; border-radius: 8px; border: 1px solid #bbf7d0;">
+                ✅ Completed for Today
+              </span>
+            ` : isMissed ? `
+              <span style="color: var(--danger); font-weight: 700; font-size: 12px; width: 100%; text-align: center; background: #fee2e2; padding: 7px 8px; border-radius: 8px; border: 1px solid #fecaca; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                ❌ Missed (15m Intake Window Expired)
+              </span>
+            ` : `
+              <button class="btn btn-success" id="take-btn-${item.scheduleId}" onclick="markScheduleTaken(${item.scheduleId}, '${escapeHtml(item.medicineName)}')">
+                ✅ Mark Taken
+              </button>
+              <button class="btn btn-warning" id="snooze-btn-${item.scheduleId}" ${item.snoozeCount >= 2 ? 'disabled title="Max snooze limit (2) reached"' : ''} onclick="snoozeScheduleDose(${item.scheduleId}, '${escapeHtml(item.medicineName)}')">
+                ⏳ Snooze (15m)
+              </button>
+            `}
+          </div>
+        `;
+
+        grid.appendChild(card);
+      });
+
+      applyFilters();
+    }
+
+    // 2. Render All Prescriptions & Schedule Slots Table
+    function renderAllSchedulesTable(medicines, slots) {
+      const tbody = document.getElementById('allSchedulesTableBody');
+      tbody.innerHTML = '';
+
+      if (!medicines || medicines.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="7" style="text-align: center; padding: 40px; color: var(--text-muted);">
+              No active prescriptions found in database. Click "+ Add New Medicine" to create one.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      medicines.forEach(med => {
+        const medSlots = slots.filter(s => s.medicineId === med.id);
+        const slotChipsHtml = medSlots.length > 0
+          ? medSlots.map(s => `
+              <span style="display: inline-flex; align-items: center; gap: 4px; background: #e0f2fe; color: #0369a1; font-weight: 700; font-size: 12px; padding: 4px 8px; border-radius: 6px; margin: 2px;">
+                ⏰ ${formatTime12H(s.time)}
+                <button onclick="deleteScheduleSlot(${s.id}, '${escapeHtml(med.name)}')" style="border:none; background:transparent; color:var(--danger); cursor:pointer; font-weight:bold; font-size:13px; line-height:1;" title="Remove this schedule slot">&times;</button>
+              </span>
+            `).join('')
+          : `<span style="color: var(--danger); font-size: 12px; font-weight: 600;">⚠️ No times scheduled</span>`;
+
+        const isLow = med.stock <= 5;
+        const stockHtml = isLow
+          ? `<span class="stock-tag stock-low">⚠️ ${med.stock} (Low)</span>`
+          : `<span class="stock-tag stock-good">${med.stock} units</span>`;
+
+        const sDate = med.startDate ? new Date(med.startDate).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' }) : '-';
+        const eDate = med.endDate ? new Date(med.endDate).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' }) : '-';
+
+        const tr = document.createElement('tr');
+        tr.setAttribute('data-name', (med.name || '').toLowerCase());
+        tr.setAttribute('data-meal', med.mealTimeing || med.mealTiming || 'AfterMeal');
+
+        tr.innerHTML = `
+          <td><strong>${escapeHtml(med.name)}</strong></td>
+          <td>${escapeHtml(med.dosage || '1 Dose')}</td>
+          <td><span class="meal-pill after">${escapeHtml(med.mealTimeing || med.mealTiming || 'AfterMeal')}</span></td>
+          <td>
+            <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 4px;">
+              ${slotChipsHtml}
+              <button class="btn btn-ghost" style="padding: 3px 8px; font-size: 11px; margin-left: 4px;" onclick="openAddSlotModalForMed(${med.id})">+ Add Slot</button>
+            </div>
+          </td>
+          <td style="font-size: 12px; color: var(--text-muted);">${sDate} to ${eDate}</td>
+          <td>${stockHtml}</td>
+          <td style="text-align: center;">
+            <a href="medicines.html" class="btn btn-ghost" style="padding: 4px 10px; font-size: 12px;">✏️ Prescriptions</a>
+          </td>
+        `;
+
+        tbody.appendChild(tr);
+      });
+    }
+
+    // Apply Live Search and Tab Filters
+    function applyFilters() {
+      const query = (document.getElementById('searchInput').value || '').toLowerCase().trim();
+      const meal = (document.getElementById('mealFilter').value || 'all');
+
+      // Filter Today Cards
+      const cards = document.querySelectorAll('.dose-card');
+      cards.forEach(card => {
+        const name = card.getAttribute('data-name') || '';
+        const status = card.getAttribute('data-status') || '';
+        const cardMeal = card.getAttribute('data-meal') || '';
+
+        const matchesQuery = !query || name.includes(query);
+        const matchesStatus = (activeStatusFilter === 'all') || (status === activeStatusFilter);
+        const matchesMeal = (meal === 'all') || (cardMeal.toLowerCase().includes(meal.toLowerCase()));
+
+        card.style.display = (matchesQuery && matchesStatus && matchesMeal) ? 'flex' : 'none';
+      });
+
+      // Filter Table Rows
+      const rows = document.querySelectorAll('#allSchedulesTableBody tr');
+      rows.forEach(row => {
+        const name = row.getAttribute('data-name');
+        if (!name) return;
+        const rowMeal = row.getAttribute('data-meal') || '';
+
+        const matchesQuery = !query || name.includes(query);
+        const matchesMeal = (meal === 'all') || (rowMeal.toLowerCase().includes(meal.toLowerCase()));
+
+        row.style.display = (matchesQuery && matchesMeal) ? '' : 'none';
+      });
+    }
+
+    // ACTION: Mark Schedule Dose as Taken
+    async function markScheduleTaken(scheduleId, medName) {
+      if (!confirm(`Did you take your prescribed dose of "${medName}"?\n\nClick OK to confirm.`)) {
+        return;
+      }
+
+      const btn = document.getElementById(`take-btn-${scheduleId}`);
+      const snoozeBtn = document.getElementById(`snooze-btn-${scheduleId}`);
+      if (btn) {
+        btn.disabled = true;
+        btn.innerText = '⏳ Saving...';
+      }
+      if (snoozeBtn) snoozeBtn.disabled = true;
+
+      try {
+        if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
+          await window.MediCareAPI.apiFetch(`/medicineschedule/${scheduleId}/take`, 'POST');
+        } else {
+          const res = await fetch(`${API_URL}/medicineschedule/${scheduleId}/take`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('medicare_jwt_token')}`
+            }
+          });
+          if (!res.ok) throw new Error(await res.text());
+        }
+
+        showToast(`✅ Dose for "${medName}" confirmed as Taken! Stock updated & recorded in History.`);
+        await loadAllScheduleData(false);
+      } catch (err) {
+        console.error('[Schedule Take] Failed:', err);
+        alert('Failed to mark dose as taken: ' + (err.message || 'Operation failed'));
+        if (btn) {
+          btn.disabled = false;
+          btn.innerText = '✅ Mark Taken';
+        }
+        if (snoozeBtn) snoozeBtn.disabled = false;
+      }
+    }
+
+    // ACTION: Snooze Schedule Dose
+    async function snoozeScheduleDose(scheduleId, medName) {
+      const btn = document.getElementById(`snooze-btn-${scheduleId}`);
+      const takeBtn = document.getElementById(`take-btn-${scheduleId}`);
+      if (btn) {
+        btn.disabled = true;
+        btn.innerText = '⏳ Snoozing...';
+      }
+      if (takeBtn) takeBtn.disabled = true;
+
+      try {
+        if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
+          await window.MediCareAPI.apiFetch(`/medicineschedule/${scheduleId}/snooze?minutes=15`, 'POST');
+        } else {
+          const res = await fetch(`${API_URL}/medicineschedule/${scheduleId}/snooze?minutes=15`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('medicare_jwt_token')}`
+            }
+          });
+          if (!res.ok) {
+            const errJson = await res.json().catch(() => ({ message: 'Snooze failed' }));
+            throw new Error(errJson.message || 'Snooze limit reached');
+          }
+        }
+
+        showToast(`⏳ Reminder for "${medName}" snoozed by 15 minutes!`);
+        await loadAllScheduleData(false);
+      } catch (err) {
+        console.error('[Schedule Snooze] Failed:', err);
+        alert('Snooze Restriction: ' + (err.message || 'Cannot snooze dose at this time.'));
+        if (btn) {
+          btn.disabled = false;
+          btn.innerText = '⏳ Snooze (15m)';
+        }
+        if (takeBtn) takeBtn.disabled = false;
+      }
+    }
+
+    // ACTION: Delete Schedule Slot
+    async function deleteScheduleSlot(scheduleId, medName) {
+      if (!confirm(`Are you sure you want to delete this schedule slot for "${medName}"?`)) return;
+
+      try {
+        if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
+          await window.MediCareAPI.apiFetch(`/medicineschedule/${scheduleId}`, 'DELETE');
+        } else {
+          await fetch(`${API_URL}/medicineschedule/${scheduleId}`, {
+            method: 'DELETE',
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('medicare_jwt_token')}`
+            }
+          });
+        }
+
+        showToast(`Schedule slot removed successfully.`);
+        await loadAllScheduleData(false);
+      } catch (err) {
+        alert('Failed to delete schedule slot: ' + (err.message || 'Error'));
+      }
+    }
+
+    // Modal: Add Slot
+    function openAddSlotModal() {
+      populateMedicineSelect();
+      document.getElementById('slotHour').value = '8';
+      document.getElementById('slotMinute').value = '00';
+      document.getElementById('slotAmPm').value = 'AM';
+      document.getElementById('addSlotModal').classList.add('active');
+    }
+
+    function openAddSlotModalForMed(medId) {
+      openAddSlotModal();
+      document.getElementById('slotMedicineSelect').value = String(medId);
+    }
+
+    function closeAddSlotModal() {
+      document.getElementById('addSlotModal').classList.remove('active');
+    }
+
+    function setSlotPreset(hour, minute, ampm) {
+      document.getElementById('slotHour').value = String(hour);
+      document.getElementById('slotMinute').value = String(minute);
+      document.getElementById('slotAmPm').value = String(ampm);
+    }
+
+    async function handleSlotSubmit(e) {
+      e.preventDefault();
+      const medId = parseInt(document.getElementById('slotMedicineSelect').value, 10);
+      if (!medId || medId <= 0) {
+        alert('Please select a valid medicine.');
+        return;
+      }
+
+      let hour = parseInt(document.getElementById('slotHour').value, 10) || 8;
+      const minute = String(parseInt(document.getElementById('slotMinute').value, 10) || 0).padStart(2, '0');
+      const ampm = document.getElementById('slotAmPm').value || 'AM';
+
+      let backendHour = hour;
+      if (ampm === 'PM' && backendHour < 12) backendHour += 12;
+      if (ampm === 'AM' && backendHour === 12) backendHour = 0;
+      const formattedTime = `${String(backendHour).padStart(2, '0')}:${minute}:00`;
+      const displayTime = `${String(hour).padStart(2, '0')}:${minute} ${ampm}`;
+
+      const btn = document.getElementById('saveSlotBtn');
+      btn.disabled = true;
+      btn.innerText = 'Saving...';
+
+      try {
+        if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
+          await window.MediCareAPI.apiFetch('/medicineschedule', 'POST', {
+            medicineId: medId,
+            time: formattedTime,
+            frequency: 'Daily'
+          });
+        }
+        closeAddSlotModal();
+        showToast(`Schedule slot (${displayTime}) saved to database!`);
+        await loadAllScheduleData(false);
+      } catch (err) {
+        alert('Failed to save slot: ' + (err.message || 'Operation failed'));
+      } finally {
+        btn.disabled = false;
+        btn.innerText = 'Save Schedule Slot';
+      }
+    }
+
+    // Modal: Add New Medicine with Schedule
+    function openAddMedicineModal() {
+      document.getElementById('scheduleMedForm').reset();
+      const today = new Date();
+      const nextMonth = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000);
+      document.getElementById('newStartDate').value = today.toISOString().split('T')[0];
+      document.getElementById('newEndDate').value = nextMonth.toISOString().split('T')[0];
+      document.getElementById('newMedDose').value = '1 Tablet';
+      document.getElementById('newMedStock').value = '30';
+      document.getElementById('addMedModal').classList.add('active');
+    }
+
+    function closeAddMedModal() {
+      document.getElementById('addMedModal').classList.remove('active');
+    }
+
+    async function handleNewMedScheduleSubmit(e) {
+      e.preventDefault();
+      const btn = document.getElementById('saveNewMedBtn');
+      btn.disabled = true;
+      btn.innerText = 'Saving...';
+
+      const name = document.getElementById('newMedName').value.trim();
+      const dose = document.getElementById('newMedDose').value.trim() || '1 Tablet';
+      const stock = parseInt(document.getElementById('newMedStock').value, 10) || 30;
+      const mealTiming = document.getElementById('newMedMealTiming').value || 'AfterMeal';
+      const startDate = document.getElementById('newStartDate').value;
+      const endDate = document.getElementById('newEndDate').value;
+
+      let hour = parseInt(document.getElementById('newSchedHour').value, 10) || 8;
+      const minute = String(parseInt(document.getElementById('newSchedMinute').value, 10) || 0).padStart(2, '0');
+      const ampm = document.getElementById('newSchedAmPm').value || 'AM';
+
+      let backendHour = hour;
+      if (ampm === 'PM' && backendHour < 12) backendHour += 12;
+      if (ampm === 'AM' && backendHour === 12) backendHour = 0;
+      const formattedTime = `${String(backendHour).padStart(2, '0')}:${minute}:00`;
+      const displayTime = `${String(hour).padStart(2, '0')}:${minute} ${ampm}`;
+
+      try {
+        let createdMed;
+        if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
+          createdMed = await window.MediCareAPI.apiFetch('/medicine', 'POST', {
+            name: name,
+            dosage: dose,
+            dose: 1,
+            stock: stock,
+            startDate: startDate ? new Date(startDate).toISOString() : new Date().toISOString(),
+            endDate: endDate ? new Date(endDate).toISOString() : new Date(Date.now() + 30*24*3600*1000).toISOString(),
+            mealTiming: mealTiming
+          });
+        }
+
+        const medId = createdMed ? (createdMed.id || createdMed.Id) : 0;
+        if (medId > 0 && window.MediCareAPI && window.MediCareAPI.apiFetch) {
+          await window.MediCareAPI.apiFetch('/medicineschedule', 'POST', {
+            medicineId: medId,
+            time: formattedTime,
+            frequency: 'Daily'
+          });
+        }
+
+        closeAddMedModal();
+        showToast(`✅ Prescription "${name}" and daily schedule (${displayTime}) saved successfully!`);
+        await loadAllScheduleData(false);
+      } catch (err) {
+        console.error('[Add Med] Error:', err);
+        alert('Failed to save prescription: ' + (err.message || 'Operation failed'));
+      } finally {
+        btn.disabled = false;
+        btn.innerText = 'Save Medicine & Schedule';
+      }
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    // Initialize Page
+    document.addEventListener('DOMContentLoaded', async () => {
+      // Check for Flash Message from Redirect (e.g., from medicines.html)
+      const flashMsg = sessionStorage.getItem('medicare_flash_msg');
+      if (flashMsg) {
+        showToast(flashMsg, true);
+        sessionStorage.removeItem('medicare_flash_msg');
+      }
+
+      await loadAllScheduleData(false);
+    });
+  </script>
+</body>
+</html>
+
