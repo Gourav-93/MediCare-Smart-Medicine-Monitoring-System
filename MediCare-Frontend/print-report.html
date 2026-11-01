@@ -10,6 +10,7 @@
 
   <!-- Common MediCare Design Tokens & Core Styles -->
   <link rel="stylesheet" href="css/common.css" />
+  <link rel="stylesheet" href="css/ai-chatbot.css" />
 
   <style>
     :root {
@@ -75,9 +76,10 @@
     }
 
     .btn {
-      padding: 8px 16px;
+      min-height: 44px;
+      padding: 10px 18px;
       border-radius: 8px;
-      font-size: 13.5px;
+      font-size: 14px;
       font-weight: 600;
       cursor: pointer;
       border: 1px solid transparent;
@@ -86,6 +88,10 @@
       gap: 6px;
       text-decoration: none;
       transition: all 0.2s;
+    }
+    .btn:focus-visible {
+      outline: 3px solid var(--primary);
+      outline-offset: 2px;
     }
     .btn-primary { background: var(--primary); color: #fff; }
     .btn-primary:hover { background: var(--primary-dark); }
@@ -111,19 +117,29 @@
     .range-tabs {
       display: flex;
       background: #e2e8f0;
-      padding: 3px;
-      border-radius: 8px;
+      padding: 4px;
+      border-radius: 10px;
       gap: 4px;
+      flex-wrap: wrap;
     }
     .range-btn {
-      padding: 6px 14px;
-      border-radius: 6px;
+      min-height: 44px;
+      padding: 8px 16px;
+      border-radius: 8px;
       border: none;
-      font-size: 12.5px;
-      font-weight: 600;
+      font-size: 13.5px;
+      font-weight: 700;
       background: transparent;
       color: var(--text-muted);
       cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+    .range-btn:focus-visible {
+      outline: 3px solid var(--primary);
+      outline-offset: 2px;
     }
     .range-btn.active {
       background: #fff;
@@ -709,8 +725,9 @@
     });
   </script>
 
-  <!-- Shared MediCare API & Modular Navbar Utilities -->
+  <!-- Shared MediCare API, Modular Navbar, and Global AI Chatbot -->
   <script src="js/api.js"></script>
   <script src="js/navbar.js"></script>
+  <script src="js/ai-chatbot.js"></script>
 </body>
 </html>
