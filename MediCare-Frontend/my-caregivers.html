@@ -1,0 +1,788 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MediCare - My Caregiver</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Common MediCare Design Tokens & Core Styles -->
+    <link rel="stylesheet" href="css/common.css" />
+    <link rel="stylesheet" href="css/ai-chatbot.css" />
+
+    <style>
+      :root {
+        --primary: #0284c7;
+        --primary-dark: #0369a1;
+        --primary-light: #e0f2fe;
+        --danger: #dc2626;
+        --danger-light: #fee2e2;
+        --success: #16a34a;
+        --success-light: #dcfce7;
+        --warning: #d97706;
+        --warning-light: #fef3c7;
+        --text-main: #0f172a;
+        --text-muted: #64748b;
+        --bg: #f8fafc;
+        --surface: #ffffff;
+        --border: #e2e8f0;
+        --radius: 14px;
+        --radius-lg: 18px;
+        --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+        --shadow-md:
+          0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        font-family: "Plus Jakarta Sans", sans-serif;
+      }
+
+      body {
+        background-color: var(--bg);
+        color: var(--text-main);
+        min-height: 100vh;
+        overflow-x: hidden;
+        line-height: 1.5;
+      }
+
+      .page-wrapper {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: clamp(20px, 4vw, 36px) clamp(16px, 4vw, 32px);
+      }
+
+      /* Hero / Header Bar */
+      .page-header {
+        background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+        color: #ffffff;
+        border-radius: var(--radius-lg);
+        padding: clamp(24px, 4vw, 36px);
+        margin-bottom: 28px;
+        box-shadow: 0 10px 25px -5px rgba(2, 132, 199, 0.25);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .page-header::after {
+        content: "";
+        position: absolute;
+        right: -30px;
+        bottom: -30px;
+        width: 180px;
+        height: 180px;
+        background: radial-gradient(
+          circle,
+          rgba(255, 255, 255, 0.15) 0%,
+          rgba(255, 255, 255, 0) 70%
+        );
+        border-radius: 50%;
+        pointer-events: none;
+      }
+
+      .header-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(8px);
+        color: #ffffff;
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+        padding: 4px 12px;
+        border-radius: 999px;
+        margin-bottom: 12px;
+      }
+
+      .page-title {
+        font-size: clamp(24px, 4vw, 32px);
+        font-weight: 800;
+        letter-spacing: -0.5px;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .page-subtitle {
+        font-size: 14.5px;
+        color: rgba(255, 255, 255, 0.9);
+        max-width: 680px;
+        line-height: 1.6;
+      }
+
+      /* Info Banner */
+      .read-only-banner {
+        background: #f0fdf4;
+        border: 1px solid #bbf7d0;
+        border-radius: var(--radius);
+        padding: 14px 18px;
+        margin-bottom: 24px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 13.5px;
+        color: #166534;
+      }
+      .read-only-banner .icon {
+        font-size: 20px;
+        flex-shrink: 0;
+      }
+
+      /* Caregiver Grid & Centered Layout */
+      #caregiverContentContainer {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .caregiver-grid {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: stretch;
+        gap: 24px;
+        width: 100%;
+        margin: 0 auto;
+      }
+
+      /* Caregiver Profile Card */
+      .cg-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: 26px;
+        box-shadow: var(--shadow-sm);
+        transition:
+          transform 0.2s ease,
+          box-shadow 0.2s ease;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        width: 100%;
+        max-width: 480px;
+        margin: 0 auto;
+      }
+
+      .cg-card:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-md);
+      }
+
+      .cg-card.primary-link {
+        border-color: #7dd3fc;
+        background: linear-gradient(180deg, #f0f9ff 0%, #ffffff 140px);
+      }
+
+      .cg-card-header {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 12px;
+        margin-bottom: 22px;
+        padding-bottom: 18px;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .cg-avatar {
+        width: 76px;
+        height: 76px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #0284c7, #38bdf8);
+        color: #ffffff;
+        font-size: 26px;
+        font-weight: 800;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        box-shadow: 0 6px 16px rgba(2, 132, 199, 0.25);
+        object-fit: cover;
+        margin: 0 auto;
+      }
+
+      .cg-meta {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+      }
+
+      .cg-meta h3 {
+        font-size: 20px;
+        font-weight: 800;
+        color: var(--text-main);
+        line-height: 1.2;
+        margin-bottom: 6px;
+        text-align: center;
+      }
+
+      .badge-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .badge-primary {
+        background: var(--primary-light);
+        color: var(--primary-dark);
+        font-size: 11.5px;
+        font-weight: 700;
+        padding: 4px 10px;
+        border-radius: 6px;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+      }
+
+      .badge-star {
+        background: #fef3c7;
+        color: #b45309;
+        font-size: 11.5px;
+        font-weight: 700;
+        padding: 4px 10px;
+        border-radius: 6px;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+      }
+
+      /* Profile Fields List - Centered inside Card */
+      .cg-details {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-bottom: 22px;
+        width: 100%;
+        max-width: 400px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      .detail-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 13.5px;
+        background: #f8fafc;
+        border: 1px solid #f1f5f9;
+        border-radius: 10px;
+        padding: 10px 14px;
+        transition: background 0.2s ease;
+      }
+      .detail-row:hover {
+        background: #f1f5f9;
+      }
+
+      .detail-row .row-icon {
+        width: 34px;
+        height: 34px;
+        border-radius: 8px;
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        flex-shrink: 0;
+        color: var(--text-muted);
+      }
+
+      .detail-content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .detail-content .label {
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 2px;
+      }
+
+      .detail-content .value {
+        font-size: 13.5px;
+        font-weight: 600;
+        color: var(--text-main);
+        word-break: break-word;
+      }
+
+      .detail-content .value a {
+        color: var(--primary);
+        text-decoration: none;
+        transition: text-decoration 0.2s;
+      }
+
+      .detail-content .value a:hover {
+        text-decoration: underline;
+      }
+
+      /* Caregiving Notes Box */
+      .notes-box {
+        background: #f8fafc;
+        border-left: 3px solid var(--primary);
+        border-radius: 8px;
+        padding: 12px 14px;
+        margin: 0 auto 20px auto;
+        max-width: 400px;
+        font-size: 12.5px;
+        color: var(--text-muted);
+        line-height: 1.5;
+        text-align: center;
+      }
+
+      /* Quick Contact Actions */
+      .cg-actions {
+        display: flex;
+        gap: 10px;
+        padding-top: 16px;
+        border-top: 1px solid var(--border);
+        width: 100%;
+        max-width: 400px;
+        margin: 0 auto;
+      }
+
+      .cg-btn {
+        flex: 1;
+        padding: 9px 14px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 700;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        border: 1px solid transparent;
+        transition: all 0.2s;
+        cursor: pointer;
+      }
+
+      .cg-btn-call {
+        background: #ecfdf5;
+        color: #047857;
+        border-color: #a7f3d0;
+      }
+      .cg-btn-call:hover {
+        background: #10b981;
+        color: #ffffff;
+      }
+
+      .cg-btn-email {
+        background: var(--primary-light);
+        color: var(--primary-dark);
+        border-color: #bae6fd;
+      }
+      .cg-btn-email:hover {
+        background: var(--primary);
+        color: #ffffff;
+      }
+
+      .cg-btn-sos {
+        background: var(--danger-light);
+        color: var(--danger);
+        border-color: #fecaca;
+      }
+      .cg-btn-sos:hover {
+        background: var(--danger);
+        color: #ffffff;
+      }
+
+      /* Empty State */
+      .empty-state {
+        background: var(--surface);
+        border: 2px dashed var(--border);
+        border-radius: var(--radius-lg);
+        padding: 60px 24px;
+        text-align: center;
+        max-width: 600px;
+        margin: 20px auto;
+      }
+
+      .empty-icon {
+        font-size: 56px;
+        margin-bottom: 16px;
+      }
+
+      .empty-title {
+        font-size: 20px;
+        font-weight: 800;
+        color: var(--text-main);
+        margin-bottom: 8px;
+      }
+
+      .empty-desc {
+        font-size: 14px;
+        color: var(--text-muted);
+        line-height: 1.6;
+        margin-bottom: 24px;
+      }
+
+      /* Loading State */
+      .loading-state {
+        text-align: center;
+        padding: 80px 20px;
+        color: var(--text-muted);
+      }
+
+      .spinner {
+        width: 44px;
+        height: 44px;
+        border: 4px solid var(--border);
+        border-top-color: var(--primary);
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+        margin: 0 auto 16px;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      @media (max-width: 768px) {
+        .caregiver-grid {
+          flex-direction: column;
+          align-items: center;
+        }
+        .cg-card {
+          max-width: 100%;
+        }
+        .page-header {
+          padding: 20px;
+        }
+        .cg-card-header {
+          flex-direction: column;
+          text-align: center;
+          gap: 12px;
+        }
+        .badge-group {
+          justify-content: center;
+        }
+        .cg-actions {
+          flex-direction: column;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Main Content Container (Navbar injected by js/navbar.js) -->
+    <div class="page-wrapper">
+      <!-- Page Header -->
+      <header class="page-header">
+        <div class="header-badge">Care & Support</div>
+        <h1 class="page-title">🩺 My Caregiver</h1>
+        <p class="page-subtitle">
+          Family members and caregivers linked to your MediCare profile. They
+          monitor your daily doses, receive notifications if a dose is delayed,
+          and provide support in medical distress.
+        </p>
+      </header>
+
+      <!-- Read-Only Notice -->
+      <div class="read-only-banner">
+        <span class="icon">🔒</span>
+        <div>
+          <strong>Read-Only Profile:</strong> You are viewing your linked
+          caregiver's contact and monitoring details. To protect relationship
+          records, caregiver profile modifications are managed directly by the
+          caregiver.
+        </div>
+      </div>
+
+      <!-- Main Dynamic Content Container -->
+      <div id="caregiverContentContainer">
+        <!-- Loading State -->
+        <div class="loading-state" id="loadingState">
+          <div class="spinner"></div>
+          <p style="font-weight: 600; font-size: 15px">
+            Loading linked caregiver profiles from database...
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Core Scripts -->
+    <script src="js/api.js"></script>
+    <script src="js/navbar.js"></script>
+    <script src="js/ai-chatbot.js"></script>
+
+    <script>
+      const API_URL =
+        (window.MediCareAPI && window.MediCareAPI.API_BASE_URL) ||
+        "http://localhost:5000/api";
+
+      document.addEventListener("DOMContentLoaded", () => {
+        loadCaregiverProfiles();
+      });
+
+      async function loadCaregiverProfiles() {
+        const container = document.getElementById("caregiverContentContainer");
+
+        try {
+          let caregivers = [];
+
+          // 1. Try unified MediCareAPI client first
+          if (window.MediCareAPI && window.MediCareAPI.apiGet) {
+            try {
+              caregivers = await window.MediCareAPI.apiGet(
+                "/profile/patient/caregivers",
+              );
+            } catch (err) {
+              // Fallback to secondary route
+              caregivers = await window.MediCareAPI.apiGet(
+                "/Caregiverpatient/my-caregivers",
+              );
+            }
+          } else {
+            // Direct fetch with bearer token
+            const token =
+              localStorage.getItem("medicare_jwt_token") ||
+              localStorage.getItem("jwtToken");
+
+            const headers = {
+              "Content-Type": "application/json",
+              ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            };
+
+            let res = await fetch(`${API_URL}/profile/patient/caregivers`, {
+              headers,
+            });
+            if (!res.ok) {
+              res = await fetch(`${API_URL}/Caregiverpatient/my-caregivers`, {
+                headers,
+              });
+            }
+
+            if (res.ok) {
+              caregivers = await res.json();
+            } else if (res.status === 401) {
+              window.location.replace("login.html?auth_required=true");
+              return;
+            } else {
+              throw new Error(`Server returned HTTP ${res.status}`);
+            }
+          }
+
+          renderCaregivers(caregivers);
+        } catch (error) {
+          console.error(
+            "[My Caregiver] Failed to fetch caregiver profile:",
+            error,
+          );
+          container.innerHTML = `
+            <div class="empty-state" style="border-color: #fca5a5; background: #fff5f5;">
+              <div class="empty-icon">⚠️</div>
+              <h2 class="empty-title" style="color: #991b1b;">Unable to Load Caregiver Profile</h2>
+              <p class="empty-desc">
+                We encountered an error connecting to the MediCare database service. Please check your network connection and retry.
+              </p>
+              <button onclick="loadCaregiverProfiles()" class="btn btn-primary" style="margin: 0 auto; height: 38px; min-height: 38px; padding: 8px 24px; font-weight: 700;">
+                🔄 Retry Connection
+              </button>
+            </div>
+          `;
+        }
+      }
+
+      function renderCaregivers(caregivers) {
+        const container = document.getElementById("caregiverContentContainer");
+
+        if (!Array.isArray(caregivers) || caregivers.length === 0) {
+          container.innerHTML = `
+            <div class="empty-state">
+              <div class="empty-icon">🛡️</div>
+              <h2 class="empty-title">No caregiver is linked to your account yet.</h2>
+              <p class="empty-desc">
+                You currently do not have a linked family caregiver. When a family member or caregiver is connected to your profile, their contact card, relationship, and monitoring status will appear here.
+              </p>
+              <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+                <a href="patient-dashboard.html" class="btn btn-ghost" style="padding: 9px 20px; font-size: 13.5px; border: 1px solid var(--border); border-radius: 8px; text-decoration: none; font-weight: 600;">
+                  ← Back to Routine
+                </a>
+                <a href="emergency.html" class="btn btn-primary" style="background: var(--danger); padding: 9px 20px; font-size: 13.5px; border-radius: 8px; text-decoration: none; font-weight: 700; color: #fff;">
+                  🚨 Emergency SOS Center
+                </a>
+              </div>
+            </div>
+          `;
+          return;
+        }
+
+        const grid = document.createElement("div");
+        grid.className = "caregiver-grid";
+
+        caregivers.forEach((cg) => {
+          const card = document.createElement("article");
+          card.className = `cg-card ${cg.isPrimary ? "primary-link" : ""}`;
+
+          // Format Caregiver Initials for avatar fallback
+          const nameParts = (cg.fullName || "Caregiver").trim().split(" ");
+          const initials =
+            nameParts.length > 1
+              ? (
+                  nameParts[0][0] + nameParts[nameParts.length - 1][0]
+                ).toUpperCase()
+              : (nameParts[0].slice(0, 2) || "CG").toUpperCase();
+
+          // Avatar Image vs Initials
+          const avatarHtml = cg.profilePhotoUrl
+            ? `<img src="${escapeHtml(cg.profilePhotoUrl)}" alt="${escapeHtml(cg.fullName)}" class="cg-avatar" onerror="this.outerHTML='<div class=\\'cg-avatar\\'>${initials}</div>'" />`
+            : `<div class="cg-avatar">${initials}</div>`;
+
+          // Date format
+          const linkedDateStr = cg.linkedSince
+            ? new Date(cg.linkedSince).toLocaleDateString("en-US", {
+                year: "numeric",
+                month: "short",
+                day: "numeric",
+              })
+            : "Active Link";
+
+          // Phone display and link
+          const phoneDisplay = cg.phoneNumber
+            ? escapeHtml(cg.phoneNumber)
+            : "Not Provided";
+          const phoneHref = cg.phoneNumber
+            ? `tel:${cg.phoneNumber.replace(/[^0-9+]/g, "")}`
+            : null;
+
+          // Email display and link
+          const emailDisplay = cg.email
+            ? escapeHtml(cg.email)
+            : "Not Disclosed";
+          const emailHref = cg.email
+            ? `mailto:${encodeURIComponent(cg.email)}`
+            : null;
+
+          // Location / City
+          const locationParts = [cg.city, cg.address].filter(Boolean);
+          const locationDisplay =
+            locationParts.length > 0
+              ? escapeHtml(locationParts.join(", "))
+              : "Standard Area";
+
+          card.innerHTML = `
+            <div>
+              <div class="cg-card-header">
+                ${avatarHtml}
+                <div class="cg-meta">
+                  <h3>${escapeHtml(cg.fullName || "Caregiver")}</h3>
+                  <div class="badge-group">
+                    <span class="badge-primary">👤 ${escapeHtml(cg.relationType || cg.relationship || "Assigned Family")}</span>
+                    ${cg.isPrimary ? '<span class="badge-star">⭐ Primary Caregiver</span>' : ""}
+                  </div>
+                </div>
+              </div>
+
+              <div class="cg-details">
+                <div class="detail-row">
+                  <div class="row-icon">📞</div>
+                  <div class="detail-content">
+                    <div class="label">Phone Number</div>
+                    <div class="value">
+                      ${phoneHref ? `<a href="${phoneHref}">${phoneDisplay}</a>` : phoneDisplay}
+                    </div>
+                  </div>
+                </div>
+
+                <div class="detail-row">
+                  <div class="row-icon">✉️</div>
+                  <div class="detail-content">
+                    <div class="label">Email Address</div>
+                    <div class="value">
+                      ${emailHref ? `<a href="${emailHref}">${emailDisplay}</a>` : emailDisplay}
+                    </div>
+                  </div>
+                </div>
+
+                <div class="detail-row">
+                  <div class="row-icon">💬</div>
+                  <div class="detail-content">
+                    <div class="label">Preferred Contact</div>
+                    <div class="value">${escapeHtml(cg.preferredContactMethod || "Phone / Email")}</div>
+                  </div>
+                </div>
+
+                <div class="detail-row">
+                  <div class="row-icon">📍</div>
+                  <div class="detail-content">
+                    <div class="label">Location</div>
+                    <div class="value">${locationDisplay}</div>
+                  </div>
+                </div>
+
+                <div class="detail-row">
+                  <div class="row-icon">📅</div>
+                  <div class="detail-content">
+                    <div class="label">Monitoring Since</div>
+                    <div class="value">${linkedDateStr}</div>
+                  </div>
+                </div>
+              </div>
+
+              ${
+                cg.caregivingNotes
+                  ? `
+                <div class="notes-box">
+                  <strong style="color: var(--text-main);">Family Caregiving Note:</strong><br />
+                  "${escapeHtml(cg.caregivingNotes)}"
+                </div>
+              `
+                  : ""
+              }
+            </div>
+
+            <div class="cg-actions">
+              ${
+                phoneHref
+                  ? `<a href="${phoneHref}" class="cg-btn cg-btn-call">📞 Call</a>`
+                  : `<span class="cg-btn cg-btn-call" style="opacity: 0.5; pointer-events: none;">📞 No Phone</span>`
+              }
+              ${
+                emailHref
+                  ? `<a href="${emailHref}" class="cg-btn cg-btn-email">✉️ Email</a>`
+                  : `<span class="cg-btn cg-btn-email" style="opacity: 0.5; pointer-events: none;">✉️ No Email</span>`
+              }
+              <a href="emergency.html" class="cg-btn cg-btn-sos">🚨 Alert</a>
+            </div>
+          `;
+
+          grid.appendChild(card);
+        });
+
+        container.innerHTML = "";
+        container.appendChild(grid);
+      }
+
+      function escapeHtml(str) {
+        if (!str) return "";
+        return String(str)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
+      }
+    </script>
+  </body>
+</html>
