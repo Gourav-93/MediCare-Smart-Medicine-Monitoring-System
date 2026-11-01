@@ -1,925 +1,3339 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MediCare - Account & Health Settings</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MediCare - Profile & Health Settings</title>
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
 
-    <link rel="stylesheet" href="css/common.css">
+    <link rel="stylesheet" href="css/common.css" />
+    <link rel="stylesheet" href="css/ai-chatbot.css" />
 
     <style>
-        :root {
-            --primary: #0284c7;
-            --primary-dark: #0369a1;
-            --primary-light: #e0f2fe;
-            --danger: #dc2626;
-            --success: #16a34a;
-            --text-main: #0f172a;
-            --text-muted: #64748b;
-            --bg: #f8fafc;
-            --surface: #ffffff;
-            --border: #e2e8f0;
-            --radius: 14px;
-            --shadow-sm: 0 1px 2px rgb(0 0 0 / 5%);
+      :root {
+        --primary: #0284c7;
+        --primary-dark: #0369a1;
+        --primary-light: #e0f2fe;
+        --accent: #0ea5e9;
+        --danger: #dc2626;
+        --danger-light: #fee2e2;
+        --success: #16a34a;
+        --success-light: #dcfce7;
+        --warning: #d97706;
+        --warning-light: #fef3c7;
+        --text-main: #0f172a;
+        --text-muted: #64748b;
+        --bg: #f8fafc;
+        --surface: #ffffff;
+        --surface-alt: #f1f5f9;
+        --border: #e2e8f0;
+        --radius: 12px;
+        --radius-lg: 16px;
+        --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+        --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.08);
+        --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        font-family: "Plus Jakarta Sans", sans-serif;
+      }
+
+      body {
+        background-color: var(--bg);
+        color: var(--text-main);
+        min-height: 100vh;
+        overflow-x: hidden;
+        line-height: 1.5;
+      }
+
+      .page-wrapper {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: clamp(16px, 3vw, 32px) clamp(16px, 4vw, 32px) 80px;
+      }
+
+      /* =========================================================
+       HERO PROFILE HEADER
+       ========================================================= */
+      .profile-hero {
+        background: linear-gradient(135deg, #ffffff 0%, #f0f9ff 100%);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: clamp(20px, 3vw, 32px);
+        box-shadow: var(--shadow-sm);
+        margin-bottom: 24px;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        position: relative;
+      }
+
+      .hero-identity {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        flex-wrap: wrap;
+      }
+
+      .avatar-wrapper {
+        position: relative;
+        width: 90px;
+        height: 90px;
+        border-radius: 50%;
+        background: var(--primary-light);
+        border: 3px solid #ffffff;
+        box-shadow: var(--shadow-md);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        flex-shrink: 0;
+      }
+
+      .avatar-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: none;
+      }
+
+      .avatar-initials {
+        font-size: 32px;
+        font-weight: 800;
+        color: var(--primary-dark);
+        text-transform: uppercase;
+        user-select: none;
+      }
+
+      .avatar-upload-btn {
+        position: absolute;
+        bottom: 2px;
+        right: 2px;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: var(--primary);
+        color: #ffffff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        border: 2px solid #ffffff;
+        font-size: 13px;
+        box-shadow: var(--shadow-sm);
+        transition:
+          background 0.2s,
+          transform 0.15s;
+      }
+      .avatar-upload-btn:hover {
+        background: var(--primary-dark);
+        transform: scale(1.08);
+      }
+
+      .identity-details h1 {
+        font-size: clamp(20px, 2.5vw, 26px);
+        font-weight: 800;
+        color: var(--text-main);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      .role-badge {
+        font-size: 11px;
+        font-weight: 700;
+        padding: 3px 10px;
+        border-radius: 20px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+      }
+      .role-patient {
+        background: #e0f2fe;
+        color: #0369a1;
+        border: 1px solid #bae6fd;
+      }
+      .role-caregiver {
+        background: #dcfce7;
+        color: #15803d;
+        border: 1px solid #bbf7d0;
+      }
+      .role-admin {
+        background: #fef3c7;
+        color: #b45309;
+        border: 1px solid #fde68a;
+      }
+
+      .identity-meta {
+        font-size: 13px;
+        color: var(--text-muted);
+        margin-top: 6px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 14px;
+      }
+      .identity-meta span {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .hero-stats {
+        display: flex;
+        gap: 16px;
+        flex-wrap: wrap;
+      }
+
+      .stat-pill {
+        background: #ffffff;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 10px 16px;
+        text-align: center;
+        min-width: 90px;
+        box-shadow: var(--shadow-sm);
+      }
+      .stat-val {
+        font-size: 18px;
+        font-weight: 800;
+        color: var(--text-main);
+      }
+      .stat-lbl {
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+      }
+
+      /* Progress Bar in Hero */
+      .profile-progress-box {
+        min-width: 140px;
+        background: #ffffff;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 10px 14px;
+        box-shadow: var(--shadow-sm);
+      }
+      .progress-bar-bg {
+        width: 100%;
+        height: 8px;
+        background: #e2e8f0;
+        border-radius: 4px;
+        overflow: hidden;
+        margin-top: 6px;
+      }
+      .progress-bar-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #0284c7, #16a34a);
+        width: 0%;
+        transition: width 0.5s ease;
+        border-radius: 4px;
+      }
+
+      /* =========================================================
+       TABS NAVIGATION
+       ========================================================= */
+      .tabs-bar {
+        display: flex;
+        gap: 8px;
+        overflow-x: auto;
+        padding-bottom: 8px;
+        margin-bottom: 20px;
+        border-bottom: 1px solid var(--border);
+        scrollbar-width: thin;
+      }
+      .tab-btn {
+        padding: 10px 18px;
+        border-radius: 10px;
+        border: 1px solid transparent;
+        background: transparent;
+        color: var(--text-muted);
+        font-size: 13.5px;
+        font-weight: 700;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        white-space: nowrap;
+        transition: all 0.2s;
+      }
+      .tab-btn:hover {
+        background: var(--surface-alt);
+        color: var(--text-main);
+      }
+      .tab-btn.active {
+        background: var(--surface);
+        color: var(--primary);
+        border-color: var(--border);
+        box-shadow: var(--shadow-sm);
+      }
+
+      /* =========================================================
+       TAB PANELS & FORMS
+       ========================================================= */
+      .tab-panel {
+        display: none;
+      }
+      .tab-panel.active {
+        display: block;
+        animation: fadeIn 0.25s ease-out;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(4px);
         }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Plus Jakarta Sans', sans-serif;
+        to {
+          opacity: 1;
+          transform: translateY(0);
         }
+      }
 
-        body {
-            background: var(--bg);
-            color: var(--text-main);
-            min-height: 100vh;
-            overflow-x: hidden;
-            line-height: 1.5;
+      .card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 24px;
+        box-shadow: var(--shadow-sm);
+        margin-bottom: 20px;
+      }
+      .card-title {
+        font-size: 17px;
+        font-weight: 800;
+        margin-bottom: 4px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .card-desc {
+        font-size: 13px;
+        color: var(--text-muted);
+        margin-bottom: 20px;
+      }
+
+      .form-grid-2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        margin-bottom: 16px;
+      }
+      .form-grid-3 {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 16px;
+        margin-bottom: 16px;
+      }
+      .form-group {
+        margin-bottom: 16px;
+      }
+      .form-group label {
+        display: block;
+        font-size: 12.5px;
+        font-weight: 700;
+        margin-bottom: 6px;
+        color: var(--text-main);
+      }
+      .form-group label .required {
+        color: var(--danger);
+      }
+      .form-group .hint {
+        font-size: 11px;
+        color: var(--text-muted);
+        margin-top: 4px;
+        display: block;
+      }
+
+      .form-control {
+        width: 100%;
+        min-height: 44px;
+        padding: 10px 14px;
+        border: 1px solid var(--border);
+        border-radius: 9px;
+        font-size: 14px;
+        background: #ffffff;
+        color: var(--text-main);
+        outline: none;
+        transition:
+          border-color 0.2s,
+          box-shadow 0.2s;
+      }
+      .form-control:focus-visible {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
+      }
+      .form-control:disabled,
+      .form-control[readonly] {
+        background: var(--surface-alt);
+        color: var(--text-muted);
+        cursor: not-allowed;
+      }
+
+      textarea.form-control {
+        min-height: 90px;
+        resize: vertical;
+      }
+
+      .form-actions {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-top: 24px;
+        flex-wrap: wrap;
+      }
+
+      /* Buttons */
+      .btn {
+        min-height: 44px;
+        padding: 10px 20px;
+        border-radius: 9px;
+        font-size: 14px;
+        font-weight: 700;
+        cursor: pointer;
+        border: 1px solid transparent;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        text-decoration: none;
+        transition: all 0.2s;
+      }
+      .btn:focus-visible {
+        outline: 3px solid var(--primary);
+        outline-offset: 2px;
+      }
+      .btn-primary {
+        background: var(--primary);
+        color: #ffffff;
+      }
+      .btn-primary:hover {
+        background: var(--primary-dark);
+      }
+      .btn-secondary {
+        background: var(--surface-alt);
+        color: var(--text-main);
+        border-color: var(--border);
+      }
+      .btn-secondary:hover {
+        background: #e2e8f0;
+      }
+      .btn-danger {
+        background: var(--danger);
+        color: #ffffff;
+      }
+      .btn-danger:hover {
+        background: #b91c1c;
+      }
+      .btn-ghost {
+        background: transparent;
+        color: var(--text-muted);
+        border-color: var(--border);
+      }
+      .btn-ghost:hover {
+        background: var(--surface-alt);
+        color: var(--text-main);
+      }
+      .btn-sm {
+        padding: 6px 12px;
+        font-size: 12px;
+        border-radius: 7px;
+      }
+      .btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+
+      /* Status Messages */
+      .status-alert {
+        padding: 10px 14px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 600;
+        display: none;
+        align-items: center;
+        gap: 8px;
+        margin-top: 14px;
+      }
+      .status-alert.success {
+        display: flex;
+        background: var(--success-light);
+        color: #15803d;
+        border: 1px solid #bbf7d0;
+      }
+      .status-alert.error {
+        display: flex;
+        background: var(--danger-light);
+        color: #b91c1c;
+        border: 1px solid #fecaca;
+      }
+
+      /* Switch Toggles */
+      .toggle-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 14px 0;
+        border-bottom: 1px solid var(--border);
+        gap: 16px;
+      }
+      .toggle-row:last-child {
+        border-bottom: none;
+      }
+      .toggle-text h4 {
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--text-main);
+      }
+      .toggle-text p {
+        font-size: 12px;
+        color: var(--text-muted);
+        margin-top: 2px;
+      }
+
+      .switch {
+        position: relative;
+        display: inline-block;
+        width: 46px;
+        height: 24px;
+        flex-shrink: 0;
+      }
+      .switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+      .slider {
+        position: absolute;
+        cursor: pointer;
+        inset: 0;
+        background: #cbd5e1;
+        transition: 0.25s;
+        border-radius: 24px;
+      }
+      .slider::before {
+        position: absolute;
+        content: "";
+        height: 18px;
+        width: 18px;
+        left: 3px;
+        bottom: 3px;
+        background: white;
+        transition: 0.25s;
+        border-radius: 50%;
+      }
+      .switch input:checked + .slider {
+        background: var(--primary);
+      }
+      .switch input:checked + .slider::before {
+        transform: translateX(22px);
+      }
+
+      /* =========================================================
+       EMERGENCY CONTACTS CARDS / TABLE
+       ========================================================= */
+      .contacts-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 16px;
+        margin-bottom: 20px;
+      }
+      .contact-card {
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 16px;
+        background: #ffffff;
+        box-shadow: var(--shadow-sm);
+        position: relative;
+        transition:
+          border-color 0.2s,
+          box-shadow 0.2s;
+      }
+      .contact-card.primary {
+        border-color: #bae6fd;
+        background: #f0f9ff;
+      }
+      .contact-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 8px;
+      }
+      .contact-name {
+        font-size: 15px;
+        font-weight: 800;
+        color: var(--text-main);
+      }
+      .contact-relation {
+        font-size: 12px;
+        color: var(--text-muted);
+        font-weight: 600;
+      }
+      .badge-primary-contact {
+        background: #0284c7;
+        color: #ffffff;
+        font-size: 10px;
+        font-weight: 700;
+        padding: 2px 8px;
+        border-radius: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+      }
+      .contact-phone {
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--text-main);
+        margin: 8px 0;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .contact-phone a {
+        color: var(--primary);
+        text-decoration: none;
+      }
+      .contact-alt-phone {
+        font-size: 12px;
+        color: var(--text-muted);
+      }
+      .contact-actions {
+        display: flex;
+        gap: 8px;
+        margin-top: 14px;
+        border-top: 1px dashed var(--border);
+        padding-top: 10px;
+      }
+
+      /* =========================================================
+       LINKED PATIENT CARDS (CAREGIVER VIEW)
+       ========================================================= */
+      .patient-cards-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 16px;
+        margin-bottom: 20px;
+      }
+      .patient-card {
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 18px;
+        background: #ffffff;
+        box-shadow: var(--shadow-sm);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        transition: all 0.2s;
+      }
+      .patient-card:hover {
+        box-shadow: var(--shadow-md);
+        border-color: #cbd5e1;
+      }
+      .patient-card-top {
+        display: flex;
+        gap: 14px;
+        align-items: center;
+        margin-bottom: 12px;
+      }
+      .patient-card-avatar {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background: var(--primary-light);
+        color: var(--primary-dark);
+        font-size: 18px;
+        font-weight: 800;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+      }
+      .patient-card-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      .patient-card-meta h4 {
+        font-size: 16px;
+        font-weight: 800;
+        color: var(--text-main);
+      }
+      .patient-card-meta p {
+        font-size: 12px;
+        color: var(--text-muted);
+      }
+      .patient-stats-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 8px;
+        background: var(--surface-alt);
+        padding: 10px;
+        border-radius: 8px;
+        text-align: center;
+        margin: 10px 0;
+      }
+      .patient-stats-row .ps-val {
+        font-size: 14px;
+        font-weight: 800;
+      }
+      .patient-stats-row .ps-lbl {
+        font-size: 10.5px;
+        color: var(--text-muted);
+        text-transform: uppercase;
+      }
+      .patient-card-notes {
+        font-size: 12px;
+        color: var(--text-muted);
+        background: #f8fafc;
+        padding: 8px 10px;
+        border-radius: 6px;
+        margin-bottom: 12px;
+        border-left: 3px solid var(--primary);
+      }
+
+      /* =========================================================
+       MODAL DIALOGS
+       ========================================================= */
+      .modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.5);
+        backdrop-filter: blur(4px);
+        z-index: 999;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+      }
+      .modal-overlay.active {
+        display: flex;
+      }
+      .modal-dialog {
+        background: #ffffff;
+        border-radius: var(--radius-lg);
+        width: 100%;
+        max-width: 520px;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: var(--shadow-xl);
+        border: 1px solid var(--border);
+        animation: modalPop 0.25s ease-out;
+      }
+      @keyframes modalPop {
+        from {
+          transform: scale(0.95);
+          opacity: 0;
         }
-
-        .site-header {
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            background: rgba(255, 255, 255, 0.95);
-            border-bottom: 1px solid var(--border);
-            min-height: 70px;
-            display: flex;
-            align-items: center;
-            padding: 12px clamp(16px, 4vw, 40px);
+        to {
+          transform: scale(1);
+          opacity: 1;
         }
+      }
+      .modal-header {
+        padding: 18px 24px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .modal-header h3 {
+        font-size: 17px;
+        font-weight: 800;
+      }
+      .modal-close-btn {
+        background: transparent;
+        border: none;
+        font-size: 20px;
+        cursor: pointer;
+        color: var(--text-muted);
+        padding: 4px 8px;
+        border-radius: 6px;
+      }
+      .modal-close-btn:hover {
+        background: var(--surface-alt);
+        color: var(--text-main);
+      }
+      .modal-body {
+        padding: 24px;
+      }
+      .modal-footer {
+        padding: 16px 24px;
+        border-top: 1px solid var(--border);
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        background: #f8fafc;
+        border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+      }
 
-        .nav-container {
-            width: 100%;
-            max-width: 1380px;
-            margin: auto;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
+      /* Medical summary badges */
+      .tags-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-top: 6px;
+      }
+      .info-tag {
+        font-size: 12px;
+        font-weight: 600;
+        padding: 4px 10px;
+        border-radius: 20px;
+        background: #e0f2fe;
+        color: #0369a1;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+      }
+      .info-tag.warning {
+        background: #fee2e2;
+        color: #dc2626;
+      }
+
+      /* Tables */
+      .table-responsive {
+        overflow-x: auto;
+        margin-top: 12px;
+        border: 1px solid var(--border);
+        border-radius: 9px;
+      }
+      .data-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+        text-align: left;
+      }
+      .data-table th {
+        background: #f8fafc;
+        padding: 10px 14px;
+        font-weight: 700;
+        color: var(--text-muted);
+        border-bottom: 1px solid var(--border);
+        white-space: nowrap;
+      }
+      .data-table td {
+        padding: 12px 14px;
+        border-bottom: 1px solid var(--border);
+        color: var(--text-main);
+      }
+      .data-table tr:last-child td {
+        border-bottom: none;
+      }
+
+      /* Missing info pills */
+      .missing-box {
+        background: var(--warning-light);
+        border: 1px solid #fde68a;
+        border-radius: 10px;
+        padding: 14px 18px;
+        margin-bottom: 20px;
+      }
+      .missing-box h4 {
+        font-size: 13.5px;
+        font-weight: 700;
+        color: #92400e;
+        margin-bottom: 6px;
+      }
+      .missing-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+      .missing-tag {
+        background: #ffffff;
+        color: #b45309;
+        border: 1px solid #fcd34d;
+        font-size: 11.5px;
+        font-weight: 700;
+        padding: 3px 10px;
+        border-radius: 12px;
+        cursor: pointer;
+      }
+      .missing-tag:hover {
+        background: #fef3c7;
+      }
+
+      /* =========================================================
+       RESPONSIVE BREAKPOINTS (320px - 1440px)
+       ========================================================= */
+      @media (max-width: 1024px) {
+        .form-grid-3 {
+          grid-template-columns: 1fr 1fr;
         }
+      }
 
-        .brand-logo {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            text-decoration: none;
+      @media (max-width: 768px) {
+        .profile-hero {
+          flex-direction: column !important;
+          align-items: center !important;
+          text-align: center !important;
+          padding: 24px 16px !important;
         }
-
-        .logo-icon {
-            width: 40px;
-            height: 40px;
-            background: linear-gradient(135deg, #0284c7, #0ea5e9);
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: 800;
-            font-size: 20px;
+        .hero-identity {
+          width: 100% !important;
+          display: flex !important;
+          flex-direction: column !important;
+          align-items: center !important;
+          text-align: center !important;
+          gap: 12px !important;
         }
-
-        .brand-text h1 {
-            font-size: 19px;
-            font-weight: 800;
-            color: var(--text-main);
+        .avatar-wrapper {
+          margin: 0 auto !important;
         }
-
-        .brand-text span {
-            font-size: 11px;
-            font-weight: 600;
-            color: var(--primary);
+        .identity-details {
+          display: flex !important;
+          flex-direction: column !important;
+          align-items: center !important;
+          text-align: center !important;
         }
-
-        .desktop-nav-links {
-            display: flex;
-            align-items: center;
-            gap: 24px;
-            list-style: none;
+        .identity-details h1 {
+          justify-content: center !important;
         }
-
-        .desktop-nav-links a {
-            text-decoration: none;
-            color: var(--text-muted);
-            font-size: 14px;
-            font-weight: 600;
+        .identity-meta {
+          justify-content: center !important;
+          text-align: center !important;
         }
-
-        .desktop-nav-links a:hover,
-        .desktop-nav-links a.active {
-            color: var(--primary);
+        .hero-stats {
+          width: 100% !important;
+          display: grid !important;
+          grid-template-columns: repeat(2, 1fr) !important;
+          gap: 10px !important;
+          margin-top: 14px !important;
         }
-
-        .mobile-actions {
-            display: none;
-            align-items: center;
-            gap: 8px;
+        .hero-stats .profile-progress-box,
+        .hero-stats .stat-pill {
+          width: 100% !important;
+          min-width: 0 !important;
+          min-height: 84px !important;
+          box-sizing: border-box !important;
+          display: flex !important;
+          flex-direction: column !important;
+          align-items: center !important;
+          justify-content: center !important;
+          text-align: center !important;
+          padding: 10px 8px !important;
+          border-radius: 12px !important;
+          margin: 0 !important;
         }
-
-        .hamburger-btn {
-            width: 40px;
-            height: 40px;
-            border-radius: 8px;
-            border: 1px solid var(--border);
-            background: white;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 5px;
-            cursor: pointer;
+        .profile-progress-box .progress-bar-bg {
+          width: 80% !important;
+          margin: 6px auto 0 !important;
         }
-
-        .hamburger-btn span {
-            width: 18px;
-            height: 2px;
-            background: var(--text-main);
+        .form-grid-2,
+        .form-grid-3 {
+          grid-template-columns: 1fr;
+          gap: 0;
         }
-
-        .mobile-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(15, 23, 42, 0.45);
-            z-index: 200;
-            opacity: 0;
-            visibility: hidden;
-            transition: 0.3s;
+        .contacts-grid,
+        .patient-cards-grid {
+          grid-template-columns: 1fr;
         }
-
-        .mobile-overlay.active {
-            opacity: 1;
-            visibility: visible;
+        .card {
+          padding: 18px;
         }
-
-        .mobile-drawer {
-            position: fixed;
-            top: 0;
-            right: -100%;
-            width: min(320px, 85vw);
-            height: 100%;
-            background: white;
-            z-index: 201;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 18px;
-            transition: right 0.3s;
+        .modal-footer {
+          flex-direction: column-reverse;
         }
+      }
 
-        .mobile-drawer.active {
-            right: 0;
+      @media (max-width: 480px) {
+        .identity-details h1 {
+          font-size: 20px;
         }
-
-        .mobile-drawer a {
-            text-decoration: none;
-            color: var(--text-main);
+        .avatar-wrapper {
+          width: 78px;
+          height: 78px;
         }
-
-        .page-wrapper {
-            max-width: 1080px;
-            margin: auto;
-            padding: clamp(16px, 3vw, 32px) clamp(16px, 4vw, 40px);
+        .avatar-initials {
+          font-size: 28px;
         }
-
-        .page-header {
-            margin-bottom: 24px;
+        .tab-btn {
+          padding: 8px 12px;
+          font-size: 12.5px;
         }
-
-        .page-header h2 {
-            font-size: clamp(22px, 3.5vw, 28px);
-            font-weight: 800;
+        .hero-stats .stat-val {
+          font-size: 17px !important;
         }
-
-        .page-header p {
-            font-size: 13.5px;
-            color: var(--text-muted);
-            margin-top: 4px;
+        .hero-stats .stat-lbl {
+          font-size: 10.5px !important;
         }
-
-        .settings-grid {
-            display: grid;
-            grid-template-columns: 280px 1fr;
-            gap: 20px;
-            align-items: start;
-        }
-
-        .profile-card,
-        .settings-card {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 24px;
-            box-shadow: var(--shadow-sm);
-        }
-
-        .profile-card {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-        }
-
-        .profile-avatar {
-            width: 86px;
-            height: 86px;
-            border-radius: 50%;
-            background: var(--primary-light);
-            color: var(--primary-dark);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 800;
-            font-size: 26px;
-            margin-bottom: 14px;
-        }
-
-        .profile-name {
-            font-size: 20px;
-            font-weight: 800;
-            overflow-wrap: anywhere;
-        }
-
-        .role-chip {
-            padding: 5px 14px;
-            background: var(--primary-light);
-            color: var(--primary-dark);
-            font-size: 12px;
-            font-weight: 700;
-            border-radius: 20px;
-            margin: 12px 0 18px;
-        }
-
-        .profile-quick-stats {
-            width: 100%;
-            border-top: 1px dashed var(--border);
-            padding-top: 16px;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
-        }
-
-        .p-num {
-            font-size: 18px;
-            font-weight: 800;
-        }
-
-        .p-lbl {
-            font-size: 11px;
-            color: var(--text-muted);
-        }
-
-        .settings-sections {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .card-header-area {
-            margin-bottom: 18px;
-            border-bottom: 1px solid var(--border);
-            padding-bottom: 12px;
-        }
-
-        .card-header-area h3 {
-            font-size: 17px;
-            font-weight: 700;
-        }
-
-        .card-header-area p {
-            font-size: 12.5px;
-            color: var(--text-muted);
-            margin-top: 4px;
-        }
-
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 14px;
-        }
-
-        .form-group {
-            margin-bottom: 14px;
-        }
-
-        .form-group label {
-            display: block;
-            font-size: 12.5px;
-            font-weight: 600;
-            margin-bottom: 6px;
-        }
-
-        .form-control {
-            width: 100%;
-            padding: 10px 12px;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            font-size: 13.5px;
-            outline: none;
-            background: white;
-            color: var(--text-main);
-        }
-
-        .form-control:focus {
-            border-color: var(--primary);
-        }
-
-        .btn {
-            padding: 10px 16px;
-            border-radius: 8px;
-            font-size: 13.5px;
-            font-weight: 600;
-            cursor: pointer;
-            border: 1px solid transparent;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            text-decoration: none;
-        }
-
-        .btn-primary {
-            background: var(--primary);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: var(--primary-dark);
-        }
-
-        .btn-ghost {
-            background: transparent;
-            color: var(--text-main);
-            border-color: var(--border);
-        }
-
-        .pref-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 16px;
-            padding: 12px 0;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .pref-item:last-child {
-            border-bottom: none;
-        }
-
-        .pref-text strong {
-            display: block;
-            font-size: 13.5px;
-        }
-
-        .pref-text span {
-            font-size: 12px;
-            color: var(--text-muted);
-        }
-
-        .switch {
-            position: relative;
-            display: inline-block;
-            width: 44px;
-            height: 24px;
-            flex-shrink: 0;
-        }
-
-        .switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            inset: 0;
-            background: #cbd5e1;
-            transition: 0.3s;
-            border-radius: 24px;
-        }
-
-        .slider::before {
-            position: absolute;
-            content: "";
-            height: 18px;
-            width: 18px;
-            left: 3px;
-            bottom: 3px;
-            background: white;
-            transition: 0.3s;
-            border-radius: 50%;
-        }
-
-        .switch input:checked + .slider {
-            background: var(--primary);
-        }
-
-        .switch input:checked + .slider::before {
-            transform: translateX(20px);
-        }
-
-        .form-message {
-            font-size: 13px;
-            margin-top: 12px;
-        }
-
-        .form-message.error {
-            color: var(--danger);
-        }
-
-        .form-message.success {
-            color: var(--success);
-        }
-
-        @media (max-width: 1023px) {
-            .desktop-nav-links {
-                display: none;
-            }
-
-            .mobile-actions {
-                display: flex;
-            }
-
-            .settings-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        @media (max-width: 767px) {
-            .form-row {
-                grid-template-columns: 1fr;
-                gap: 0;
-            }
-
-            .settings-card,
-            .profile-card {
-                padding: 16px;
-            }
-
-            .btn {
-                width: 100%;
-            }
-        }
-
-        @media (max-width: 374px) {
-            .brand-text h1 {
-                font-size: 16px;
-            }
-
-            .brand-text span {
-                display: none;
-            }
-
-            .pref-item {
-                align-items: flex-start;
-            }
-        }
+      }
     </style>
-</head>
-
-<body>
-
+  </head>
+  <body>
+    <!-- Modular Global MediCare Header -->
     <header id="global-header"></header>
 
     <main class="page-wrapper">
-        <div class="page-header">
-            <h2>Account & Health Settings</h2>
-            <p>Manage your profile, emergency contacts and notification preferences.</p>
+      <!-- =========================================================
+         1. HERO PROFILE SUMMARY BANNER
+         ========================================================= -->
+      <section class="profile-hero" id="profileHero">
+        <div class="hero-identity">
+          <div class="avatar-wrapper">
+            <img
+              src=""
+              alt="Profile Photo"
+              id="heroAvatarImg"
+              class="avatar-img"
+            />
+            <div class="avatar-initials" id="heroAvatarInitials">--</div>
+            <label
+              for="profilePhotoInput"
+              class="avatar-upload-btn"
+              title="Upload new profile picture"
+              aria-label="Upload photo"
+            >
+              📷
+            </label>
+            <input
+              type="file"
+              id="profilePhotoInput"
+              accept="image/jpeg,image/png,image/webp"
+              style="display: none"
+            />
+          </div>
+
+          <div class="identity-details">
+            <h1 id="heroFullName">
+              Loading profile...
+              <span class="role-badge" id="heroRoleBadge">Role</span>
+            </h1>
+            <div class="identity-meta">
+              <span id="heroEmail">✉️ Loading...</span>
+              <span id="heroPhone">📞 --</span>
+              <span id="heroLocation">📍 --</span>
+              <span id="heroAge" style="display: none">🎂 --</span>
+            </div>
+          </div>
         </div>
 
-        <div class="settings-grid">
+        <!-- Quick Stats Block (Dynamically customized by Role) -->
+        <div class="hero-stats" id="heroStatsContainer">
+          <!-- Patient Stats -->
+          <div
+            class="profile-progress-box"
+            id="statCompletionBox"
+            style="display: none"
+          >
+            <div class="stat-lbl">Profile Completion</div>
+            <div class="stat-val" id="statCompletionVal">0%</div>
+            <div class="progress-bar-bg">
+              <div class="progress-bar-fill" id="statCompletionBar"></div>
+            </div>
+          </div>
 
-            <section class="profile-card">
-                <div class="profile-avatar" id="profileAvatar">--</div>
-                <div class="profile-name" id="profileName">Loading profile...</div>
-                <div class="role-chip" id="profileRole">Role: --</div>
+          <div class="stat-pill" id="statAdherenceBox" style="display: none">
+            <div class="stat-val" id="statAdherenceVal">--</div>
+            <div class="stat-lbl">Adherence</div>
+          </div>
 
-                <div class="profile-quick-stats">
-                    <div>
-                        <div class="p-num" id="adherenceValue">--</div>
-                        <div class="p-lbl">Adherence</div>
-                    </div>
-                    <div>
-                        <div class="p-num" id="medicineCount">--</div>
-                        <div class="p-lbl">Active Medicines</div>
-                    </div>
+          <div class="stat-pill" id="statMedicinesBox" style="display: none">
+            <div class="stat-val" id="statMedicinesVal">--</div>
+            <div class="stat-lbl">Active Meds</div>
+          </div>
+
+          <div class="stat-pill" id="statCaregiversBox" style="display: none">
+            <div class="stat-val" id="statCaregiversVal">--</div>
+            <div class="stat-lbl">Caregivers</div>
+          </div>
+
+          <!-- Caregiver Stats -->
+          <div class="stat-pill" id="statPatientsBox" style="display: none">
+            <div class="stat-val" id="statPatientsVal">--</div>
+            <div class="stat-lbl">Linked Patients</div>
+          </div>
+
+          <div
+            class="stat-pill"
+            id="statAccountCreatedBox"
+            style="display: none"
+          >
+            <div class="stat-val" id="statAccountCreatedVal">--</div>
+            <div class="stat-lbl">Member Since</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Photo Upload Status Banner -->
+      <div id="photoStatusAlert" class="status-alert"></div>
+
+      <!-- =========================================================
+         2. NAVIGATION TABS BAR
+         ========================================================= -->
+      <nav class="tabs-bar" id="profileTabsBar" role="tablist">
+        <!-- Injected dynamically based on Role -->
+      </nav>
+
+      <!-- =========================================================
+         3. PATIENT TABS CONTENT
+         ========================================================= -->
+      <div id="patientViews" style="display: none">
+        <!-- Tab 1: Personal Information -->
+        <div class="tab-panel active" id="tab-patient-personal" role="tabpanel">
+          <div class="card">
+            <h2 class="card-title">👤 Personal Demographic Information</h2>
+            <p class="card-desc">
+              Your basic account identity and contact information.
+            </p>
+
+            <form
+              id="patientPersonalForm"
+              onsubmit="handleSavePatientPersonal(event)"
+            >
+              <div class="form-grid-2">
+                <div class="form-group">
+                  <label for="pFullName"
+                    >Full Name <span class="required">*</span></label
+                  >
+                  <input
+                    type="text"
+                    id="pFullName"
+                    class="form-control"
+                    placeholder="e.g. John Doe"
+                    required
+                    maxlength="100"
+                  />
+                </div>
+                <div class="form-group">
+                  <label for="pEmail">Registered Email</label>
+                  <input
+                    type="email"
+                    id="pEmail"
+                    class="form-control"
+                    disabled
+                    title="Email is tied to your account login"
+                  />
+                  <span class="hint"
+                    >Account email cannot be modified directly.</span
+                  >
+                </div>
+              </div>
+
+              <div class="form-grid-3">
+                <div class="form-group">
+                  <label for="pPhone">Phone Number</label>
+                  <input
+                    type="tel"
+                    id="pPhone"
+                    class="form-control"
+                    placeholder="+91 98765-43210"
+                    maxlength="25"
+                  />
+                </div>
+                <div class="form-group">
+                  <label for="pDob">Date of Birth</label>
+                  <input
+                    type="date"
+                    id="pDob"
+                    class="form-control"
+                    onchange="updateAgePreview()"
+                  />
+                  <span class="hint" id="pAgePreview">Age: Not specified</span>
+                </div>
+                <div class="form-group">
+                  <label for="pGender">Gender</label>
+                  <select id="pGender" class="form-control">
+                    <option value="">Prefer not to say</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-grid-2">
+                <div class="form-group">
+                  <label for="pAddress">Residential Address</label>
+                  <input
+                    type="text"
+                    id="pAddress"
+                    class="form-control"
+                    placeholder="e.g. 123 Healthcare Blvd, Suite 4"
+                    maxlength="200"
+                  />
+                </div>
+                <div class="form-group">
+                  <label for="pCity">City</label>
+                  <input
+                    type="text"
+                    id="pCity"
+                    class="form-control"
+                    placeholder="e.g. Mumbai, New York"
+                    maxlength="100"
+                  />
+                </div>
+              </div>
+
+              <div class="form-actions">
+                <button
+                  type="submit"
+                  class="btn btn-primary"
+                  id="savePatientPersonalBtn"
+                >
+                  Save Personal Details
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-ghost"
+                  onclick="loadPatientProfileData()"
+                >
+                  Discard Changes
+                </button>
+              </div>
+              <div id="patientPersonalAlert" class="status-alert"></div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Tab 2: Medical Information -->
+        <div class="tab-panel" id="tab-patient-medical" role="tabpanel">
+          <div class="card">
+            <h2 class="card-title">🩺 Clinical & Medical Record</h2>
+            <p class="card-desc">
+              Accurate medical details ensure appropriate emergency and reminder
+              routing.
+            </p>
+
+            <form
+              id="patientMedicalForm"
+              onsubmit="handleSavePatientMedical(event)"
+            >
+              <div class="form-grid-3">
+                <div class="form-group">
+                  <label for="mBloodGroup">Blood Group</label>
+                  <select id="mBloodGroup" class="form-control">
+                    <option value="Unknown">Unknown / Not Tested</option>
+                    <option value="A+">A Positive (A+)</option>
+                    <option value="A-">A Negative (A-)</option>
+                    <option value="B+">B Positive (B+)</option>
+                    <option value="B-">B Negative (B-)</option>
+                    <option value="AB+">AB Positive (AB+)</option>
+                    <option value="AB-">AB Negative (AB-)</option>
+                    <option value="O+">O Positive (O+)</option>
+                    <option value="O-">O Negative (O-)</option>
+                  </select>
                 </div>
 
-                <button type="button" class="btn btn-ghost"
-                        style="width:100%; margin-top:20px"
-                        id="logoutButton">
-                    Log Out
+                <div class="form-group">
+                  <label for="mDoctorName">Primary Doctor Name</label>
+                  <input
+                    type="text"
+                    id="mDoctorName"
+                    class="form-control"
+                    placeholder="e.g. Dr. Jane Smith"
+                    maxlength="100"
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label for="mDoctorContact">Doctor Contact Number</label>
+                  <input
+                    type="tel"
+                    id="mDoctorContact"
+                    class="form-control"
+                    placeholder="+91 98765-43210"
+                    maxlength="25"
+                  />
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="mHospitalName">Hospital / Clinic Name</label>
+                <input
+                  type="text"
+                  id="mHospitalName"
+                  class="form-control"
+                  placeholder="e.g. City Care Memorial Hospital"
+                  maxlength="150"
+                />
+              </div>
+
+              <div class="form-grid-2">
+                <div class="form-group">
+                  <label for="mConditions">Existing Medical Conditions</label>
+                  <input
+                    type="text"
+                    id="mConditions"
+                    class="form-control"
+                    placeholder="e.g. Hypertension, Type 2 Diabetes, Asthma"
+                    maxlength="500"
+                  />
+                  <span class="hint"
+                    >Separate multiple conditions with commas.</span
+                  >
+                </div>
+
+                <div class="form-group">
+                  <label for="mAllergies">Drug & Environmental Allergies</label>
+                  <input
+                    type="text"
+                    id="mAllergies"
+                    class="form-control"
+                    placeholder="e.g. Penicillin, Peanuts, Sulfa"
+                    maxlength="500"
+                  />
+                  <span class="hint"
+                    >Critical for emergency caregivers and clinicians.</span
+                  >
+                </div>
+              </div>
+
+              <div class="form-grid-2">
+                <div class="form-group">
+                  <label for="mPastHistory"
+                    >Relevant Past Medical History</label
+                  >
+                  <textarea
+                    id="mPastHistory"
+                    class="form-control"
+                    placeholder="Past surgeries, major hospitalizations, chronic illnesses..."
+                    maxlength="1000"
+                  ></textarea>
+                </div>
+
+                <div class="form-group">
+                  <label for="mNotes"
+                    >Current Medical Notes / Care Instructions</label
+                  >
+                  <textarea
+                    id="mNotes"
+                    class="form-control"
+                    placeholder="Special lifestyle instructions, dietary restrictions, mobility notes..."
+                    maxlength="1000"
+                  ></textarea>
+                </div>
+              </div>
+
+              <div class="form-actions">
+                <button
+                  type="submit"
+                  class="btn btn-primary"
+                  id="savePatientMedicalBtn"
+                >
+                  Save Medical Information
                 </button>
-            </section>
-
-            <div class="settings-sections">
-
-                <section class="settings-card">
-                    <div class="card-header-area">
-                        <h3>Personal Health Profile</h3>
-                        <p>Update your personal information.</p>
-                    </div>
-
-                    <form id="profileForm">
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="fullName">Full Name</label>
-                                <input type="text" id="fullName"
-                                       class="form-control" autocomplete="name"
-                                       required>
-                            </div>
-
-                            <div class="form-group">
-                                <label for="email">Registered Email</label>
-                                <input type="email" id="email"
-                                       class="form-control" autocomplete="email"
-                                       disabled>
-                            </div>
-                        </div>
-
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="phone">Phone Number</label>
-                                <input type="tel" id="phone"
-                                       class="form-control" autocomplete="tel">
-                            </div>
-
-                            <div class="form-group">
-                                <label for="dateOfBirth">Date of Birth</label>
-                                <input type="date" id="dateOfBirth"
-                                       class="form-control">
-                            </div>
-                        </div>
-
-                        <button type="submit" class="btn btn-primary">
-                            Save Profile Changes
-                        </button>
-
-                        <p id="profileMessage" class="form-message"
-                           role="status" aria-live="polite"></p>
-                    </form>
-                </section>
-
-                <section class="settings-card">
-                    <div class="card-header-area">
-                        <h3>Emergency Contacts</h3>
-                        <p>Manage the people to contact during an emergency.</p>
-                    </div>
-
-                    <form id="emergencyContactForm">
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="contactName">Contact Name</label>
-                                <input type="text" id="contactName"
-                                       class="form-control">
-                            </div>
-
-                            <div class="form-group">
-                                <label for="contactRelationship">Relationship</label>
-                                <input type="text" id="contactRelationship"
-                                       class="form-control">
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="emergencyPhone">Emergency Phone</label>
-                            <input type="tel" id="emergencyPhone"
-                                   class="form-control">
-                        </div>
-
-                        <div class="form-group">
-                            <label for="doctorContact">Doctor / Clinic Contact</label>
-                            <input type="text" id="doctorContact"
-                                   class="form-control">
-                        </div>
-
-                        <button type="submit" class="btn btn-primary">
-                            Save Emergency Contacts
-                        </button>
-
-                        <p id="emergencyMessage" class="form-message"
-                           role="status" aria-live="polite"></p>
-                    </form>
-                </section>
-
-                <section class="settings-card">
-                    <div class="card-header-area">
-                        <h3>Notification Preferences</h3>
-                        <p>Manage reminders and caregiver alerts.</p>
-                    </div>
-
-                    <form id="notificationForm">
-                        <div class="pref-item">
-                            <div class="pref-text">
-                                <strong>Dose Intake Reminders</strong>
-                                <span>Reminders for scheduled doses.</span>
-                            </div>
-                            <label class="switch">
-                                <input type="checkbox" name="doseReminders">
-                                <span class="slider"></span>
-                            </label>
-                        </div>
-
-                        <div class="pref-item">
-                            <div class="pref-text">
-                                <strong>Medicine Refill Alerts</strong>
-                                <span>Notifications when medicine stock is low.</span>
-                            </div>
-                            <label class="switch">
-                                <input type="checkbox" name="refillAlerts">
-                                <span class="slider"></span>
-                            </label>
-                        </div>
-
-                        <div class="pref-item">
-                            <div class="pref-text">
-                                <strong>Caregiver Missed Dose Alerts</strong>
-                                <span>Alerts for linked caregivers about missed doses.</span>
-                            </div>
-                            <label class="switch">
-                                <input type="checkbox" name="caregiverAlerts">
-                                <span class="slider"></span>
-                            </label>
-                        </div>
-
-                        <button type="submit" class="btn btn-primary"
-                                style="margin-top:16px">
-                            Save Preferences
-                        </button>
-
-                        <p id="notificationMessage" class="form-message"
-                           role="status" aria-live="polite"></p>
-                    </form>
-                </section>
-
-            </div>
+                <button
+                  type="button"
+                  class="btn btn-ghost"
+                  onclick="loadPatientMedicalData()"
+                >
+                  Reset
+                </button>
+              </div>
+              <div id="patientMedicalAlert" class="status-alert"></div>
+            </form>
+          </div>
         </div>
+
+        <!-- Tab 3: Emergency Contacts -->
+        <div class="tab-panel" id="tab-patient-emergency" role="tabpanel">
+          <div class="card">
+            <div
+              style="
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                flex-wrap: wrap;
+                gap: 12px;
+                margin-bottom: 14px;
+              "
+            >
+              <div>
+                <h2 class="card-title">🚨 Emergency Contacts & SOS Routing</h2>
+                <p class="card-desc" style="margin-bottom: 0">
+                  Designate emergency contacts alerted during critical health
+                  alerts or distress signals.
+                </p>
+              </div>
+              <button
+                type="button"
+                class="btn btn-primary btn-sm"
+                onclick="openAddContactModal()"
+              >
+                + Add Emergency Contact
+              </button>
+            </div>
+
+            <div id="contactsContainer" class="contacts-grid">
+              <!-- Dynamic Emergency Contact Cards -->
+            </div>
+            <div
+              id="noContactsMsg"
+              style="
+                display: none;
+                text-align: center;
+                padding: 30px;
+                color: var(--text-muted);
+                background: var(--surface-alt);
+                border-radius: 10px;
+              "
+            >
+              No emergency contacts registered yet. Please add at least one
+              primary contact.
+            </div>
+            <div id="emergencyContactAlert" class="status-alert"></div>
+          </div>
+        </div>
+
+        <!-- Tab 4: Care & Medications Overview -->
+        <div class="tab-panel" id="tab-patient-care" role="tabpanel">
+          <div class="card">
+            <h2 class="card-title">🛡️ Linked Family & Caregivers</h2>
+            <p class="card-desc">
+              Caregivers currently linked to monitor your medication schedule
+              and receive distress alerts.
+            </p>
+
+            <div
+              id="linkedCaregiversList"
+              style="
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+                gap: 14px;
+                margin-bottom: 24px;
+              "
+            >
+              <!-- Dynamic Caregiver Cards -->
+            </div>
+            <div
+              id="noCaregiversMsg"
+              style="
+                display: none;
+                text-align: center;
+                padding: 24px;
+                color: var(--text-muted);
+                background: var(--surface-alt);
+                border-radius: 10px;
+                margin-bottom: 24px;
+              "
+            >
+              No caregivers linked to your account yet. You can link a caregiver
+              using their email from the dashboard.
+            </div>
+
+            <h3 style="font-size: 16px; font-weight: 800; margin: 24px 0 8px">
+              💊 Active Prescription Inventory
+            </h3>
+            <p class="card-desc">
+              Your active medications synchronized from the prescription system.
+            </p>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Medicine</th>
+                    <th>Dosage</th>
+                    <th>Meal Timing</th>
+                    <th>Schedule Frequency</th>
+                    <th>Stock Remaining</th>
+                  </tr>
+                </thead>
+                <tbody id="patientMedicinesTableBody">
+                  <tr>
+                    <td colspan="5" style="text-align: center">
+                      Loading prescriptions...
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 5: Profile Summary & Insights -->
+        <div class="tab-panel" id="tab-patient-summary" role="tabpanel">
+          <!-- Missing Information Alert Box -->
+          <div id="summaryMissingBox" class="missing-box" style="display: none">
+            <h4>⚠️ Complete Your Profile to Reach 100%</h4>
+            <p style="font-size: 12px; margin-bottom: 8px">
+              The following details are currently missing from your record:
+            </p>
+            <div id="summaryMissingTags" class="missing-tags"></div>
+          </div>
+
+          <div class="card">
+            <h2 class="card-title">📅 Today's Medication Schedule</h2>
+            <p class="card-desc">Real-time daily dosing routine for today.</p>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Scheduled Time</th>
+                    <th>Medicine</th>
+                    <th>Dosage</th>
+                    <th>Meal Timing</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="summaryScheduleTableBody">
+                  <tr>
+                    <td colspan="5" style="text-align: center">
+                      Loading today's schedule...
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="card">
+            <h2 class="card-title">📋 Recent Dosing Activity</h2>
+            <p class="card-desc">Recent intake logs and compliance history.</p>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Medicine</th>
+                    <th>Dosage</th>
+                    <th>Scheduled For</th>
+                    <th>Taken At</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="summaryActivityTableBody">
+                  <tr>
+                    <td colspan="5" style="text-align: center">
+                      Loading activity...
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- =========================================================
+         4. CAREGIVER TABS CONTENT
+         ========================================================= -->
+      <div id="caregiverViews" style="display: none">
+        <!-- Tab 1: Personal Details -->
+        <div class="tab-panel active" id="tab-cg-personal" role="tabpanel">
+          <div class="card">
+            <h2 class="card-title">👤 Caregiver Personal Details</h2>
+            <p class="card-desc">
+              Manage your caregiver profile and communication preferences.
+            </p>
+
+            <form
+              id="cgPersonalForm"
+              onsubmit="handleSaveCaregiverPersonal(event)"
+            >
+              <div class="form-grid-2">
+                <div class="form-group">
+                  <label for="cgFullName"
+                    >Full Name <span class="required">*</span></label
+                  >
+                  <input
+                    type="text"
+                    id="cgFullName"
+                    class="form-control"
+                    required
+                    maxlength="100"
+                  />
+                </div>
+                <div class="form-group">
+                  <label for="cgEmail">Registered Email</label>
+                  <input
+                    type="email"
+                    id="cgEmail"
+                    class="form-control"
+                    disabled
+                  />
+                </div>
+              </div>
+
+              <div class="form-grid-3">
+                <div class="form-group">
+                  <label for="cgPhone">Phone Number</label>
+                  <input
+                    type="tel"
+                    id="cgPhone"
+                    class="form-control"
+                    placeholder="+91 98765-43210"
+                    maxlength="25"
+                  />
+                </div>
+                <div class="form-group">
+                  <label for="cgGender">Gender</label>
+                  <select id="cgGender" class="form-control">
+                    <option value="">Prefer not to say</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="cgContactMethod">Preferred Contact Method</label>
+                  <select id="cgContactMethod" class="form-control">
+                    <option value="Email">Email</option>
+                    <option value="Phone">Phone / SMS</option>
+                    <option value="In-App">In-App Notification</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-grid-2">
+                <div class="form-group">
+                  <label for="cgAddress">Address</label>
+                  <input
+                    type="text"
+                    id="cgAddress"
+                    class="form-control"
+                    placeholder="Residential address"
+                    maxlength="200"
+                  />
+                </div>
+                <div class="form-group">
+                  <label for="cgCity">City</label>
+                  <input
+                    type="text"
+                    id="cgCity"
+                    class="form-control"
+                    placeholder="City"
+                    maxlength="100"
+                  />
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="cgRelationship"
+                  >Caregiving Relationship Title</label
+                >
+                <input
+                  type="text"
+                  id="cgRelationship"
+                  class="form-control"
+                  placeholder="e.g. Primary Family Caregiver, Nurse, Guardian"
+                  maxlength="50"
+                />
+              </div>
+
+              <div class="form-actions">
+                <button
+                  type="submit"
+                  class="btn btn-primary"
+                  id="saveCgPersonalBtn"
+                >
+                  Save Caregiver Details
+                </button>
+              </div>
+              <div id="cgPersonalAlert" class="status-alert"></div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Tab 2: Linked Patients -->
+        <div class="tab-panel" id="tab-cg-patients" role="tabpanel">
+          <div class="card">
+            <h2 class="card-title">👥 Monitored Patients</h2>
+            <p class="card-desc">
+              Patients who have granted you caregiving permissions to track
+              their schedules and vital adherence.
+            </p>
+
+            <div id="cgPatientsContainer" class="patient-cards-grid">
+              <!-- Dynamic Linked Patient Cards -->
+            </div>
+            <div
+              id="noCgPatientsMsg"
+              style="
+                display: none;
+                text-align: center;
+                padding: 30px;
+                color: var(--text-muted);
+                background: var(--surface-alt);
+                border-radius: 10px;
+              "
+            >
+              You are not currently linked to any patient accounts. Ask your
+              patient to link your email address from their portal.
+            </div>
+            <div id="cgPatientActionAlert" class="status-alert"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- =========================================================
+         5. SHARED TABS (Notification Preferences & Security)
+         ========================================================= -->
+
+      <!-- Tab: Notification Preferences -->
+      <div class="tab-panel" id="tab-shared-preferences" role="tabpanel">
+        <div class="card">
+          <h2 class="card-title">
+            🔔 Alert Channels & Notification Preferences
+          </h2>
+          <p class="card-desc">
+            Configure automated reminder delivery, missed-dose escalation, and
+            distress notifications.
+          </p>
+
+          <form id="preferencesForm" onsubmit="handleSavePreferences(event)">
+            <div class="toggle-row">
+              <div class="toggle-text">
+                <h4>Scheduled Medicine Reminders</h4>
+                <p>
+                  Receive push/in-app reminders when a prescribed dosage is due.
+                </p>
+              </div>
+              <label class="switch">
+                <input type="checkbox" id="prefDoseReminders" checked />
+                <span class="slider"></span>
+              </label>
+            </div>
+
+            <div class="toggle-row">
+              <div class="toggle-text">
+                <h4>Caregiver Missed-Dose Alerts</h4>
+                <p>
+                  Alert linked family members or caregivers if a dose is delayed
+                  by more than 30 minutes.
+                </p>
+              </div>
+              <label class="switch">
+                <input type="checkbox" id="prefCaregiverAlerts" checked />
+                <span class="slider"></span>
+              </label>
+            </div>
+
+            <div class="toggle-row">
+              <div class="toggle-text">
+                <h4>Low-Stock Pharmacy Alerts</h4>
+                <p>
+                  Trigger proactive notifications when prescription remaining
+                  units fall below threshold.
+                </p>
+              </div>
+              <label class="switch">
+                <input type="checkbox" id="prefLowStockAlerts" checked />
+                <span class="slider"></span>
+              </label>
+            </div>
+
+            <div class="toggle-row">
+              <div class="toggle-text">
+                <h4>Emergency Distress Alerts</h4>
+                <p>
+                  Instant high-priority routing during SOS panic button
+                  triggers.
+                </p>
+              </div>
+              <label class="switch">
+                <input type="checkbox" id="prefEmergencyAlerts" checked />
+                <span class="slider"></span>
+              </label>
+            </div>
+
+            <div class="toggle-row">
+              <div class="toggle-text">
+                <h4>Email Notifications</h4>
+                <p>
+                  Receive schedule briefings and weekly compliance summaries via
+                  email.
+                </p>
+              </div>
+              <label class="switch">
+                <input type="checkbox" id="prefEmailNotifications" checked />
+                <span class="slider"></span>
+              </label>
+            </div>
+
+            <div class="toggle-row">
+              <div class="toggle-text">
+                <h4>In-App Sound & Visual Notifications</h4>
+                <p>
+                  Show notifications in the top navigation alert bell while
+                  using the web portal.
+                </p>
+              </div>
+              <label class="switch">
+                <input type="checkbox" id="prefInAppNotifications" checked />
+                <span class="slider"></span>
+              </label>
+            </div>
+
+            <div class="toggle-row">
+              <div class="toggle-text">
+                <h4>WhatsApp Reminders</h4>
+                <p>
+                  Receive WhatsApp messages 10 minutes prior to dosage time
+                  (where configured).
+                </p>
+              </div>
+              <label class="switch">
+                <input type="checkbox" id="prefWhatsAppReminders" />
+                <span class="slider"></span>
+              </label>
+            </div>
+
+            <div class="form-actions">
+              <button
+                type="submit"
+                class="btn btn-primary"
+                id="savePreferencesBtn"
+              >
+                Save Notification Preferences
+              </button>
+            </div>
+            <div id="preferencesAlert" class="status-alert"></div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Tab: Password & Security -->
+      <div class="tab-panel" id="tab-shared-security" role="tabpanel">
+        <div class="card">
+          <h2 class="card-title">🔐 Account Password & Security</h2>
+          <p class="card-desc">
+            Safeguard your MediCare account with encrypted authentication
+            credentials.
+          </p>
+
+          <form
+            id="passwordChangeForm"
+            onsubmit="handleUpdatePassword(event)"
+            style="max-width: 480px"
+          >
+            <div class="form-group">
+              <label for="currentPassword"
+                >Current Password <span class="required">*</span></label
+              >
+              <input
+                type="password"
+                id="currentPassword"
+                class="form-control"
+                placeholder="••••••••"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="newPassword"
+                >New Password <span class="required">*</span></label
+              >
+              <input
+                type="password"
+                id="newPassword"
+                class="form-control"
+                placeholder="Minimum 6 characters"
+                required
+                minlength="6"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="confirmPassword"
+                >Confirm New Password <span class="required">*</span></label
+              >
+              <input
+                type="password"
+                id="confirmPassword"
+                class="form-control"
+                placeholder="Re-type new password"
+                required
+                minlength="6"
+              />
+            </div>
+
+            <div class="form-actions">
+              <button
+                type="submit"
+                class="btn btn-primary"
+                id="changePasswordBtn"
+              >
+                Update Password
+              </button>
+            </div>
+            <div id="passwordAlert" class="status-alert"></div>
+          </form>
+
+          <hr
+            style="
+              margin: 28px 0;
+              border: none;
+              border-top: 1px solid var(--border);
+            "
+          />
+
+          <div
+            style="
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              flex-wrap: wrap;
+              gap: 12px;
+            "
+          >
+            <div>
+              <h4 style="font-size: 14px; font-weight: 700">Account Session</h4>
+              <p style="font-size: 12px; color: var(--text-muted)">
+                Sign out of your active browser session on this device.
+              </p>
+            </div>
+            <button
+              type="button"
+              class="btn btn-ghost"
+              onclick="handleLogout()"
+              style="color: var(--danger); border-color: #fca5a5"
+            >
+              Log Out of MediCare
+            </button>
+          </div>
+        </div>
+      </div>
     </main>
 
+    <!-- =========================================================
+       6. MODAL: ADD / EDIT EMERGENCY CONTACT
+       ========================================================= -->
+    <div class="modal-overlay" id="contactModal">
+      <div class="modal-dialog">
+        <div class="modal-header">
+          <h3 id="contactModalTitle">Add Emergency Contact</h3>
+          <button
+            type="button"
+            class="modal-close-btn"
+            onclick="closeContactModal()"
+          >
+            &times;
+          </button>
+        </div>
+        <form id="contactModalForm" onsubmit="handleSaveContactModal(event)">
+          <div class="modal-body">
+            <input type="hidden" id="modalContactId" value="" />
+
+            <div class="form-group">
+              <label for="modalContactName"
+                >Contact Full Name <span class="required">*</span></label
+              >
+              <input
+                type="text"
+                id="modalContactName"
+                class="form-control"
+                placeholder="e.g. Sarah Miller"
+                required
+                maxlength="100"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="modalContactRelationship"
+                >Relationship <span class="required">*</span></label
+              >
+              <input
+                type="text"
+                id="modalContactRelationship"
+                class="form-control"
+                placeholder="e.g. Daughter, Spouse, Neighbor"
+                required
+                maxlength="50"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="modalContactPhone"
+                >Phone Number <span class="required">*</span></label
+              >
+              <input
+                type="tel"
+                id="modalContactPhone"
+                class="form-control"
+                placeholder="+91 98765-43210"
+                required
+                maxlength="25"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="modalContactAltPhone"
+                >Alternate Phone (Optional)</label
+              >
+              <input
+                type="tel"
+                id="modalContactAltPhone"
+                class="form-control"
+                placeholder="+91 98765-00000"
+                maxlength="25"
+              />
+            </div>
+
+            <div
+              style="
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                margin-top: 12px;
+              "
+            >
+              <input
+                type="checkbox"
+                id="modalContactIsPrimary"
+                style="width: 18px; height: 18px; cursor: pointer"
+              />
+              <label
+                for="modalContactIsPrimary"
+                style="
+                  margin-bottom: 0;
+                  font-size: 13px;
+                  font-weight: 700;
+                  cursor: pointer;
+                "
+              >
+                Designate as Primary Emergency Contact
+              </label>
+            </div>
+            <div
+              id="contactModalAlert"
+              class="status-alert"
+              style="margin-top: 12px"
+            ></div>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-ghost"
+              onclick="closeContactModal()"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              class="btn btn-primary"
+              id="modalContactSaveBtn"
+            >
+              Save Contact
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- =========================================================
+       7. MODAL: EDIT CAREGIVER PATIENT LINK
+       ========================================================= -->
+    <div class="modal-overlay" id="editLinkModal">
+      <div class="modal-dialog">
+        <div class="modal-header">
+          <h3>Edit Patient Caregiving Details</h3>
+          <button
+            type="button"
+            class="modal-close-btn"
+            onclick="closeEditLinkModal()"
+          >
+            &times;
+          </button>
+        </div>
+        <form id="editLinkForm" onsubmit="handleSaveEditLink(event)">
+          <div class="modal-body">
+            <input type="hidden" id="modalLinkId" value="" />
+
+            <div class="form-group">
+              <label>Patient</label>
+              <input
+                type="text"
+                id="modalLinkPatientName"
+                class="form-control"
+                disabled
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="modalLinkRelation">Relationship with Patient</label>
+              <input
+                type="text"
+                id="modalLinkRelation"
+                class="form-control"
+                placeholder="e.g. Primary Caregiver, Son, Home Nurse"
+                maxlength="50"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="modalLinkNotes"
+                >Caregiving Notes & Responsibilities</label
+              >
+              <textarea
+                id="modalLinkNotes"
+                class="form-control"
+                placeholder="Specific responsibilities, daily check-in times, medication administration notes..."
+                maxlength="500"
+              ></textarea>
+            </div>
+
+            <div
+              style="
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                margin-top: 12px;
+              "
+            >
+              <input
+                type="checkbox"
+                id="modalLinkIsPrimary"
+                style="width: 18px; height: 18px; cursor: pointer"
+              />
+              <label
+                for="modalLinkIsPrimary"
+                style="
+                  margin-bottom: 0;
+                  font-size: 13px;
+                  font-weight: 700;
+                  cursor: pointer;
+                "
+              >
+                Primary Caregiver for this Patient
+              </label>
+            </div>
+            <div
+              id="editLinkModalAlert"
+              class="status-alert"
+              style="margin-top: 12px"
+            ></div>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-ghost"
+              onclick="closeEditLinkModal()"
+            >
+              Cancel
+            </button>
+            <button type="submit" class="btn btn-primary" id="modalLinkSaveBtn">
+              Save Link Details
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- =========================================================
+       8. MODAL: PATIENT CLINICAL DETAILS VIEWER (FOR CAREGIVER)
+       ========================================================= -->
+    <div class="modal-overlay" id="patientClinicalModal">
+      <div class="modal-dialog" style="max-width: 620px">
+        <div class="modal-header">
+          <h3 id="clinicalModalTitle">Patient Medical Details</h3>
+          <button
+            type="button"
+            class="modal-close-btn"
+            onclick="closeClinicalModal()"
+          >
+            &times;
+          </button>
+        </div>
+        <div class="modal-body" id="clinicalModalContent">
+          <!-- Injected dynamically -->
+        </div>
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            onclick="closeClinicalModal()"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Core Scripts -->
     <script src="js/api.js"></script>
     <script src="js/navbar.js"></script>
+    <script src="js/ai-chatbot.js"></script>
 
+    <!-- Profile Management Logic -->
     <script>
-        /*
-         * Connect these functions to the actual Spring Boot API.
-         * Endpoint paths must match your backend controllers.
-         * No fake success messages or sample data are used.
-         */
+      "use strict";
 
-        async function requestApi(url, options = {}) {
-            const response = await fetch(url, {
-                ...options,
-                headers: {
-                    "Content-Type": "application/json",
-                    ...(options.headers || {})
+      let currentRole = "PATIENT";
+      let currentPatientProfile = null;
+      let currentCaregiverProfile = null;
+
+      document.addEventListener("DOMContentLoaded", async () => {
+        // 1. Guard check
+        if (window.MediCareAPI && window.MediCareAPI.checkRole) {
+          if (!window.MediCareAPI.checkRole(["PATIENT", "CAREGIVER", "ADMIN"]))
+            return;
+        }
+
+        currentRole = window.MediCareAPI
+          ? window.MediCareAPI.getUserRole()
+          : "PATIENT";
+        if (!currentRole) currentRole = "PATIENT";
+
+        renderTabsForRole(currentRole);
+        setupPhotoUploadListener();
+
+        if (currentRole === "PATIENT") {
+          document.getElementById("patientViews").style.display = "block";
+          await loadPatientProfileData();
+          await loadPatientMedicalData();
+          await loadPatientEmergencyContacts();
+          await loadPatientCareAndMeds();
+          await loadPatientSummary();
+        } else {
+          document.getElementById("caregiverViews").style.display = "block";
+          await loadCaregiverProfileData();
+          await loadCaregiverPatients();
+        }
+
+        await loadPreferences();
+      });
+
+      // =========================================================
+      // TABS MANAGEMENT
+      // =========================================================
+      function renderTabsForRole(role) {
+        const container = document.getElementById("profileTabsBar");
+        container.innerHTML = "";
+
+        const tabs = [];
+        if (role === "PATIENT") {
+          tabs.push({ id: "tab-patient-personal", label: "👤 Personal Info" });
+          tabs.push({ id: "tab-patient-medical", label: "🩺 Medical Record" });
+          tabs.push({
+            id: "tab-patient-emergency",
+            label: "🚨 Emergency Contacts",
+          });
+          tabs.push({ id: "tab-patient-care", label: "💊 Care & Medications" });
+          tabs.push({
+            id: "tab-patient-summary",
+            label: "📊 Status & Summary",
+          });
+          tabs.push({
+            id: "tab-shared-preferences",
+            label: "🔔 Alert Preferences",
+          });
+          tabs.push({ id: "tab-shared-security", label: "🔐 Security" });
+        } else {
+          tabs.push({ id: "tab-cg-personal", label: "👤 Personal Details" });
+          tabs.push({ id: "tab-cg-patients", label: "👥 Monitored Patients" });
+          tabs.push({
+            id: "tab-shared-preferences",
+            label: "🔔 Alert Preferences",
+          });
+          tabs.push({ id: "tab-shared-security", label: "🔐 Security" });
+        }
+
+        tabs.forEach((tab, idx) => {
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "tab-btn" + (idx === 0 ? " active" : "");
+          btn.textContent = tab.label;
+          btn.onclick = () => switchTab(tab.id, btn);
+          container.appendChild(btn);
+        });
+      }
+
+      function switchTab(panelId, clickedBtn) {
+        document
+          .querySelectorAll(".tab-btn")
+          .forEach((b) => b.classList.remove("active"));
+        document
+          .querySelectorAll(".tab-panel")
+          .forEach((p) => p.classList.remove("active"));
+
+        if (clickedBtn) clickedBtn.classList.add("active");
+        const targetPanel = document.getElementById(panelId);
+        if (targetPanel) targetPanel.classList.add("active");
+      }
+
+      // =========================================================
+      // PATIENT DATA LOADERS & HANDLERS
+      // =========================================================
+      async function loadPatientProfileData() {
+        try {
+          const profile = await window.MediCareAPI.apiGet("/profile/patient");
+          if (!profile) return;
+          currentPatientProfile = profile;
+
+          // Hero Update
+          updateHeroHeader({
+            name: profile.fullName,
+            role: "PATIENT",
+            email: profile.email,
+            phone: profile.phoneNumber,
+            location:
+              [profile.city, profile.address].filter(Boolean).join(", ") ||
+              "Location not set",
+            age: profile.age != null ? `${profile.age} yrs` : null,
+            photoUrl: profile.profilePhotoUrl,
+            completion: profile.profileCompletionPercentage,
+            adherence: profile.adherencePercentage,
+            activeMeds: profile.activeMedicineCount,
+            caregivers: profile.linkedCaregiverCount,
+          });
+
+          // Personal Form Fill
+          document.getElementById("pFullName").value = profile.fullName || "";
+          document.getElementById("pEmail").value = profile.email || "";
+          document.getElementById("pPhone").value = profile.phoneNumber || "";
+          document.getElementById("pDob").value = profile.dateOfBirth
+            ? profile.dateOfBirth.split("T")[0]
+            : "";
+          document.getElementById("pGender").value = profile.gender || "";
+          document.getElementById("pAddress").value = profile.address || "";
+          document.getElementById("pCity").value = profile.city || "";
+
+          updateAgePreview();
+        } catch (err) {
+          console.error("Error loading patient profile:", err);
+        }
+      }
+
+      function updateAgePreview() {
+        const dobVal = document.getElementById("pDob").value;
+        const preview = document.getElementById("pAgePreview");
+        if (!dobVal) {
+          preview.textContent = "Age: Not specified";
+          return;
+        }
+        const dob = new Date(dobVal);
+        const today = new Date();
+        let age = today.getFullYear() - dob.getFullYear();
+        const m = today.getMonth() - dob.getMonth();
+        if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) age--;
+        preview.textContent =
+          age >= 0 ? `Age: ${age} years old` : "Invalid date of birth";
+      }
+
+      async function handleSavePatientPersonal(e) {
+        e.preventDefault();
+        const btn = document.getElementById("savePatientPersonalBtn");
+        const alertBox = document.getElementById("patientPersonalAlert");
+        btn.disabled = true;
+        showAlert(alertBox, "Saving changes...", "info");
+
+        try {
+          const payload = {
+            fullName: document.getElementById("pFullName").value.trim(),
+            phoneNumber: document.getElementById("pPhone").value.trim(),
+            dateOfBirth: document.getElementById("pDob").value || null,
+            gender: document.getElementById("pGender").value || null,
+            address: document.getElementById("pAddress").value.trim() || null,
+            city: document.getElementById("pCity").value.trim() || null,
+          };
+
+          const res = await window.MediCareAPI.apiPut(
+            "/profile/patient",
+            payload,
+          );
+          showAlert(
+            alertBox,
+            "✓ Personal details saved successfully!",
+            "success",
+          );
+          await loadPatientProfileData();
+          await loadPatientSummary();
+        } catch (err) {
+          showAlert(
+            alertBox,
+            "✗ " + (err.message || "Failed to save changes"),
+            "error",
+          );
+        } finally {
+          btn.disabled = false;
+        }
+      }
+
+      async function loadPatientMedicalData() {
+        try {
+          const med = await window.MediCareAPI.apiGet(
+            "/profile/patient/medical",
+          );
+          if (!med) return;
+
+          document.getElementById("mBloodGroup").value =
+            med.bloodGroup || "Unknown";
+          document.getElementById("mDoctorName").value = med.doctorName || "";
+          document.getElementById("mDoctorContact").value =
+            med.doctorContact || "";
+          document.getElementById("mHospitalName").value =
+            med.hospitalOrClinicName || "";
+          document.getElementById("mConditions").value =
+            med.medicalConditions || "";
+          document.getElementById("mAllergies").value = med.allergies || "";
+          document.getElementById("mPastHistory").value =
+            med.pastMedicalHistory || "";
+          document.getElementById("mNotes").value = med.medicalNotes || "";
+        } catch (err) {
+          console.error("Error loading patient medical data:", err);
+        }
+      }
+
+      async function handleSavePatientMedical(e) {
+        e.preventDefault();
+        const btn = document.getElementById("savePatientMedicalBtn");
+        const alertBox = document.getElementById("patientMedicalAlert");
+        btn.disabled = true;
+        showAlert(alertBox, "Saving medical record...", "info");
+
+        try {
+          const payload = {
+            bloodGroup: document.getElementById("mBloodGroup").value,
+            doctorName:
+              document.getElementById("mDoctorName").value.trim() || null,
+            doctorContact:
+              document.getElementById("mDoctorContact").value.trim() || null,
+            hospitalOrClinicName:
+              document.getElementById("mHospitalName").value.trim() || null,
+            medicalConditions:
+              document.getElementById("mConditions").value.trim() || null,
+            allergies:
+              document.getElementById("mAllergies").value.trim() || null,
+            pastMedicalHistory:
+              document.getElementById("mPastHistory").value.trim() || null,
+            medicalNotes:
+              document.getElementById("mNotes").value.trim() || null,
+          };
+
+          await window.MediCareAPI.apiPut("/profile/patient/medical", payload);
+          showAlert(
+            alertBox,
+            "✓ Medical record updated successfully!",
+            "success",
+          );
+          await loadPatientProfileData();
+          await loadPatientSummary();
+        } catch (err) {
+          showAlert(
+            alertBox,
+            "✗ " + (err.message || "Failed to update medical details"),
+            "error",
+          );
+        } finally {
+          btn.disabled = false;
+        }
+      }
+
+      // Emergency Contacts CRUD
+      let cachedContacts = [];
+      async function loadPatientEmergencyContacts() {
+        try {
+          const contacts = await window.MediCareAPI.apiGet(
+            "/profile/patient/emergency-contacts",
+          );
+          cachedContacts = contacts || [];
+          renderEmergencyContacts(cachedContacts);
+        } catch (err) {
+          console.error("Error loading emergency contacts:", err);
+        }
+      }
+
+      function renderEmergencyContacts(contacts) {
+        const container = document.getElementById("contactsContainer");
+        const noMsg = document.getElementById("noContactsMsg");
+        container.innerHTML = "";
+
+        if (!contacts || contacts.length === 0) {
+          noMsg.style.display = "block";
+          return;
+        }
+        noMsg.style.display = "none";
+
+        contacts.forEach((c) => {
+          const card = document.createElement("div");
+          card.className = "contact-card" + (c.isPrimary ? " primary" : "");
+          card.innerHTML = `
+          <div class="contact-header">
+            <div>
+              <div class="contact-name">${escapeHtml(c.contactName)}</div>
+              <div class="contact-relation">${escapeHtml(c.relationship)}</div>
+            </div>
+            ${c.isPrimary ? '<span class="badge-primary-contact">Primary</span>' : ""}
+          </div>
+          <div class="contact-phone">
+            📞 <a href="tel:${escapeHtml(c.phoneNumber)}">${escapeHtml(c.phoneNumber)}</a>
+          </div>
+          ${c.alternatePhoneNumber ? `<div class="contact-alt-phone">Alt: ${escapeHtml(c.alternatePhoneNumber)}</div>` : ""}
+          <div class="contact-actions">
+            <button type="button" class="btn btn-ghost btn-sm" onclick="openEditContactModal(${c.id})">✏️ Edit</button>
+            <button type="button" class="btn btn-ghost btn-sm" style="color:var(--danger);" onclick="handleDeleteContact(${c.id}, '${escapeHtml(c.contactName)}')">🗑️ Delete</button>
+          </div>
+        `;
+          container.appendChild(card);
+        });
+      }
+
+      function openAddContactModal() {
+        document.getElementById("modalContactId").value = "";
+        document.getElementById("modalContactName").value = "";
+        document.getElementById("modalContactRelationship").value = "";
+        document.getElementById("modalContactPhone").value = "";
+        document.getElementById("modalContactAltPhone").value = "";
+        document.getElementById("modalContactIsPrimary").checked =
+          cachedContacts.length === 0;
+        document.getElementById("contactModalTitle").textContent =
+          "Add Emergency Contact";
+        document.getElementById("contactModalAlert").style.display = "none";
+        document.getElementById("contactModal").classList.add("active");
+      }
+
+      function openEditContactModal(contactId) {
+        const c = cachedContacts.find((x) => x.id === contactId);
+        if (!c) return;
+
+        document.getElementById("modalContactId").value = c.id;
+        document.getElementById("modalContactName").value = c.contactName;
+        document.getElementById("modalContactRelationship").value =
+          c.relationship;
+        document.getElementById("modalContactPhone").value = c.phoneNumber;
+        document.getElementById("modalContactAltPhone").value =
+          c.alternatePhoneNumber || "";
+        document.getElementById("modalContactIsPrimary").checked =
+          !!c.isPrimary;
+        document.getElementById("contactModalTitle").textContent =
+          "Edit Emergency Contact";
+        document.getElementById("contactModalAlert").style.display = "none";
+        document.getElementById("contactModal").classList.add("active");
+      }
+
+      function closeContactModal() {
+        document.getElementById("contactModal").classList.remove("active");
+      }
+
+      async function handleSaveContactModal(e) {
+        e.preventDefault();
+        const id = document.getElementById("modalContactId").value;
+        const btn = document.getElementById("modalContactSaveBtn");
+        const alertBox = document.getElementById("contactModalAlert");
+        btn.disabled = true;
+
+        const payload = {
+          contactName: document.getElementById("modalContactName").value.trim(),
+          relationship: document
+            .getElementById("modalContactRelationship")
+            .value.trim(),
+          phoneNumber: document
+            .getElementById("modalContactPhone")
+            .value.trim(),
+          alternatePhoneNumber:
+            document.getElementById("modalContactAltPhone").value.trim() ||
+            null,
+          isPrimary: document.getElementById("modalContactIsPrimary").checked,
+        };
+
+        try {
+          if (id) {
+            await window.MediCareAPI.apiPut(
+              `/profile/patient/emergency-contacts/${id}`,
+              payload,
+            );
+          } else {
+            await window.MediCareAPI.apiPost(
+              "/profile/patient/emergency-contacts",
+              payload,
+            );
+          }
+          closeContactModal();
+          await loadPatientEmergencyContacts();
+          await loadPatientProfileData();
+          await loadPatientSummary();
+        } catch (err) {
+          showAlert(
+            alertBox,
+            "✗ " + (err.message || "Error saving contact"),
+            "error",
+          );
+        } finally {
+          btn.disabled = false;
+        }
+      }
+
+      async function handleDeleteContact(id, name) {
+        if (
+          !confirm(
+            `Are you sure you want to remove ${name} from your emergency contacts?`,
+          )
+        )
+          return;
+
+        try {
+          await window.MediCareAPI.apiDelete(
+            `/profile/patient/emergency-contacts/${id}`,
+          );
+          await loadPatientEmergencyContacts();
+          await loadPatientProfileData();
+          await loadPatientSummary();
+        } catch (err) {
+          alert(
+            "Failed to delete contact: " + (err.message || "Unknown error"),
+          );
+        }
+      }
+
+      // Care & Medications
+      async function loadPatientCareAndMeds() {
+        // 1. Linked Caregivers
+        try {
+          if (currentPatientProfile && currentPatientProfile.id) {
+            const caregivers = await window.MediCareAPI.apiGet(
+              `/Caregiverpatient/patient/${currentPatientProfile.id}`,
+            );
+            const container = document.getElementById("linkedCaregiversList");
+            const noMsg = document.getElementById("noCaregiversMsg");
+            container.innerHTML = "";
+
+            if (caregivers && caregivers.length > 0) {
+              noMsg.style.display = "none";
+              caregivers.forEach((cg) => {
+                const card = document.createElement("div");
+                card.className = "contact-card";
+                card.innerHTML = `
+                <div class="contact-header">
+                  <div>
+                    <div class="contact-name">${escapeHtml(cg.name || "Caregiver")}</div>
+                    <div class="contact-relation">${escapeHtml(cg.relationship || "Assigned Family")}</div>
+                  </div>
+                  <span class="badge-primary-contact" style="background:#16a34a;">Linked</span>
+                </div>
+                <div style="font-size:12px; color:var(--text-muted); margin-top:6px;">
+                  ✉️ ${escapeHtml(cg.email || "Email not disclosed")}
+                </div>
+              `;
+                container.appendChild(card);
+              });
+            } else {
+              noMsg.style.display = "block";
+            }
+          }
+        } catch (e) {
+          console.warn("Could not load linked caregivers:", e);
+        }
+
+        // 2. Prescription Medicines from existing Medicine API
+        try {
+          const medicines = await window.MediCareAPI.apiGet("/medicine");
+          const tbody = document.getElementById("patientMedicinesTableBody");
+          tbody.innerHTML = "";
+
+          if (!medicines || medicines.length === 0) {
+            tbody.innerHTML =
+              '<tr><td colspan="5" style="text-align:center; color:var(--text-muted);">No active prescriptions found in your medicine inventory.</td></tr>';
+            return;
+          }
+
+          medicines.forEach((m) => {
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+            <td><strong>${escapeHtml(m.name || "Medicine")}</strong></td>
+            <td>${escapeHtml(m.dosage || "--")}</td>
+            <td>${escapeHtml(m.mealTimeing || m.mealTiming || "After Meal")}</td>
+            <td>${escapeHtml(m.frequency || "--")}</td>
+            <td><span class="info-tag ${m.stock <= 5 ? "warning" : ""}">${m.stock ?? 0} units</span></td>
+          `;
+            tbody.appendChild(tr);
+          });
+        } catch (e) {
+          console.warn("Could not load patient medicines:", e);
+        }
+      }
+
+      // Patient Summary
+      async function loadPatientSummary() {
+        try {
+          const summary = await window.MediCareAPI.apiGet(
+            "/profile/patient/summary",
+          );
+          if (!summary) return;
+
+          // Missing information box
+          const missingBox = document.getElementById("summaryMissingBox");
+          const missingTags = document.getElementById("summaryMissingTags");
+          missingTags.innerHTML = "";
+
+          if (
+            summary.missingInformation &&
+            summary.missingInformation.length > 0
+          ) {
+            missingBox.style.display = "block";
+            summary.missingInformation.forEach((item) => {
+              const tag = document.createElement("span");
+              tag.className = "missing-tag";
+              tag.textContent = `+ Add ${item}`;
+              tag.onclick = () => {
+                if (
+                  item.includes("Medical") ||
+                  item.includes("Blood") ||
+                  item.includes("Doctor")
+                ) {
+                  document.querySelectorAll(".tab-btn")[1].click();
+                } else if (item.includes("Emergency")) {
+                  document.querySelectorAll(".tab-btn")[2].click();
+                } else {
+                  document.querySelectorAll(".tab-btn")[0].click();
                 }
+              };
+              missingTags.appendChild(tag);
             });
+          } else {
+            missingBox.style.display = "none";
+          }
 
-            if (!response.ok) {
-                throw new Error(
-                    "Request failed (" + response.status + "). Please try again."
-                );
-            }
+          // Upcoming schedule table
+          const schedBody = document.getElementById("summaryScheduleTableBody");
+          schedBody.innerHTML = "";
+          if (
+            summary.upcomingSchedules &&
+            summary.upcomingSchedules.length > 0
+          ) {
+            summary.upcomingSchedules.forEach((s) => {
+              const tr = document.createElement("tr");
+              tr.innerHTML = `
+              <td><strong>${escapeHtml(s.scheduledTime)}</strong></td>
+              <td>${escapeHtml(s.medicineName)}</td>
+              <td>${escapeHtml(s.dosage)}</td>
+              <td>${escapeHtml(s.mealTiming)}</td>
+              <td><span class="info-tag">${escapeHtml(s.status)}</span></td>
+            `;
+              schedBody.appendChild(tr);
+            });
+          } else {
+            schedBody.innerHTML =
+              '<tr><td colspan="5" style="text-align:center; color:var(--text-muted);">No medication schedules remaining for today.</td></tr>';
+          }
 
-            if (response.status === 204) {
-                return null;
-            }
-
-            return response.json();
+          // Recent activity table
+          const actBody = document.getElementById("summaryActivityTableBody");
+          actBody.innerHTML = "";
+          if (summary.recentActivity && summary.recentActivity.length > 0) {
+            summary.recentActivity.forEach((a) => {
+              const tr = document.createElement("tr");
+              const schedDate = new Date(a.scheduledTime).toLocaleString([], {
+                month: "short",
+                day: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+              });
+              const takenDate = a.takenTime
+                ? new Date(a.takenTime).toLocaleString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })
+                : "--";
+              tr.innerHTML = `
+              <td><strong>${escapeHtml(a.medicineName)}</strong></td>
+              <td>${escapeHtml(a.dosage)}</td>
+              <td>${schedDate}</td>
+              <td>${takenDate}</td>
+              <td><span class="info-tag ${a.status === "Missed" ? "warning" : ""}">${escapeHtml(a.status)}</span></td>
+            `;
+              actBody.appendChild(tr);
+            });
+          } else {
+            actBody.innerHTML =
+              '<tr><td colspan="5" style="text-align:center; color:var(--text-muted);">No recent medicine intake logs recorded.</td></tr>';
+          }
+        } catch (err) {
+          console.error("Error loading patient summary:", err);
         }
+      }
 
-        function showMessage(elementId, message, isError = false) {
-            const element = document.getElementById(elementId);
-            element.textContent = message;
-            element.className = "form-message " +
-                (isError ? "error" : "success");
+      // =========================================================
+      // CAREGIVER DATA LOADERS & HANDLERS
+      // =========================================================
+      async function loadCaregiverProfileData() {
+        try {
+          const profile = await window.MediCareAPI.apiGet("/profile/caregiver");
+          if (!profile) return;
+          currentCaregiverProfile = profile;
+
+          updateHeroHeader({
+            name: profile.fullName,
+            role: "CAREGIVER",
+            email: profile.email,
+            phone: profile.phoneNumber,
+            location:
+              [profile.city, profile.address].filter(Boolean).join(", ") ||
+              "Location not set",
+            photoUrl: profile.profilePhotoUrl,
+            linkedPatientsCount: profile.linkedPatientCount,
+            createdAt: profile.accountCreatedAt
+              ? new Date(profile.accountCreatedAt).toLocaleDateString()
+              : "Active Member",
+          });
+
+          document.getElementById("cgFullName").value = profile.fullName || "";
+          document.getElementById("cgEmail").value = profile.email || "";
+          document.getElementById("cgPhone").value = profile.phoneNumber || "";
+          document.getElementById("cgGender").value = profile.gender || "";
+          document.getElementById("cgAddress").value = profile.address || "";
+          document.getElementById("cgCity").value = profile.city || "";
+          document.getElementById("cgContactMethod").value =
+            profile.preferredContactMethod || "Email";
+          document.getElementById("cgRelationship").value =
+            profile.relationship || "";
+        } catch (err) {
+          console.error("Error loading caregiver profile:", err);
         }
+      }
 
-        function setInputValue(id, value) {
-            document.getElementById(id).value = value ?? "";
+      async function handleSaveCaregiverPersonal(e) {
+        e.preventDefault();
+        const btn = document.getElementById("saveCgPersonalBtn");
+        const alertBox = document.getElementById("cgPersonalAlert");
+        btn.disabled = true;
+        showAlert(alertBox, "Saving caregiver details...", "info");
+
+        try {
+          const payload = {
+            fullName: document.getElementById("cgFullName").value.trim(),
+            phoneNumber:
+              document.getElementById("cgPhone").value.trim() || null,
+            gender: document.getElementById("cgGender").value || null,
+            address: document.getElementById("cgAddress").value.trim() || null,
+            city: document.getElementById("cgCity").value.trim() || null,
+            preferredContactMethod:
+              document.getElementById("cgContactMethod").value,
+            relationship:
+              document.getElementById("cgRelationship").value.trim() || null,
+          };
+
+          await window.MediCareAPI.apiPut("/profile/caregiver", payload);
+          showAlert(
+            alertBox,
+            "✓ Caregiver profile saved successfully!",
+            "success",
+          );
+          await loadCaregiverProfileData();
+        } catch (err) {
+          showAlert(
+            alertBox,
+            "✗ " + (err.message || "Error saving caregiver profile"),
+            "error",
+          );
+        } finally {
+          btn.disabled = false;
         }
+      }
 
-        function displayProfile(profile) {
-            setInputValue("fullName", profile.fullName);
-            setInputValue("email", profile.email);
-            setInputValue("phone", profile.phone);
-            setInputValue("dateOfBirth", profile.dateOfBirth);
-
-            document.getElementById("profileName").textContent =
-                profile.fullName || "Profile";
-
-            document.getElementById("profileAvatar").textContent =
-                (profile.fullName || "--")
-                    .trim()
-                    .split(/\s+/)
-                    .slice(0, 2)
-                    .map(part => part[0])
-                    .join("")
-                    .toUpperCase();
-
-            document.getElementById("profileRole").textContent =
-                "Role: " + (profile.role || "--");
-
-            document.getElementById("adherenceValue").textContent =
-                profile.adherencePercentage == null
-                    ? "--"
-                    : profile.adherencePercentage + "%";
-
-            document.getElementById("medicineCount").textContent =
-                profile.activeMedicineCount ?? "--";
+      let cachedCgPatients = [];
+      async function loadCaregiverPatients() {
+        try {
+          const patients = await window.MediCareAPI.apiGet(
+            "/profile/caregiver/patients",
+          );
+          cachedCgPatients = patients || [];
+          renderCaregiverPatients(cachedCgPatients);
+        } catch (err) {
+          console.error("Error loading caregiver linked patients:", err);
         }
+      }
 
-        function displayEmergencyContacts(contact) {
-            setInputValue("contactName", contact.contactName);
-            setInputValue("contactRelationship", contact.relationship);
-            setInputValue("emergencyPhone", contact.phone);
-            setInputValue("doctorContact", contact.doctorContact);
+      function renderCaregiverPatients(patients) {
+        const container = document.getElementById("cgPatientsContainer");
+        const noMsg = document.getElementById("noCgPatientsMsg");
+        container.innerHTML = "";
+
+        if (!patients || patients.length === 0) {
+          noMsg.style.display = "block";
+          return;
         }
+        noMsg.style.display = "none";
 
-        function displayNotificationPreferences(preferences) {
-            document.querySelector(
-                '[name="doseReminders"]'
-            ).checked = preferences.doseReminders === true;
+        patients.forEach((p) => {
+          const card = document.createElement("div");
+          card.className = "patient-card";
+          const initials = (p.patientName || "P")
+            .split(" ")
+            .map((n) => n[0])
+            .join("")
+            .substring(0, 2)
+            .toUpperCase();
 
-            document.querySelector(
-                '[name="refillAlerts"]'
-            ).checked = preferences.refillAlerts === true;
+          card.innerHTML = `
+          <div>
+            <div class="patient-card-top">
+              <div class="patient-card-avatar">
+                ${p.profilePhotoUrl ? `<img src="${escapeHtml(p.profilePhotoUrl)}" alt="${escapeHtml(p.patientName)}" />` : initials}
+              </div>
+              <div class="patient-card-meta">
+                <h4>${escapeHtml(p.patientName)}</h4>
+                <p>Relation: <strong>${escapeHtml(p.relationType || "Patient")}</strong> ${p.isPrimaryCaregiver ? '<span class="badge-primary-contact" style="margin-left:4px;">Primary</span>' : ""}</p>
+                <p>Blood Group: <strong>${escapeHtml(p.bloodGroup || "Unknown")}</strong> ${p.age != null ? `• Age: ${p.age}` : ""}</p>
+              </div>
+            </div>
 
-            document.querySelector(
-                '[name="caregiverAlerts"]'
-            ).checked = preferences.caregiverAlerts === true;
-        }
+            <div class="patient-stats-row">
+              <div>
+                <div class="ps-val">${p.adherencePercentage != null ? p.adherencePercentage + "%" : "--"}</div>
+                <div class="ps-lbl">Adherence</div>
+              </div>
+              <div>
+                <div class="ps-val">${p.activeMedicineCount ?? 0}</div>
+                <div class="ps-lbl">Active Meds</div>
+              </div>
+              <div>
+                <div class="ps-val">${p.primaryEmergencyPhone ? "Yes" : "No"}</div>
+                <div class="ps-lbl">SOS Ready</div>
+              </div>
+            </div>
 
-        /*
-         * TODO: Replace these API paths with the real endpoints
-         * found in your Spring Boot controllers.
-         */
+            ${p.caregivingNotes ? `<div class="patient-card-notes">📝 ${escapeHtml(p.caregivingNotes)}</div>` : ""}
+            <div style="font-size:12px; color:var(--text-muted); margin-bottom:12px;">
+              📞 Contact: <a href="tel:${escapeHtml(p.patientPhone)}" style="color:var(--primary); font-weight:700;">${escapeHtml(p.patientPhone || "Not provided")}</a>
+            </div>
+          </div>
 
-        async function loadSettings() {
-            try {
-                const user = (window.MediCareAPI && window.MediCareAPI.getCurrentUser()) || {};
-                const role = (window.MediCareAPI && window.MediCareAPI.getUserRole()) || 'PATIENT';
-                
-                let profileData = {
-                    fullName: user.name || "User",
-                    email: user.email || "",
-                    phone: "",
-                    dateOfBirth: "",
-                    role: role,
-                    adherencePercentage: null,
-                    activeMedicineCount: 0
-                };
+          <div style="display:flex; gap:8px; border-top:1px solid var(--border); padding-top:12px;">
+            <button type="button" class="btn btn-secondary btn-sm" style="flex:1;" onclick="openPatientClinicalModal(${p.patientId}, '${escapeHtml(p.patientName)}')">
+              📋 Clinical Overview
+            </button>
+            <button type="button" class="btn btn-ghost btn-sm" onclick="openEditLinkModal(${p.caregiverPatientId})">
+              ⚙️ Edit Link
+            </button>
+          </div>
+        `;
+          container.appendChild(card);
+        });
+      }
 
-                if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
-                    if (role === 'PATIENT') {
-                        try {
-                            const dash = await window.MediCareAPI.apiFetch('/dashboard/patient');
-                            if (dash && dash.patient) {
-                                profileData.fullName = dash.patient.name || profileData.fullName;
-                                profileData.email = dash.patient.email || profileData.email;
-                                profileData.phone = dash.patient.emergencyContact || "";
-                                if (dash.patient.dateOfBirth) {
-                                    profileData.dateOfBirth = new Date(dash.patient.dateOfBirth).toISOString().split('T')[0];
-                                }
-                                profileData.adherencePercentage = dash.adherencePercentage;
-                                profileData.activeMedicineCount = dash.totalMedicines || (dash.medicines ? dash.medicines.length : 0);
-                            }
-                        } catch (e) {}
-                    } else if (role === 'CAREGIVER') {
-                        try {
-                            const dash = await window.MediCareAPI.apiFetch('/dashboard/caregiver');
-                            if (dash && dash.caregiver) {
-                                profileData.fullName = dash.caregiver.name || profileData.fullName;
-                                profileData.email = dash.caregiver.email || profileData.email;
-                                profileData.phone = dash.caregiver.relationship || "";
-                            }
-                        } catch (e) {}
-                    }
-                }
-
-                displayProfile(profileData);
-
-            } catch (error) {
-                document.getElementById("profileName").textContent =
-                    "Unable to load profile";
-                console.error("Loading settings failed:", error);
-            }
-        }
-
-        document.getElementById("profileForm").addEventListener(
-            "submit",
-            async function (event) {
-                event.preventDefault();
-
-                const profile = {
-                    fullName: document.getElementById("fullName").value.trim(),
-                    phone: document.getElementById("phone").value.trim(),
-                    dateOfBirth:
-                        document.getElementById("dateOfBirth").value
-                };
-
-                try {
-                    /*
-                     * Replace with the confirmed backend endpoint.
-                     * Example:
-                     *
-                     * await requestApi("/api/user/profile", {
-                     *     method: "PUT",
-                     *     body: JSON.stringify(profile)
-                     * });
-                     *
-                     * Do not display success until the API saves the data.
-                     */
-
-                    showMessage(
-                        "profileMessage",
-                        "Profile API is not connected yet.",
-                        true
-                    );
-                } catch (error) {
-                    showMessage("profileMessage", error.message, true);
-                }
-            }
+      function openEditLinkModal(linkId) {
+        const link = cachedCgPatients.find(
+          (x) => x.caregiverPatientId === linkId,
         );
+        if (!link) return;
 
-        document.getElementById("emergencyContactForm").addEventListener(
-            "submit",
-            async function (event) {
-                event.preventDefault();
+        document.getElementById("modalLinkId").value = link.caregiverPatientId;
+        document.getElementById("modalLinkPatientName").value =
+          link.patientName;
+        document.getElementById("modalLinkRelation").value =
+          link.relationType || "";
+        document.getElementById("modalLinkNotes").value =
+          link.caregivingNotes || "";
+        document.getElementById("modalLinkIsPrimary").checked =
+          !!link.isPrimaryCaregiver;
+        document.getElementById("editLinkModalAlert").style.display = "none";
+        document.getElementById("editLinkModal").classList.add("active");
+      }
 
-                const contact = {
-                    contactName:
-                        document.getElementById("contactName").value.trim(),
-                    relationship:
-                        document.getElementById("contactRelationship").value.trim(),
-                    phone:
-                        document.getElementById("emergencyPhone").value.trim(),
-                    doctorContact:
-                        document.getElementById("doctorContact").value.trim()
-                };
+      function closeEditLinkModal() {
+        document.getElementById("editLinkModal").classList.remove("active");
+      }
 
-                try {
-                    /*
-                     * Connect this form to the real emergency-contact API.
-                     * Do not show success until the backend confirms saving.
-                     */
+      async function handleSaveEditLink(e) {
+        e.preventDefault();
+        const linkId = document.getElementById("modalLinkId").value;
+        const btn = document.getElementById("modalLinkSaveBtn");
+        const alertBox = document.getElementById("editLinkModalAlert");
+        btn.disabled = true;
 
-                    showMessage(
-                        "emergencyMessage",
-                        "Emergency contacts API is not connected yet.",
-                        true
-                    );
-                } catch (error) {
-                    showMessage("emergencyMessage", error.message, true);
-                }
+        const payload = {
+          relationType:
+            document.getElementById("modalLinkRelation").value.trim() || null,
+          caregivingNotes:
+            document.getElementById("modalLinkNotes").value.trim() || null,
+          isPrimary: document.getElementById("modalLinkIsPrimary").checked,
+        };
+
+        try {
+          await window.MediCareAPI.apiPut(
+            `/profile/caregiver/patients/${linkId}`,
+            payload,
+          );
+          closeEditLinkModal();
+          await loadCaregiverPatients();
+        } catch (err) {
+          showAlert(
+            alertBox,
+            "✗ " + (err.message || "Error updating link"),
+            "error",
+          );
+        } finally {
+          btn.disabled = false;
+        }
+      }
+
+      // View permitted clinical profile for linked patient
+      async function openPatientClinicalModal(patientId, patientName) {
+        const modal = document.getElementById("patientClinicalModal");
+        const title = document.getElementById("clinicalModalTitle");
+        const content = document.getElementById("clinicalModalContent");
+        title.textContent = `Clinical Overview — ${patientName}`;
+        content.innerHTML =
+          '<p style="text-align:center;">Loading clinical records...</p>';
+        modal.classList.add("active");
+
+        try {
+          const [profile, medical] = await Promise.all([
+            window.MediCareAPI.apiGet(
+              `/profile/patient?patientId=${patientId}`,
+            ),
+            window.MediCareAPI.apiGet(
+              `/profile/patient/medical?patientId=${patientId}`,
+            ),
+          ]);
+
+          content.innerHTML = `
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:16px;">
+            <div class="stat-pill" style="text-align:left;">
+              <div class="stat-lbl">Blood Group</div>
+              <div class="stat-val" style="color:var(--primary);">${escapeHtml(medical?.bloodGroup || "Unknown")}</div>
+            </div>
+            <div class="stat-pill" style="text-align:left;">
+              <div class="stat-lbl">Primary Emergency Contact</div>
+              <div class="stat-val" style="font-size:14px;">${escapeHtml(profile?.primaryEmergencyPhone || "None registered")}</div>
+            </div>
+          </div>
+
+          <div style="margin-bottom:14px;">
+            <h4 style="font-size:13px; font-weight:700;">Doctor & Hospital</h4>
+            <p style="font-size:13px; color:var(--text-muted);">${escapeHtml(medical?.doctorName || "Not specified")} • ${escapeHtml(medical?.doctorContact || "No contact")} (${escapeHtml(medical?.hospitalOrClinicName || "Hospital not set")})</p>
+          </div>
+
+          <div style="margin-bottom:14px;">
+            <h4 style="font-size:13px; font-weight:700;">Existing Conditions</h4>
+            <div class="tags-container">
+              ${(medical?.medicalConditions || "None reported")
+                .split(",")
+                .map(
+                  (c) =>
+                    `<span class="info-tag">${escapeHtml(c.trim())}</span>`,
+                )
+                .join("")}
+            </div>
+          </div>
+
+          <div style="margin-bottom:14px;">
+            <h4 style="font-size:13px; font-weight:700;">Documented Allergies</h4>
+            <div class="tags-container">
+              ${(medical?.allergies || "None reported")
+                .split(",")
+                .map(
+                  (a) =>
+                    `<span class="info-tag warning">⚠️ ${escapeHtml(a.trim())}</span>`,
+                )
+                .join("")}
+            </div>
+          </div>
+
+          ${
+            medical?.medicalNotes
+              ? `
+            <div style="margin-top:14px; background:#f8fafc; padding:10px 12px; border-radius:8px; border-left:3px solid var(--primary);">
+              <h4 style="font-size:12px; font-weight:700;">Care Notes:</h4>
+              <p style="font-size:12.5px; color:var(--text-main); margin-top:2px;">${escapeHtml(medical.medicalNotes)}</p>
+            </div>
+          `
+              : ""
+          }
+        `;
+        } catch (err) {
+          content.innerHTML = `<p style="color:var(--danger); text-align:center;">Failed to load clinical details: ${escapeHtml(err.message || "Unauthorized")}</p>`;
+        }
+      }
+
+      function closeClinicalModal() {
+        document
+          .getElementById("patientClinicalModal")
+          .classList.remove("active");
+      }
+
+      // =========================================================
+      // NOTIFICATION PREFERENCES
+      // =========================================================
+      async function loadPreferences() {
+        try {
+          const prefs = await window.MediCareAPI.apiGet(
+            "/profile/caregiver/notification-preferences",
+          );
+          if (!prefs) return;
+
+          document.getElementById("prefDoseReminders").checked =
+            prefs.doseReminders !== false;
+          document.getElementById("prefCaregiverAlerts").checked =
+            prefs.caregiverAlerts !== false;
+          document.getElementById("prefLowStockAlerts").checked =
+            prefs.lowStockAlerts !== false;
+          document.getElementById("prefEmergencyAlerts").checked =
+            prefs.emergencyAlerts !== false;
+          document.getElementById("prefEmailNotifications").checked =
+            prefs.emailNotifications !== false;
+          document.getElementById("prefInAppNotifications").checked =
+            prefs.inAppNotifications !== false;
+          document.getElementById("prefWhatsAppReminders").checked =
+            !!prefs.whatsAppReminders;
+        } catch (err) {
+          console.error("Error loading notification preferences:", err);
+        }
+      }
+
+      async function handleSavePreferences(e) {
+        e.preventDefault();
+        const btn = document.getElementById("savePreferencesBtn");
+        const alertBox = document.getElementById("preferencesAlert");
+        btn.disabled = true;
+        showAlert(alertBox, "Saving notification preferences...", "info");
+
+        try {
+          const payload = {
+            doseReminders: document.getElementById("prefDoseReminders").checked,
+            caregiverAlerts: document.getElementById("prefCaregiverAlerts")
+              .checked,
+            missedDoseAlerts: document.getElementById("prefCaregiverAlerts")
+              .checked,
+            lowStockAlerts:
+              document.getElementById("prefLowStockAlerts").checked,
+            refillAlerts: document.getElementById("prefLowStockAlerts").checked,
+            emergencyAlerts: document.getElementById("prefEmergencyAlerts")
+              .checked,
+            emailNotifications: document.getElementById(
+              "prefEmailNotifications",
+            ).checked,
+            inAppNotifications: document.getElementById(
+              "prefInAppNotifications",
+            ).checked,
+            whatsAppReminders: document.getElementById("prefWhatsAppReminders")
+              .checked,
+          };
+
+          await window.MediCareAPI.apiPut(
+            "/profile/caregiver/notification-preferences",
+            payload,
+          );
+          showAlert(alertBox, "✓ Notification preferences updated!", "success");
+        } catch (err) {
+          showAlert(
+            alertBox,
+            "✗ " + (err.message || "Error saving preferences"),
+            "error",
+          );
+        } finally {
+          btn.disabled = false;
+        }
+      }
+
+      // =========================================================
+      // PASSWORD UPDATE & LOGOUT
+      // =========================================================
+      async function handleUpdatePassword(e) {
+        e.preventDefault();
+        const btn = document.getElementById("changePasswordBtn");
+        const alertBox = document.getElementById("passwordAlert");
+
+        const currentPassword =
+          document.getElementById("currentPassword").value;
+        const newPassword = document.getElementById("newPassword").value;
+        const confirmPassword =
+          document.getElementById("confirmPassword").value;
+
+        if (newPassword !== confirmPassword) {
+          showAlert(alertBox, "✗ New passwords do not match!", "error");
+          return;
+        }
+
+        btn.disabled = true;
+        showAlert(alertBox, "Updating password...", "info");
+
+        try {
+          await window.MediCareAPI.apiPost("/auth/change-password", {
+            currentPassword,
+            newPassword,
+            confirmPassword,
+          });
+
+          showAlert(alertBox, "✓ Password changed successfully!", "success");
+          document.getElementById("currentPassword").value = "";
+          document.getElementById("newPassword").value = "";
+          document.getElementById("confirmPassword").value = "";
+        } catch (err) {
+          showAlert(
+            alertBox,
+            "✗ " + (err.message || "Password update failed"),
+            "error",
+          );
+        } finally {
+          btn.disabled = false;
+        }
+      }
+
+      function handleLogout() {
+        if (
+          confirm("Are you sure you want to log out of your MediCare session?")
+        ) {
+          if (window.MediCareAPI && window.MediCareAPI.clearAuthToken) {
+            window.MediCareAPI.clearAuthToken();
+          } else {
+            localStorage.clear();
+          }
+          window.location.href = "login.html";
+        }
+      }
+
+      // =========================================================
+      // PROFILE PHOTO UPLOAD LISTENER
+      // =========================================================
+      function setupPhotoUploadListener() {
+        const input = document.getElementById("profilePhotoInput");
+        const alertBox = document.getElementById("photoStatusAlert");
+
+        input.addEventListener("change", async () => {
+          if (!input.files || input.files.length === 0) return;
+          const file = input.files[0];
+
+          // Client-side validations
+          if (file.size > 5 * 1024 * 1024) {
+            showAlert(
+              alertBox,
+              "✗ File exceeds 5 MB limit. Please select a smaller image.",
+              "error",
+            );
+            input.value = "";
+            return;
+          }
+
+          const validTypes = ["image/jpeg", "image/png", "image/webp"];
+          if (!validTypes.includes(file.type)) {
+            showAlert(
+              alertBox,
+              "✗ Unsupported file type. Please upload a .jpg, .png, or .webp image.",
+              "error",
+            );
+            input.value = "";
+            return;
+          }
+
+          showAlert(alertBox, "Uploading profile picture...", "info");
+
+          const formData = new FormData();
+          formData.append("file", file);
+
+          try {
+            const res = await window.MediCareAPI.apiFetch(
+              "/profile/photo",
+              "POST",
+              formData,
+            );
+            if (res && res.photoUrl) {
+              showAlert(
+                alertBox,
+                "✓ Profile photo updated successfully!",
+                "success",
+              );
+              const img = document.getElementById("heroAvatarImg");
+              const initials = document.getElementById("heroAvatarInitials");
+              img.src = res.photoUrl;
+              img.style.display = "block";
+              initials.style.display = "none";
             }
-        );
+          } catch (err) {
+            showAlert(
+              alertBox,
+              "✗ Upload failed: " + (err.message || "Server error"),
+              "error",
+            );
+          } finally {
+            input.value = "";
+          }
+        });
+      }
 
-        document.getElementById("notificationForm").addEventListener(
-            "submit",
-            async function (event) {
-                event.preventDefault();
+      // =========================================================
+      // UI HELPERS
+      // =========================================================
+      function updateHeroHeader(data) {
+        document.getElementById("heroFullName").innerHTML = `
+        ${escapeHtml(data.name || "User")}
+        <span class="role-badge role-${data.role.toLowerCase()}" id="heroRoleBadge">${data.role}</span>
+      `;
+        document.getElementById("heroEmail").textContent =
+          `✉️ ${data.email || "Email not set"}`;
+        document.getElementById("heroPhone").textContent =
+          `📞 ${data.phone || "Phone not set"}`;
+        document.getElementById("heroLocation").textContent =
+          `📍 ${data.location || "Location not set"}`;
 
-                const preferences = {
-                    doseReminders:
-                        document.querySelector('[name="doseReminders"]').checked,
-                    refillAlerts:
-                        document.querySelector('[name="refillAlerts"]').checked,
-                    caregiverAlerts:
-                        document.querySelector('[name="caregiverAlerts"]').checked
-                };
+        if (data.age) {
+          const ageEl = document.getElementById("heroAge");
+          ageEl.textContent = `🎂 ${data.age}`;
+          ageEl.style.display = "inline-flex";
+        }
 
-                try {
-                    /*
-                     * Save preferences using the actual backend API.
-                     */
+        // Avatar
+        const img = document.getElementById("heroAvatarImg");
+        const initials = document.getElementById("heroAvatarInitials");
+        if (data.photoUrl) {
+          img.src = data.photoUrl;
+          img.style.display = "block";
+          initials.style.display = "none";
+        } else {
+          img.style.display = "none";
+          initials.textContent =
+            (data.name || "U")
+              .split(" ")
+              .map((n) => n[0])
+              .join("")
+              .substring(0, 2)
+              .toUpperCase() || "U";
+          initials.style.display = "block";
+        }
 
-                    showMessage(
-                        "notificationMessage",
-                        "Notification preferences API is not connected yet.",
-                        true
-                    );
-                } catch (error) {
-                    showMessage("notificationMessage", error.message, true);
-                }
-            }
-        );
+        // Role specific stats
+        if (data.role === "PATIENT") {
+          document.getElementById("statCompletionBox").style.display = "block";
+          document.getElementById("statCompletionVal").textContent =
+            `${data.completion ?? 0}%`;
+          document.getElementById("statCompletionBar").style.width =
+            `${data.completion ?? 0}%`;
 
-        document.getElementById("logoutButton").addEventListener(
-            "click",
-            function () {
-                /*
-                 * Connect this to your existing authentication logout flow.
-                 * Do not assume the login page URL or token storage method.
-                 */
+          document.getElementById("statAdherenceBox").style.display = "block";
+          document.getElementById("statAdherenceVal").textContent =
+            data.adherence != null ? `${data.adherence}%` : "--";
 
-                window.location.href = "index.html";
-            }
-        );
+          document.getElementById("statMedicinesBox").style.display = "block";
+          document.getElementById("statMedicinesVal").textContent =
+            data.activeMeds ?? 0;
 
-        loadSettings();
+          document.getElementById("statCaregiversBox").style.display = "block";
+          document.getElementById("statCaregiversVal").textContent =
+            data.caregivers ?? 0;
+        } else {
+          document.getElementById("statPatientsBox").style.display = "block";
+          document.getElementById("statPatientsVal").textContent =
+            data.linkedPatientsCount ?? 0;
+
+          document.getElementById("statAccountCreatedBox").style.display =
+            "block";
+          document.getElementById("statAccountCreatedVal").textContent =
+            data.createdAt || "Active";
+        }
+      }
+
+      function showAlert(box, msg, type) {
+        if (!box) return;
+        box.textContent = msg;
+        box.className = "status-alert " + type;
+        box.style.display = "flex";
+        if (type === "success") {
+          setTimeout(() => {
+            box.style.display = "none";
+          }, 4500);
+        }
+      }
+
+      function escapeHtml(str) {
+        if (!str) return "";
+        return String(str)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
+      }
     </script>
-</body>
+  </body>
 </html>
