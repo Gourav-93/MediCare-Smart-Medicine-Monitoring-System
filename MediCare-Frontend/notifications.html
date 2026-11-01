@@ -1,513 +1,606 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MediCare - Notification & Alert Center</title>
-  
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MediCare - Notification & Alert Center</title>
 
-  <!-- Common MediCare Design Tokens & Core Styles -->
-  <link rel="stylesheet" href="css/common.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
 
-  <style>
-    :root {
-      --primary: #0284c7;
-      --primary-dark: #0369a1;
-      --primary-light: #e0f2fe;
-      --danger: #dc2626;
-      --danger-light: #fee2e2;
-      --success: #16a34a;
-      --success-light: #dcfce7;
-      --warning: #d97706;
-      --warning-light: #fef3c7;
-      --text-main: #0f172a;
-      --text-muted: #64748b;
-      --bg: #f8fafc;
-      --surface: #ffffff;
-      --border: #e2e8f0;
-      --radius: 12px;
-      --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-      --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-    }
+    <!-- Common MediCare Design Tokens & Core Styles -->
+    <link rel="stylesheet" href="css/common.css" />
+    <link rel="stylesheet" href="css/ai-chatbot.css" />
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: 'Plus Jakarta Sans', sans-serif;
-    }
+    <style>
+      :root {
+        --primary: #0284c7;
+        --primary-dark: #0369a1;
+        --primary-light: #e0f2fe;
+        --danger: #dc2626;
+        --danger-light: #fee2e2;
+        --success: #16a34a;
+        --success-light: #dcfce7;
+        --warning: #d97706;
+        --warning-light: #fef3c7;
+        --text-main: #0f172a;
+        --text-muted: #64748b;
+        --bg: #f8fafc;
+        --surface: #ffffff;
+        --border: #e2e8f0;
+        --radius: 12px;
+        --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+        --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+      }
 
-    body {
-      background-color: var(--bg);
-      color: var(--text-main);
-      min-height: 100vh;
-      overflow-x: hidden;
-      line-height: 1.5;
-    }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        font-family: "Plus Jakarta Sans", sans-serif;
+      }
 
-    /* Header */
-    .site-header {
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      background: rgba(255, 255, 255, 0.95);
-      backdrop-filter: blur(10px);
-      border-bottom: 1px solid var(--border);
-      height: 70px;
-      display: flex;
-      align-items: center;
-      padding: 0 clamp(16px, 4vw, 40px);
-    }
+      body {
+        background-color: var(--bg);
+        color: var(--text-main);
+        min-height: 100vh;
+        overflow-x: hidden;
+        line-height: 1.5;
+      }
 
-    .nav-container {
-      width: 100%;
-      max-width: 1380px;
-      margin: 0 auto;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
+      /* Header */
+      .site-header {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-bottom: 1px solid var(--border);
+        height: 70px;
+        display: flex;
+        align-items: center;
+        padding: 0 clamp(16px, 4vw, 40px);
+      }
 
-    .brand-logo {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      text-decoration: none;
-    }
+      .nav-container {
+        width: 100%;
+        max-width: 1380px;
+        margin: 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
 
-    .logo-icon {
-      width: 40px;
-      height: 40px;
-      background: linear-gradient(135deg, #0284c7, #0ea5e9);
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #ffffff;
-      font-weight: 800;
-      font-size: 20px;
-      box-shadow: 0 4px 10px rgba(2, 132, 199, 0.3);
-    }
+      .brand-logo {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        text-decoration: none;
+      }
 
-    .brand-text h1 {
-      font-size: 19px;
-      font-weight: 800;
-      color: var(--text-main);
-      line-height: 1.1;
-    }
+      .logo-icon {
+        width: 40px;
+        height: 40px;
+        background: linear-gradient(135deg, #0284c7, #0ea5e9);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #ffffff;
+        font-weight: 800;
+        font-size: 20px;
+        box-shadow: 0 4px 10px rgba(2, 132, 199, 0.3);
+      }
 
-    .brand-text span {
-      font-size: 11px;
-      font-weight: 600;
-      color: var(--primary);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
+      .brand-text h1 {
+        font-size: 19px;
+        font-weight: 800;
+        color: var(--text-main);
+        line-height: 1.1;
+      }
 
-    .desktop-nav-links {
-      display: flex;
-      align-items: center;
-      gap: 24px;
-      list-style: none;
-    }
+      .brand-text span {
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--primary);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
 
-    .desktop-nav-links a {
-      text-decoration: none;
-      color: var(--text-muted);
-      font-size: 14px;
-      font-weight: 600;
-      transition: color 0.2s;
-    }
-    .desktop-nav-links a.active { color: var(--primary); }
+      .desktop-nav-links {
+        display: flex;
+        align-items: center;
+        gap: 24px;
+        list-style: none;
+      }
 
-    .btn {
-      padding: 9px 16px;
-      border-radius: 8px;
-      font-size: 13.5px;
-      font-weight: 600;
-      cursor: pointer;
-      border: 1px solid transparent;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      text-decoration: none;
-      transition: all 0.2s;
-    }
-    .btn-primary { background: var(--primary); color: #fff; }
-    .btn-primary:hover { background: var(--primary-dark); }
-    .btn-ghost { background: transparent; color: var(--text-main); border-color: var(--border); }
-    .btn-ghost:hover { background: #f1f5f9; }
+      .desktop-nav-links a {
+        text-decoration: none;
+        color: var(--text-muted);
+        font-size: 14px;
+        font-weight: 600;
+        transition: color 0.2s;
+      }
+      .desktop-nav-links a.active {
+        color: var(--primary);
+      }
 
-    .btn-sos {
-      background: var(--danger);
-      color: #fff;
-      padding: 8px 14px;
-      font-size: 13px;
-      border-radius: 8px;
-    }
+      .btn {
+        padding: 9px 16px;
+        border-radius: 8px;
+        font-size: 13.5px;
+        font-weight: 600;
+        cursor: pointer;
+        border: 1px solid transparent;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        text-decoration: none;
+        transition: all 0.2s;
+      }
+      .btn-primary {
+        background: var(--primary);
+        color: #fff;
+      }
+      .btn-primary:hover {
+        background: var(--primary-dark);
+      }
+      .btn-ghost {
+        background: transparent;
+        color: var(--text-main);
+        border-color: var(--border);
+      }
+      .btn-ghost:hover {
+        background: #f1f5f9;
+      }
 
-    /* Mobile Controls */
-    .mobile-actions { display: none; align-items: center; gap: 8px; }
-    .hamburger-btn {
-      width: 40px;
-      height: 40px;
-      border-radius: 8px;
-      border: 1px solid var(--border);
-      background: #ffffff;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 5px;
-      cursor: pointer;
-    }
-    .hamburger-btn span {
-      width: 18px;
-      height: 2px;
-      background: var(--text-main);
-      border-radius: 2px;
-    }
+      .btn-sos {
+        background: var(--danger);
+        color: #fff;
+        padding: 8px 14px;
+        font-size: 13px;
+        border-radius: 8px;
+      }
 
-    /* Mobile Drawer */
-    .mobile-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(15, 23, 42, 0.45);
-      backdrop-filter: blur(4px);
-      z-index: 200;
-      opacity: 0;
-      visibility: hidden;
-      transition: all 0.3s;
-    }
-    .mobile-overlay.active { opacity: 1; visibility: visible; }
+      /* Mobile Controls */
+      .mobile-actions {
+        display: none;
+        align-items: center;
+        gap: 8px;
+      }
+      .hamburger-btn {
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+        background: #ffffff;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+        cursor: pointer;
+      }
+      .hamburger-btn span {
+        width: 18px;
+        height: 2px;
+        background: var(--text-main);
+        border-radius: 2px;
+      }
 
-    .mobile-drawer {
-      position: fixed;
-      top: 0;
-      right: -100%;
-      width: min(320px, 85vw);
-      height: 100%;
-      background: var(--surface);
-      z-index: 201;
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      transition: right 0.3s ease;
-    }
-    .mobile-drawer.active { right: 0; }
+      /* Mobile Drawer */
+      .mobile-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.45);
+        backdrop-filter: blur(4px);
+        z-index: 200;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s;
+      }
+      .mobile-overlay.active {
+        opacity: 1;
+        visibility: visible;
+      }
 
-    /* Page Container */
-    .page-wrapper {
-      max-width: 960px;
-      margin: 0 auto;
-      padding: clamp(16px, 3vw, 32px) clamp(16px, 4vw, 30px);
-    }
+      .mobile-drawer {
+        position: fixed;
+        top: 0;
+        right: -100%;
+        width: min(320px, 85vw);
+        height: 100%;
+        background: var(--surface);
+        z-index: 201;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        transition: right 0.3s ease;
+      }
+      .mobile-drawer.active {
+        right: 0;
+      }
 
-    .section-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 16px;
-      margin-bottom: 24px;
-    }
-    .section-title h2 {
-      font-size: clamp(22px, 3.5vw, 28px);
-      font-weight: 800;
-      letter-spacing: -0.5px;
-    }
-    .section-title p {
-      font-size: 13.5px;
-      color: var(--text-muted);
-    }
+      /* Page Container */
+      .page-wrapper {
+        max-width: 960px;
+        margin: 0 auto;
+        padding: clamp(16px, 3vw, 32px) clamp(16px, 4vw, 30px);
+      }
 
-    /* Filter Tabs & Mark All Actions */
-    .filter-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 12px;
-      margin-bottom: 20px;
-    }
+      .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 16px;
+        margin-bottom: 24px;
+      }
+      .section-title h2 {
+        font-size: clamp(22px, 3.5vw, 28px);
+        font-weight: 800;
+        letter-spacing: -0.5px;
+      }
+      .section-title p {
+        font-size: 13.5px;
+        color: var(--text-muted);
+      }
 
-    .tab-pills {
-      display: flex;
-      background: #e2e8f0;
-      border-radius: 8px;
-      padding: 3px;
-      gap: 2px;
-      flex-wrap: wrap;
-    }
-    .tab-btn {
-      padding: 7px 14px;
-      border-radius: 6px;
-      border: none;
-      font-size: 12.5px;
-      font-weight: 600;
-      background: transparent;
-      color: var(--text-muted);
-      cursor: pointer;
-    }
-    .tab-btn.active {
-      background: #fff;
-      color: var(--text-main);
-      box-shadow: var(--shadow-sm);
-    }
+      /* Filter Tabs & Mark All Actions */
+      .filter-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-bottom: 20px;
+      }
 
-    /* =========================================================
+      .tab-pills {
+        display: flex;
+        background: #e2e8f0;
+        border-radius: 10px;
+        padding: 4px;
+        gap: 4px;
+        flex-wrap: wrap;
+      }
+      .tab-btn {
+        min-height: 44px;
+        padding: 10px 18px;
+        border-radius: 8px;
+        border: none;
+        font-size: 13.5px;
+        font-weight: 700;
+        background: transparent;
+        color: var(--text-muted);
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+      }
+      .tab-btn:focus-visible {
+        outline: 3px solid var(--primary);
+        outline-offset: 2px;
+      }
+      .tab-btn.active {
+        background: #fff;
+        color: var(--text-main);
+        box-shadow: var(--shadow-sm);
+      }
+
+      /* =========================================================
        NOTIFICATION CARDS LIST
        ========================================================= */
-    .notif-list {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      margin-bottom: 40px;
-    }
+      .notif-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        margin-bottom: 40px;
+      }
 
-    .notif-card {
-      background: #ffffff;
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 16px 20px;
-      box-shadow: var(--shadow-sm);
-      display: flex;
-      align-items: flex-start;
-      gap: 16px;
-      transition: all 0.2s;
-      position: relative;
-    }
-    .notif-card:hover {
-      border-color: #cbd5e1;
-      box-shadow: var(--shadow-md);
-    }
+      .notif-card {
+        background: #ffffff;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 16px 20px;
+        box-shadow: var(--shadow-sm);
+        display: flex;
+        align-items: flex-start;
+        gap: 16px;
+        transition: all 0.2s;
+        position: relative;
+      }
+      .notif-card:hover {
+        border-color: #cbd5e1;
+        box-shadow: var(--shadow-md);
+      }
 
-    /* Unread Notification Styling */
-    .notif-card.unread {
-      background: #f8fbff;
-      border-left: 4px solid var(--primary);
-    }
-    .notif-card.unread::after {
-      content: '';
-      position: absolute;
-      top: 18px;
-      right: 18px;
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: var(--primary);
-    }
+      /* Unread Notification Styling */
+      .notif-card.unread {
+        background: #f8fbff;
+        border-left: 4px solid var(--primary);
+      }
+      .notif-card.unread::after {
+        content: "";
+        position: absolute;
+        top: 18px;
+        right: 18px;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--primary);
+      }
 
-    /* Urgent Emergency Styling */
-    .notif-card.emergency {
-      background: #fef2f2;
-      border-color: #fecaca;
-      border-left: 4px solid var(--danger);
-    }
+      /* Urgent Emergency Styling */
+      .notif-card.emergency {
+        background: #fef2f2;
+        border-color: #fecaca;
+        border-left: 4px solid var(--danger);
+      }
 
-    .notif-icon-box {
-      width: 44px;
-      height: 44px;
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 20px;
-      flex-shrink: 0;
-    }
-    .icon-primary { background: var(--primary-light); color: var(--primary-dark); }
-    .icon-danger { background: var(--danger-light); color: var(--danger); }
-    .icon-warning { background: var(--warning-light); color: var(--warning); }
-    .icon-success { background: var(--success-light); color: var(--success); }
+      .notif-icon-box {
+        width: 44px;
+        height: 44px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        flex-shrink: 0;
+      }
+      .icon-primary {
+        background: var(--primary-light);
+        color: var(--primary-dark);
+      }
+      .icon-danger {
+        background: var(--danger-light);
+        color: var(--danger);
+      }
+      .icon-warning {
+        background: var(--warning-light);
+        color: var(--warning);
+      }
+      .icon-success {
+        background: var(--success-light);
+        color: var(--success);
+      }
 
-    .notif-content {
-      flex: 1;
-      min-width: 0;
-    }
-    .notif-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 6px;
-      margin-bottom: 4px;
-    }
-    .notif-title {
-      font-size: 15px;
-      font-weight: 700;
-      color: var(--text-main);
-    }
-    .notif-time {
-      font-size: 11.5px;
-      color: var(--text-muted);
-      margin-right: 16px;
-    }
+      .notif-content {
+        flex: 1;
+        min-width: 0;
+      }
+      .notif-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-bottom: 4px;
+      }
+      .notif-title {
+        font-size: 15px;
+        font-weight: 700;
+        color: var(--text-main);
+      }
+      .notif-time {
+        font-size: 11.5px;
+        color: var(--text-muted);
+        margin-right: 16px;
+      }
 
-    .notif-desc {
-      font-size: 13px;
-      color: #334155;
-      line-height: 1.45;
-      margin-bottom: 10px;
-    }
+      .notif-desc {
+        font-size: 13px;
+        color: #334155;
+        line-height: 1.45;
+        margin-bottom: 10px;
+      }
 
-    .notif-actions {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-    .notif-actions .btn {
-      padding: 6px 12px;
-      font-size: 12px;
-    }
+      .notif-actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+      .notif-actions .btn {
+        min-height: 44px;
+        padding: 10px 16px;
+        font-size: 13.5px;
+        font-weight: 600;
+      }
 
-    /* =========================================================
+      /* =========================================================
        RESPONSIVE BREAKPOINTS (320px - 1366px+)
        ========================================================= */
-    @media (max-width: 1023px) {
-      .desktop-nav-links { display: none; }
-      .mobile-actions { display: flex; }
-    }
-
-    @media (max-width: 767px) {
-      .section-header { flex-direction: column; align-items: stretch; }
-      .filter-bar { flex-direction: column; align-items: stretch; }
-      .tab-pills { width: 100%; }
-      .tab-btn { flex: 1; text-align: center; }
-      .notif-card { flex-direction: column; gap: 12px; padding: 14px; }
-      .notif-actions { width: 100%; }
-      .notif-actions .btn { flex: 1; justify-content: center; }
-    }
-
-    @media (max-width: 374px) {
-      .brand-text h1 { font-size: 16px; }
-      .brand-text span { display: none; }
-      .notif-title { font-size: 14px; }
-      .notif-desc { font-size: 12.5px; }
-    }
-  </style>
-</head>
-<body>
-
-  <!-- ================= MODULAR GLOBAL HEADER ================= -->
-  <header id="global-header"></header>
-
-  <!-- ================= MAIN CONTENT ================= -->
-  <div class="page-wrapper">
-    <div class="section-header">
-      <div class="section-title">
-        <h2>Notification & Alert Center</h2>
-        <p>Real-time intake alerts, inventory notices, and emergency broadcasts.</p>
-      </div>
-      <button class="btn btn-ghost" style="border: 1px solid var(--border);" onclick="markAllRead()">
-        ✓ Mark All as Read
-      </button>
-    </div>
-
-    <!-- Filter Bar -->
-    <div class="filter-bar">
-      <div class="tab-pills">
-        <button class="tab-btn active" onclick="filterNotifs('all', this)">All (<span id="countAll">0</span>)</button>
-        <button class="tab-btn" onclick="filterNotifs('unread', this)">Unread (<span id="countUnread">0</span>)</button>
-        <button class="tab-btn" onclick="filterNotifs('emergency', this)">Emergencies 🚨</button>
-        <button class="tab-btn" onclick="filterNotifs('refill', this)">Refills ⚠️</button>
-      </div>
-    </div>
-
-    <!-- Notification Cards List (Live from MySQL) -->
-    <div class="notif-list" id="notifContainer">
-      <div style="text-align: center; padding: 40px; color: var(--text-muted);">
-        Loading live notifications from database...
-      </div>
-    </div>
-
-  </div>
-
-  <!-- Shared MediCare API & Modular Navbar Utilities -->
-  <script src="js/api.js"></script>
-  <script src="js/navbar.js"></script>
-
-  <!-- ================= LIVE NOTIFICATIONS DATABASE SCRIPT ================= -->
-  <script>
-    const API_URL = (window.MediCareAPI && window.MediCareAPI.API_BASE_URL) || 'http://localhost:5000/api';
-    let loadedNotifs = [];
-    let activeFilter = 'all';
-
-    async function loadNotifications() {
-      const container = document.getElementById('notifContainer');
-      try {
-        let notifs = [];
-        let meds = [];
-
-        if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
-          try {
-            notifs = await window.MediCareAPI.apiFetch('/notification');
-          } catch (e) {
-            console.warn('[Notifs] /notification fetch fallback:', e);
-          }
-          try {
-            meds = await window.MediCareAPI.apiFetch('/medicine');
-          } catch (e) {}
-        } else {
-          const token = localStorage.getItem('medicare_jwt_token');
-          const res = await fetch(`${API_URL}/notification`, {
-            headers: token ? { 'Authorization': `Bearer ${token}` } : {}
-          });
-          if (res.ok) notifs = await res.json();
-
-          const medRes = await fetch(`${API_URL}/medicine`, {
-            headers: token ? { 'Authorization': `Bearer ${token}` } : {}
-          });
-          if (medRes.ok) meds = await medRes.json();
+      @media (max-width: 1023px) {
+        .desktop-nav-links {
+          display: none;
         }
+        .mobile-actions {
+          display: flex;
+        }
+      }
 
-        const items = Array.isArray(notifs) ? notifs : [];
-        const medItems = Array.isArray(meds) ? meds : [];
+      @media (max-width: 767px) {
+        .section-header {
+          flex-direction: column;
+          align-items: stretch;
+          gap: 14px;
+        }
+        .section-header .btn {
+          width: auto !important;
+          align-self: center !important;
+          margin: 4px auto 0 !important;
+          padding: 7px 14px !important;
+          font-size: 12.5px !important;
+          min-height: 36px !important;
+          border-radius: 8px !important;
+        }
+        .filter-bar {
+          flex-direction: column;
+          align-items: stretch;
+        }
+        .tab-pills {
+          width: 100%;
+        }
+        .tab-btn {
+          flex: 1;
+          text-align: center;
+        }
+        .notif-card {
+          flex-direction: column;
+          gap: 12px;
+          padding: 14px;
+        }
+        .notif-actions {
+          width: 100%;
+        }
+        .notif-actions .btn {
+          flex: 1;
+          justify-content: center;
+          min-height: 36px !important;
+          padding: 6px 12px !important;
+          font-size: 12.5px !important;
+        }
+      }
 
-        // Synthesize low stock notifications for medicines with stock <= 5
-        const combined = [...items];
-        medItems.forEach(m => {
-          if (m.stock !== undefined && m.stock <= 5) {
-            combined.unshift({
-              id: 'med-' + m.id,
-              isGenerated: true,
-              title: `Critical Refill Alert: ${m.name}`,
-              message: `Inventory check: Only ${m.stock} units remaining for ${m.name}. Please order a refill soon.`,
-              type: 'Refill',
-              isRead: false,
-              createdAt: m.endDate || new Date().toISOString()
+      @media (max-width: 374px) {
+        .brand-text h1 {
+          font-size: 16px;
+        }
+        .brand-text span {
+          display: none;
+        }
+        .notif-title {
+          font-size: 14px;
+        }
+        .notif-desc {
+          font-size: 12.5px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- ================= MODULAR GLOBAL HEADER ================= -->
+    <header id="global-header"></header>
+
+    <!-- ================= MAIN CONTENT ================= -->
+    <div class="page-wrapper">
+      <div class="section-header">
+        <div class="section-title">
+          <h2>Notification & Alert Center</h2>
+          <p>
+            Real-time intake alerts, inventory notices, and emergency
+            broadcasts.
+          </p>
+        </div>
+        <button
+          class="btn btn-ghost"
+          style="border: 1px solid var(--border)"
+          onclick="markAllRead()"
+        >
+          ✓ Mark All as Read
+        </button>
+      </div>
+
+      <!-- Filter Bar -->
+      <div class="filter-bar">
+        <div class="tab-pills">
+          <button class="tab-btn active" onclick="filterNotifs('all', this)">
+            All (<span id="countAll">0</span>)
+          </button>
+          <button class="tab-btn" onclick="filterNotifs('unread', this)">
+            Unread (<span id="countUnread">0</span>)
+          </button>
+          <button class="tab-btn" onclick="filterNotifs('emergency', this)">
+            Emergencies 🚨
+          </button>
+          <button class="tab-btn" onclick="filterNotifs('refill', this)">
+            Refills ⚠️
+          </button>
+        </div>
+      </div>
+
+      <!-- Notification Cards List (Live from MySQL) -->
+      <div class="notif-list" id="notifContainer">
+        <div
+          style="text-align: center; padding: 40px; color: var(--text-muted)"
+        >
+          Loading live notifications from database...
+        </div>
+      </div>
+    </div>
+
+    <!-- Shared MediCare API, Modular Navbar, and Global AI Chatbot -->
+    <script src="js/api.js"></script>
+    <script src="js/navbar.js"></script>
+    <script src="js/ai-chatbot.js"></script>
+
+    <!-- ================= LIVE NOTIFICATIONS DATABASE SCRIPT ================= -->
+    <script>
+      const API_URL =
+        (window.MediCareAPI && window.MediCareAPI.API_BASE_URL) ||
+        "http://localhost:5000/api";
+      let loadedNotifs = [];
+      let activeFilter = "all";
+
+      async function loadNotifications() {
+        const container = document.getElementById("notifContainer");
+        try {
+          let notifs = [];
+          let meds = [];
+
+          if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
+            try {
+              notifs = await window.MediCareAPI.apiFetch("/notification");
+            } catch (e) {
+              console.warn("[Notifs] /notification fetch fallback:", e);
+            }
+            try {
+              meds = await window.MediCareAPI.apiFetch("/medicine");
+            } catch (e) {}
+          } else {
+            const token = localStorage.getItem("medicare_jwt_token");
+            const res = await fetch(`${API_URL}/notification`, {
+              headers: token ? { Authorization: `Bearer ${token}` } : {},
             });
-          }
-        });
+            if (res.ok) notifs = await res.json();
 
-        loadedNotifs = combined;
-        renderNotifications(loadedNotifs);
-      } catch (err) {
-        console.error('[Notifs] Error loading:', err);
-        container.innerHTML = `
+            const medRes = await fetch(`${API_URL}/medicine`, {
+              headers: token ? { Authorization: `Bearer ${token}` } : {},
+            });
+            if (medRes.ok) meds = await medRes.json();
+          }
+
+          loadedNotifs = Array.isArray(notifs) ? notifs : [];
+          renderNotifications(loadedNotifs);
+        } catch (err) {
+          console.error("[Notifs] Error loading:", err);
+          container.innerHTML = `
           <div style="text-align: center; padding: 40px; color: var(--text-muted);">
             No notifications found in the database.
           </div>
         `;
+        }
       }
-    }
 
-    function renderNotifications(notifs) {
-      const container = document.getElementById('notifContainer');
-      container.innerHTML = '';
+      function renderNotifications(notifs) {
+        const container = document.getElementById("notifContainer");
+        container.innerHTML = "";
 
-      let unread = 0;
-      notifs.forEach(n => {
-        if (!n.isRead) unread++;
-      });
+        let unread = 0;
+        notifs.forEach((n) => {
+          if (!n.isRead) unread++;
+        });
 
-      document.getElementById('countAll').innerText = notifs.length;
-      document.getElementById('countUnread').innerText = unread;
+        document.getElementById("countAll").innerText = notifs.length;
+        document.getElementById("countUnread").innerText = unread;
 
-      if (notifs.length === 0) {
-        container.innerHTML = `
+        if (notifs.length === 0) {
+          container.innerHTML = `
           <div style="text-align: center; padding: 50px 20px; background: #fff; border-radius: var(--radius); border: 1px dashed var(--border);">
             <div style="font-size: 32px; margin-bottom: 8px;">🔔</div>
             <div style="font-size: 16px; font-weight: 700;">No Notifications</div>
@@ -516,154 +609,188 @@
             </div>
           </div>
         `;
-        return;
-      }
-
-      notifs.forEach(n => {
-        const type = (n.type || '').toLowerCase();
-        const isEmergency = type.includes('emergency');
-        const isRefill = type.includes('refill');
-        const isDose = type.includes('medicine') || type.includes('dose');
-
-        let category = 'system';
-        let icon = '🔔';
-        let iconClass = 'icon-primary';
-
-        if (isEmergency) {
-          category = 'emergency';
-          icon = '🚨';
-          iconClass = 'icon-danger';
-        } else if (isRefill) {
-          category = 'refill';
-          icon = '⚠️';
-          iconClass = 'icon-warning';
-        } else if (isDose) {
-          category = 'dose';
-          icon = '💊';
-          iconClass = 'icon-primary';
+          return;
         }
 
-        const timeStr = n.createdAt ? new Date(n.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Recent';
+        notifs.forEach((n) => {
+          const type = (n.type || "").toLowerCase();
+          const isEmergency = type.includes("emergency");
+          const isRefill = type.includes("refill") || type.includes("stock");
+          const isDose =
+            type.includes("medicine") ||
+            type.includes("dose") ||
+            type.includes("reminder") ||
+            type.includes("missed");
 
-        const card = document.createElement('div');
-        card.className = `notif-card ${isEmergency ? 'emergency' : ''} ${n.isRead ? '' : 'unread'}`;
-        card.setAttribute('data-category', category);
-        card.setAttribute('data-id', n.id);
+          let category = "system";
+          let icon = "🔔";
+          let iconClass = "icon-primary";
 
-        card.innerHTML = `
+          if (isEmergency) {
+            category = "emergency";
+            icon = "🚨";
+            iconClass = "icon-danger";
+          } else if (isRefill) {
+            category = "refill";
+            icon = "⚠️";
+            iconClass = "icon-warning";
+          } else if (isDose) {
+            category = "dose";
+            icon = "💊";
+            iconClass = "icon-primary";
+          }
+
+          const timeStr = n.createdAt
+            ? new Date(n.createdAt).toLocaleDateString("en-US", {
+                month: "short",
+                day: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+              })
+            : "Recent";
+
+          const card = document.createElement("div");
+          card.className = `notif-card ${isEmergency ? "emergency" : ""} ${n.isRead ? "" : "unread"}`;
+          card.setAttribute("data-category", category);
+          card.setAttribute("data-id", n.id);
+
+          card.innerHTML = `
           <div class="notif-icon-box ${iconClass}">${icon}</div>
           <div class="notif-content">
             <div class="notif-header">
-              <div class="notif-title">${escapeHtml(n.title || 'Notification')}</div>
+              <div class="notif-title">${escapeHtml(n.title || "Notification")}</div>
               <span class="notif-time">${timeStr}</span>
             </div>
-            <div class="notif-desc">${escapeHtml(n.message || '')}</div>
+            <div class="notif-desc">${escapeHtml(n.message || "")}</div>
             <div class="notif-actions">
-              ${!n.isRead ? `<button class="btn btn-ghost" onclick="markCardAsRead('${n.id}', this)">Mark Read</button>` : ''}
-              ${isEmergency ? `<a href="emergency.html" class="btn btn-primary" style="background: var(--danger);">Open Emergency Hub</a>` : ''}
-              ${isRefill ? `<a href="medicines.html" class="btn btn-ghost" style="color: var(--primary);">View Inventory</a>` : ''}
+              ${!n.isRead ? `<button class="btn btn-ghost" onclick="markCardAsRead('${n.id}', this)">Mark Read</button>` : ""}
+              ${isEmergency ? `<a href="${window.MediCareAPI && window.MediCareAPI.getUserRole && window.MediCareAPI.getUserRole() === "CAREGIVER" ? "caregiver-dashboard.html" : "emergency.html"}" class="btn btn-primary" style="background: var(--danger);">Open Emergency Hub</a>` : ""}
+              ${isRefill ? `<a href="medicines.html" class="btn btn-ghost" style="color: var(--primary);">View Inventory</a>` : ""}
             </div>
           </div>
         `;
 
-        container.appendChild(card);
-      });
+          container.appendChild(card);
+        });
 
-      applyCurrentFilter();
-    }
+        applyCurrentFilter();
+      }
 
-    async function markCardAsRead(id, btn) {
-      try {
-        if (!String(id).startsWith('med-')) {
+      async function markCardAsRead(id, btn) {
+        try {
+          if (!String(id).startsWith("med-")) {
+            if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
+              await window.MediCareAPI.apiFetch(
+                `/notification/${id}/read`,
+                "PUT",
+              );
+            } else {
+              const token = localStorage.getItem("medicare_jwt_token");
+              await fetch(`${API_URL}/notification/${id}/read`, {
+                method: "PUT",
+                headers: token ? { Authorization: `Bearer ${token}` } : {},
+              });
+            }
+          }
+          const card = btn.closest(".notif-card");
+          card.classList.remove("unread");
+          btn.remove();
+          updateCounts();
+        } catch (err) {
+          console.error("[Notif Read]", err);
+          const card = btn.closest(".notif-card");
+          card.classList.remove("unread");
+          btn.remove();
+          updateCounts();
+        }
+      }
+
+      async function markAllRead() {
+        try {
           if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
-            await window.MediCareAPI.apiFetch(`/notification/${id}/read`, 'PUT');
+            await window.MediCareAPI.apiFetch("/notification/read-all", "PUT");
           } else {
-            const token = localStorage.getItem('medicare_jwt_token');
-            await fetch(`${API_URL}/notification/${id}/read`, {
-              method: 'PUT',
-              headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+            const token = localStorage.getItem("medicare_jwt_token");
+            await fetch(`${API_URL}/notification/read-all`, {
+              method: "PUT",
+              headers: token ? { Authorization: `Bearer ${token}` } : {},
             });
           }
-        }
-        const card = btn.closest('.notif-card');
-        card.classList.remove('unread');
-        btn.remove();
-        updateCounts();
-      } catch (err) {
-        console.error('[Notif Read]', err);
-        const card = btn.closest('.notif-card');
-        card.classList.remove('unread');
-        btn.remove();
-        updateCounts();
-      }
-    }
-
-    async function markAllRead() {
-      try {
-        if (window.MediCareAPI && window.MediCareAPI.apiFetch) {
-          await window.MediCareAPI.apiFetch('/notification/read-all', 'PUT');
-        } else {
-          const token = localStorage.getItem('medicare_jwt_token');
-          await fetch(`${API_URL}/notification/read-all`, {
-            method: 'PUT',
-            headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+          document.querySelectorAll(".notif-card.unread").forEach((card) => {
+            card.classList.remove("unread");
+            const b = card.querySelector("button");
+            if (b) b.remove();
           });
+          updateCounts();
+          if (typeof showMediCareToast === "function") {
+            showMediCareToast("All notifications marked as read", "success");
+          } else {
+            alert("All notifications marked as read.");
+          }
+        } catch (err) {
+          console.error("[Notification read-all]", err);
+          // Still update UI locally for offline/mock friendliness with clear warning
+          document.querySelectorAll(".notif-card.unread").forEach((card) => {
+            card.classList.remove("unread");
+            const b = card.querySelector("button");
+            if (b) b.remove();
+          });
+          updateCounts();
+          if (typeof showMediCareToast === "function") {
+            showMediCareToast(
+              "Marked as read locally. Server could not be reached.",
+              "info",
+            );
+          } else {
+            alert("Marked as read locally (server was unreachable).");
+          }
         }
-        document.querySelectorAll('.notif-card.unread').forEach(card => {
-          card.classList.remove('unread');
-          const b = card.querySelector('button');
-          if (b) b.remove();
-        });
-        updateCounts();
-        alert('All notifications marked as read.');
-      } catch (err) {
-        console.error('[Notification read-all]', err);
-        document.querySelectorAll('.notif-card.unread').forEach(card => {
-          card.classList.remove('unread');
-          const b = card.querySelector('button');
-          if (b) b.remove();
-        });
-        updateCounts();
-        alert('All notifications marked as read.');
       }
-    }
 
-    function updateCounts() {
-      const unreadCount = document.querySelectorAll('.notif-card.unread').length;
-      document.getElementById('countUnread').innerText = unreadCount;
-    }
+      function updateCounts() {
+        const unreadCount =
+          document.querySelectorAll(".notif-card.unread").length;
+        document.getElementById("countUnread").innerText = unreadCount;
+      }
 
-    function filterNotifs(category, btn) {
-      activeFilter = category;
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      applyCurrentFilter();
-    }
+      function filterNotifs(category, btn) {
+        activeFilter = category;
+        document
+          .querySelectorAll(".tab-btn")
+          .forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        applyCurrentFilter();
+      }
 
-    function applyCurrentFilter() {
-      const cards = document.querySelectorAll('.notif-card');
-      cards.forEach(card => {
-        const isUnread = card.classList.contains('unread');
-        const cat = card.getAttribute('data-category');
+      function applyCurrentFilter() {
+        const cards = document.querySelectorAll(".notif-card");
+        cards.forEach((card) => {
+          const isUnread = card.classList.contains("unread");
+          const cat = card.getAttribute("data-category");
 
-        if (activeFilter === 'all') {
-          card.style.display = 'flex';
-        } else if (activeFilter === 'unread') {
-          card.style.display = isUnread ? 'flex' : 'none';
-        } else {
-          card.style.display = (cat === activeFilter) ? 'flex' : 'none';
-        }
+          if (activeFilter === "all") {
+            card.style.display = "flex";
+          } else if (activeFilter === "unread") {
+            card.style.display = isUnread ? "flex" : "none";
+          } else {
+            card.style.display = cat === activeFilter ? "flex" : "none";
+          }
+        });
+      }
+
+      function escapeHtml(str) {
+        if (!str) return "";
+        return String(str)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;");
+      }
+
+      document.addEventListener("DOMContentLoaded", () => {
+        loadNotifications();
+        setInterval(loadNotifications, 15000);
       });
-    }
-
-    function escapeHtml(str) {
-      if (!str) return '';
-      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-    }
-
-    document.addEventListener('DOMContentLoaded', () => {
-      loadNotifications();
-    });
-  </script>
-</body>
+    </script>
+  </body>
 </html>
