@@ -30,6 +30,10 @@ public class AppDbContext : DbContext
 
     public DbSet<EmailDeliveryLog> EmailDeliveryLogs { get; set; }
 
+    public DbSet<UserNotificationPreference> UserNotificationPreferences { get; set; }
+
+    public DbSet<EmergencyContact> EmergencyContacts { get; set; }
+
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -82,6 +86,20 @@ public class AppDbContext : DbContext
             .HasForeignKey(ms => ms.MedicineId)
             .OnDelete(DeleteBehavior.Cascade);
 
+        // Medicine -> MedicineLog (One-to-Many, Prevent Cascade Delete of History)
+        modelBuilder.Entity<MedicineLog>()
+            .HasOne(ml => ml.Medicine)
+            .WithMany(m => m.MedicineLogs)
+            .HasForeignKey(ml => ml.MedicineId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // Schedule -> MedicineLog (Optional One-to-Many)
+        modelBuilder.Entity<MedicineLog>()
+            .HasOne(ml => ml.Schedule)
+            .WithMany()
+            .HasForeignKey(ml => ml.ScheduleId)
+            .OnDelete(DeleteBehavior.SetNull);
+
         modelBuilder.Entity<EmergencyAlert>()
             .HasOne(e => e.Patient)
             .WithMany()
@@ -102,6 +120,18 @@ public class AppDbContext : DbContext
             .HasOne(e => e.MedicineSchedule)
             .WithMany()
             .HasForeignKey(e => e.MedicineScheduleId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<UserNotificationPreference>()
+            .HasOne(p => p.User)
+            .WithOne(u => u.NotificationPreference)
+            .HasForeignKey<UserNotificationPreference>(p => p.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<EmergencyContact>()
+            .HasOne(ec => ec.Patient)
+            .WithMany(p => p.EmergencyContacts)
+            .HasForeignKey(ec => ec.PatientId)
             .OnDelete(DeleteBehavior.Cascade);
     }
 }
