@@ -1,0 +1,481 @@
+/* ==========================================================================
+   MEDICARE PLATFORM - COMPACT FLOATING AI CHATBOT WIDGET STYLES
+   File: css/ai-chatbot.css
+   Description: Compact floating AI launcher (48-52px), streamlined chat panel
+                (320-360px W x 420-480px H), tight padding, readable fonts,
+                and responsive mobile viewport optimization (60-70% height).
+   ========================================================================== */
+
+/* 1. COMPACT FLOATING LAUNCHER BUTTON (48-52px) */
+.medicare-chat-launcher {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 9998;
+  width: 50px;
+  height: 50px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 50%;
+  box-shadow: 0 6px 18px -2px rgba(2, 132, 199, 0.42), 0 3px 8px rgba(15, 23, 42, 0.12);
+  cursor: pointer;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.medicare-chat-launcher:hover {
+  transform: translateY(-2px) scale(1.06);
+  box-shadow: 0 10px 24px -2px rgba(2, 132, 199, 0.52), 0 4px 10px rgba(15, 23, 42, 0.16);
+  background: linear-gradient(135deg, #0369a1 0%, #0284c7 100%);
+}
+
+.medicare-chat-launcher:active {
+  transform: translateY(0) scale(0.96);
+}
+
+.medicare-launcher-icon-wrap {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 23px;
+  line-height: 1;
+}
+
+.medicare-launcher-status-dot {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 9px;
+  height: 9px;
+  background: #22c55e;
+  border: 2px solid #0284c7;
+  border-radius: 50%;
+  box-shadow: 0 0 5px rgba(34, 197, 94, 0.8);
+  animation: pulse-dot 2s infinite;
+}
+
+@keyframes pulse-dot {
+  0% { transform: scale(0.92); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
+  70% { transform: scale(1.08); box-shadow: 0 0 0 5px rgba(34, 197, 94, 0); }
+  100% { transform: scale(0.92); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+}
+
+/* Hide bulky label to keep launcher button small and circular (48-52px) */
+.medicare-launcher-label {
+  display: none;
+}
+
+/* 2. COMPACT CHAT PANEL MODAL (320-360px W x 420-480px H) */
+.medicare-chat-panel {
+  position: fixed;
+  bottom: 78px;
+  right: 20px;
+  width: 340px;
+  height: 450px;
+  max-height: calc(100vh - 95px);
+  background: #ffffff;
+  border-radius: 14px;
+  box-shadow: 0 16px 36px -6px rgba(15, 23, 42, 0.22), 0 0 0 1px rgba(15, 23, 42, 0.08);
+  display: flex;
+  flex-direction: column;
+  z-index: 9999;
+  overflow: hidden;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  opacity: 0;
+  transform: translateY(12px) scale(0.96);
+  pointer-events: none;
+  visibility: hidden;
+  transition: opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              visibility 0.2s;
+}
+
+.medicare-chat-panel.active {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+  visibility: visible;
+}
+
+/* 3. COMPACT HEADER */
+.medicare-chat-header {
+  padding: 10px 14px;
+  background: linear-gradient(135deg, #0284c7, #0369a1);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  flex-shrink: 0;
+}
+
+.medicare-chat-header-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.medicare-chat-avatar {
+  width: 28px;
+  height: 28px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  flex-shrink: 0;
+}
+
+.medicare-chat-titles h3 {
+  font-size: 13px;
+  font-weight: 700;
+  margin: 0;
+  color: #ffffff;
+  line-height: 1.15;
+}
+
+.medicare-chat-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 500;
+  color: #bae6fd;
+}
+
+.medicare-chat-status-dot {
+  width: 6px;
+  height: 6px;
+  background: #4ade80;
+  border-radius: 50%;
+  display: inline-block;
+  box-shadow: 0 0 4px #4ade80;
+}
+
+.medicare-chat-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.medicare-chat-head-btn {
+  background: rgba(255, 255, 255, 0.15);
+  border: none;
+  color: #ffffff;
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.18s;
+}
+
+.medicare-chat-head-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(1.05);
+}
+
+/* 4. COMPACT SAFETY / COMPLIANCE BANNER */
+.medicare-chat-banner {
+  background: #f0fdf4;
+  border-bottom: 1px solid #bbf7d0;
+  color: #166534;
+  padding: 5px 11px;
+  font-size: 10.5px;
+  line-height: 1.3;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.medicare-chat-banner strong {
+  font-weight: 700;
+}
+
+/* 5. SCROLLABLE MESSAGES CONTAINER */
+.medicare-chat-messages {
+  flex: 1;
+  padding: 11px 13px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: #f8fafc;
+  scroll-behavior: smooth;
+  min-height: 0; /* Prevents container from blowing out flex parent */
+}
+
+.medicare-chat-messages::-webkit-scrollbar {
+  width: 5px;
+}
+.medicare-chat-messages::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+.medicare-chat-messages::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.medicare-chat-row {
+  display: flex;
+  gap: 6px;
+  max-width: 88%;
+  animation: fadeInMsg 0.18s ease-out forwards;
+}
+
+@keyframes fadeInMsg {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.medicare-chat-row.bot {
+  align-self: flex-start;
+}
+
+.medicare-chat-row.user {
+  align-self: flex-end;
+  flex-direction: row-reverse;
+}
+
+.medicare-chat-bubble {
+  padding: 8px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  line-height: 1.45;
+  word-break: break-word;
+}
+
+.medicare-chat-row.bot .medicare-chat-bubble {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  color: #0f172a;
+  border-top-left-radius: 3px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+}
+
+.medicare-chat-row.bot .medicare-chat-bubble p {
+  margin-bottom: 4px;
+}
+.medicare-chat-row.bot .medicare-chat-bubble p:last-child {
+  margin-bottom: 0;
+}
+.medicare-chat-row.bot .medicare-chat-bubble ul,
+.medicare-chat-row.bot .medicare-chat-bubble ol {
+  margin: 4px 0 4px 14px;
+  padding: 0;
+}
+.medicare-chat-row.bot .medicare-chat-bubble li {
+  margin-bottom: 2px;
+}
+.medicare-chat-row.bot .medicare-chat-bubble strong {
+  font-weight: 700;
+  color: #0369a1;
+}
+
+.medicare-chat-row.user .medicare-chat-bubble {
+  background: linear-gradient(135deg, #0284c7, #0369a1);
+  color: #ffffff;
+  border-top-right-radius: 3px;
+  box-shadow: 0 2px 5px rgba(2, 132, 199, 0.22);
+}
+
+.medicare-chat-timestamp {
+  font-size: 9.5px;
+  color: #94a3b8;
+  margin-top: 3px;
+  padding: 0 3px;
+}
+
+.medicare-chat-row.user .medicare-chat-timestamp {
+  text-align: right;
+}
+
+/* 6. COMPACT TYPING INDICATOR */
+.medicare-chat-typing {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 7px 11px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  border-top-left-radius: 3px;
+  width: fit-content;
+}
+
+.medicare-chat-typing-dot {
+  width: 5px;
+  height: 5px;
+  background: #0284c7;
+  border-radius: 50%;
+  animation: bounceDot 1.4s infinite ease-in-out both;
+}
+
+.medicare-chat-typing-dot:nth-child(1) { animation-delay: -0.32s; }
+.medicare-chat-typing-dot:nth-child(2) { animation-delay: -0.16s; }
+
+@keyframes bounceDot {
+  0%, 80%, 100% { transform: scale(0.6); opacity: 0.5; }
+  40% { transform: scale(1.1); opacity: 1; }
+}
+
+/* 7. COMPACT QUICK PROMPT CHIPS */
+.medicare-chat-prompts {
+  padding: 6px 10px;
+  background: #ffffff;
+  border-top: 1px solid #e2e8f0;
+  display: flex;
+  gap: 5px;
+  overflow-x: auto;
+  white-space: nowrap;
+  flex-shrink: 0;
+  -webkit-overflow-scrolling: touch;
+}
+
+.medicare-chat-prompts::-webkit-scrollbar {
+  height: 3px;
+}
+.medicare-chat-prompts::-webkit-scrollbar-thumb {
+  background: #e2e8f0;
+  border-radius: 2px;
+}
+
+.medicare-chat-chip {
+  padding: 4px 9px;
+  border-radius: 12px;
+  background: #f1f5f9;
+  color: #334155;
+  font-size: 10.5px;
+  font-weight: 600;
+  border: 1px solid #e2e8f0;
+  cursor: pointer;
+  transition: all 0.18s;
+  flex-shrink: 0;
+  font-family: inherit;
+}
+
+.medicare-chat-chip:hover {
+  background: #e0f2fe;
+  color: #0369a1;
+  border-color: #bae6fd;
+}
+
+/* 8. COMPACT INPUT FORM */
+.medicare-chat-input-bar {
+  padding: 7px 10px;
+  background: #ffffff;
+  border-top: 1px solid #e2e8f0;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.medicare-chat-input {
+  flex: 1;
+  padding: 7px 11px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 12px;
+  outline: none;
+  background: #f8fafc;
+  color: #0f172a;
+  font-family: inherit;
+  transition: border-color 0.18s, background-color 0.18s;
+}
+
+.medicare-chat-input:focus {
+  border-color: #0284c7;
+  background: #ffffff;
+  box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.15);
+}
+
+.medicare-chat-input:disabled {
+  background: #f1f5f9;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.medicare-chat-send-btn {
+  padding: 7px 13px;
+  background: linear-gradient(135deg, #0284c7, #0369a1);
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  transition: all 0.18s;
+  font-family: inherit;
+  flex-shrink: 0;
+}
+
+.medicare-chat-send-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #0369a1, #0284c7);
+  transform: translateY(-1px);
+}
+
+.medicare-chat-send-btn:disabled {
+  background: #94a3b8;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* 9. RESPONSIVE BREAKPOINTS (Mobile Viewport Optimization) */
+@media (max-width: 480px) {
+  .medicare-chat-launcher {
+    bottom: 14px;
+    right: 14px;
+    width: 46px;
+    height: 46px;
+  }
+
+  .medicare-launcher-icon-wrap {
+    font-size: 20px;
+  }
+
+  .medicare-chat-panel {
+    width: calc(100vw - 28px);
+    right: 14px;
+    bottom: 68px;
+    height: 65vh;
+    max-height: 70vh;
+    border-radius: 12px;
+  }
+
+  .medicare-chat-row {
+    max-width: 90%;
+  }
+
+  .medicare-chat-chip {
+    font-size: 10px;
+    padding: 3px 8px;
+  }
+}
+
+/* 10. PRINT MEDIA EXCLUSION */
+@media print {
+  .medicare-chat-launcher,
+  .medicare-chat-panel {
+    display: none !important;
+  }
+}
