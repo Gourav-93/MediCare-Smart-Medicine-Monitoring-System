@@ -1,98 +1,165 @@
 /* ==========================================================================
-   MEDICARE PLATFORM - SHARED DESIGN TOKENS & BASE CSS
+   MEDICARE PLATFORM - SHARED DESIGN TOKENS & BASE RESPONSIVE CSS
    File: css/common.css
-   Author: MediCare Frontend Engineering
-   Description: Global CSS variables, reset rules, shared UI primitives, 
-                reusable navigation header, and responsive mobile drawer.
+   Description: Clean medical-themed design system, typography, UI primitives,
+                reusable navigation header, mobile drawer, responsive wrappers.
    ========================================================================== */
 
-/* 1. GLOBAL DESIGN TOKENS */
+/* 1. GLOBAL DESIGN TOKENS (Simple Clean Medical Blue & White Palette) */
 :root {
-  /* Color Palette */
+  /* Primary Medical Blue & Accents */
   --primary: #0284c7;
   --primary-dark: #0369a1;
-  --primary-light: #e0f2fe;
-  
+  --primary-light: #f0f9ff;
+  --primary-subtle: #e0f2fe;
+
+  /* Status Colors (High Contrast WCAG AA compliant) */
   --danger: #dc2626;
   --danger-dark: #b91c1c;
-  --danger-light: #fee2e2;
-  
+  --danger-light: #fef2f2;
+  --danger-border: #fecaca;
+
   --success: #16a34a;
   --success-dark: #15803d;
-  --success-light: #dcfce7;
-  
+  --success-light: #f0fdf4;
+  --success-border: #bbf7d0;
+
   --warning: #d97706;
   --warning-dark: #b45309;
-  --warning-light: #fef3c7;
-  
-  --info: #0284c7;
-  --info-light: #e0f2fe;
+  --warning-light: #fffbeb;
+  --warning-border: #fde68a;
 
-  /* Neutrals */
+  --info: #0284c7;
+  --info-light: #f0f9ff;
+  --info-border: #bae6fd;
+
+  /* Neutrals - High Contrast for Elderly & Children */
   --text-main: #0f172a;
+  --text-secondary: #334155;
   --text-muted: #64748b;
   --bg: #f8fafc;
   --surface: #ffffff;
   --surface-alt: #f1f5f9;
   --border: #e2e8f0;
-  --border-focus: #94a3b8;
+  --border-focus: #0284c7;
 
   /* Typography & Layout Tokens */
-  --font-family: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --radius-sm: 6px;
-  --radius: 12px;
-  --radius-lg: 16px;
+  --font-family:
+    "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    sans-serif;
+  --radius-sm: 8px;
+  --radius: 10px;
+  --radius-lg: 14px;
   --radius-full: 9999px;
 
-  /* Elevation / Shadows */
-  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
-  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  /* Touch Target Standard */
+  --touch-target: 44px;
+
+  /* Subtle Clean Elevation */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.08), 0 1px 2px -1px rgba(0, 0, 0, 0.04);
+  --shadow-md:
+    0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08);
 }
 
-/* 2. UNIVERSAL RESET & BOX SIZING */
-*, *::before, *::after {
+/* 2. UNIVERSAL RESET, BOX SIZING & ACCESSIBILITY */
+*,
+*::before,
+*::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
   font-family: var(--font-family);
 }
 
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+  overflow-x: hidden;
+  width: 100%;
+  max-width: 100vw;
+}
+
 body {
   background-color: var(--bg);
   color: var(--text-main);
   min-height: 100vh;
+  width: 100%;
+  max-width: 100vw;
   overflow-x: hidden;
-  line-height: 1.5;
+  line-height: 1.6;
+  font-size: 15px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Accessible focus ring for keyboard navigation */
+:focus-visible {
+  outline: 3px solid var(--primary) !important;
+  outline-offset: 2px !important;
 }
 
 body.drawer-open {
   overflow: hidden !important;
 }
 
-/* 3. SHARED UI PRIMITIVES: BUTTONS */
+img,
+svg,
+canvas {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* 3. SHARED PAGE WRAPPERS & CONTAINERS */
+.page-wrapper,
+.page-container,
+.container {
+  width: 100%;
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 24px 20px 60px;
+}
+
+@media (max-width: 768px) {
+  .page-wrapper,
+  .page-container,
+  .container {
+    padding: 16px 14px 50px;
+  }
+}
+
+@media (max-width: 375px) {
+  .page-wrapper,
+  .page-container,
+  .container {
+    padding: 12px 10px 40px;
+  }
+}
+
+/* 4. SHARED UI PRIMITIVES: BUTTONS (Minimum 44px touch targets) */
 .btn {
+  min-height: var(--touch-target);
   padding: 10px 18px;
-  border-radius: 9px;
-  font-size: 14px;
+  border-radius: var(--radius);
+  font-size: 14.5px;
   font-weight: 600;
   cursor: pointer;
   border: 1px solid transparent;
-  transition: all 0.2s ease;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease,
+    box-shadow 0.15s ease;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
   text-decoration: none;
-  line-height: 1.2;
-}
-
-.btn:focus-visible {
-  outline: 2px solid var(--primary);
-  outline-offset: 2px;
+  line-height: 1.3;
+  white-space: nowrap;
+  user-select: none;
 }
 
 .btn:disabled {
@@ -102,157 +169,448 @@ body.drawer-open {
 }
 
 .btn-primary {
-  background: var(--primary);
+  background-color: var(--primary);
   color: #ffffff;
-  box-shadow: 0 4px 12px rgba(2, 132, 199, 0.25);
+  border-color: var(--primary);
 }
 
 .btn-primary:hover {
-  background: var(--primary-dark);
-  transform: translateY(-1px);
+  background-color: var(--primary-dark);
+  border-color: var(--primary-dark);
+  color: #ffffff;
 }
 
 .btn-ghost {
-  background: transparent;
+  background-color: #ffffff;
   color: var(--text-main);
   border-color: var(--border);
 }
 
 .btn-ghost:hover {
-  background: var(--surface-alt);
+  background-color: var(--surface-alt);
   color: var(--primary);
+  border-color: #cbd5e1;
 }
 
 .btn-success {
-  background: var(--success);
+  background-color: var(--success);
   color: #ffffff;
+  border-color: var(--success);
 }
 
 .btn-success:hover {
-  background: var(--success-dark);
+  background-color: var(--success-dark);
+  border-color: var(--success-dark);
 }
 
 .btn-danger {
-  background: var(--danger);
+  background-color: var(--danger);
   color: #ffffff;
+  border-color: var(--danger);
 }
 
 .btn-danger:hover {
-  background: var(--danger-dark);
+  background-color: var(--danger-dark);
+  border-color: var(--danger-dark);
+}
+
+.btn-danger-outline {
+  background-color: #ffffff;
+  color: var(--danger);
+  border-color: var(--danger-border);
+}
+
+.btn-danger-outline:hover {
+  background-color: var(--danger-light);
+  border-color: var(--danger);
+}
+
+.btn-warning {
+  background-color: var(--warning);
+  color: #ffffff;
+  border-color: var(--warning);
+}
+
+.btn-warning:hover {
+  background-color: var(--warning-dark);
+  border-color: var(--warning-dark);
 }
 
 .btn-snooze {
-  background: #ffffff;
+  background-color: #ffffff;
   border-color: #cbd5e1;
   color: var(--text-main);
 }
 
 .btn-snooze:hover {
-  background: var(--surface-alt);
+  background-color: var(--surface-alt);
 }
 
-/* SOS Panic Distress Button */
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 12px;
+  border-radius: var(--radius-sm);
+}
+
+/* SOS Panic Distress Button - Clean, Accessible and Distinct (>= 44px touch target) */
 .btn-sos {
-  background: var(--danger);
+  min-height: var(--touch-target);
+  background-color: var(--danger);
   color: #ffffff;
-  padding: 9px 16px;
-  font-size: 13.5px;
+  padding: 10px 18px;
+  font-size: 14px;
   font-weight: 700;
-  border-radius: 8px;
-  border: none;
+  border-radius: var(--radius);
+  border: 1px solid var(--danger-dark);
   cursor: pointer;
-  animation: pulse-sos 2s infinite;
-  box-shadow: 0 2px 10px rgba(220, 38, 38, 0.35);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 8px;
   text-decoration: none;
+  transition:
+    background-color 0.15s ease,
+    box-shadow 0.15s ease;
+  user-select: none;
 }
 
 .btn-sos:hover {
-  background: var(--danger-dark);
+  background-color: var(--danger-dark);
   color: #ffffff;
 }
 
-@keyframes pulse-sos {
-  0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.45); }
-  70% { box-shadow: 0 0 0 8px rgba(220, 38, 38, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
+.btn-help {
+  min-height: var(--touch-target);
+  background-color: var(--primary-light);
+  color: var(--primary-dark);
+  border: 1px solid var(--info-border);
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: var(--radius);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  text-decoration: none;
 }
 
-/* 4. SHARED UI PRIMITIVES: BADGES */
+.btn-help:hover {
+  background-color: var(--primary-subtle);
+  color: var(--primary-dark);
+}
+
+/* 5. SHARED UI PRIMITIVES: BADGES */
 .badge {
   display: inline-flex;
   align-items: center;
   gap: 6px;
   padding: 4px 10px;
-  border-radius: var(--radius-full);
-  font-size: 12px;
+  border-radius: var(--radius-sm);
+  font-size: 12.5px;
   font-weight: 700;
-  letter-spacing: 0.3px;
+  line-height: 1.25;
+}
+
+.badge-primary {
+  background-color: var(--primary-light);
+  color: var(--primary-dark);
+  border: 1px solid var(--info-border);
+}
+
+.badge-success {
+  background-color: var(--success-light);
+  color: var(--success-dark);
+  border: 1px solid var(--success-border);
+}
+
+.badge-danger {
+  background-color: var(--danger-light);
+  color: var(--danger-dark);
+  border: 1px solid var(--danger-border);
+}
+
+.badge-warning {
+  background-color: var(--warning-light);
+  color: var(--warning-dark);
+  border: 1px solid var(--warning-border);
+}
+
+/* Clear Status Badges for Medications */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: var(--radius-full);
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.status-badge.taken {
+  background-color: var(--success-light);
+  color: var(--success-dark);
+  border: 1px solid var(--success-border);
+}
+
+.status-badge.pending {
+  background-color: var(--warning-light);
+  color: var(--warning-dark);
+  border: 1px solid var(--warning-border);
+}
+
+.status-badge.missed {
+  background-color: var(--danger-light);
+  color: var(--danger-dark);
+  border: 1px solid var(--danger-border);
+}
+
+.status-badge.next {
+  background-color: #eff6ff;
+  color: #1d4ed8;
+  border: 1.5px solid #93c5fd;
+  box-shadow: 0 1px 3px rgba(29, 78, 216, 0.1);
+}
+
+.badge-role {
+  padding: 4px 10px;
+  font-size: 11.5px;
+  font-weight: 700;
+  border-radius: var(--radius-sm);
+  background-color: var(--primary-light);
+  color: var(--primary-dark);
+  border: 1px solid var(--info-border);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   text-transform: uppercase;
 }
 
-.badge-primary { background: var(--primary-light); color: var(--primary-dark); }
-.badge-success { background: var(--success-light); color: var(--success-dark); }
-.badge-danger { background: var(--danger-light); color: var(--danger-dark); }
-.badge-warning { background: var(--warning-light); color: var(--warning-dark); }
-
-.badge-role {
-  padding: 3px 8px;
-  font-size: 11px;
-  font-weight: 800;
-  border-radius: 6px;
-  background: var(--primary-light);
-  color: var(--primary-dark);
-  border: 1px solid rgba(2, 132, 199, 0.2);
+.badge-role.role-admin {
+  background-color: #f5f3ff;
+  color: #6d28d9;
+  border-color: #ddd6fe;
 }
 
-.pill-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background: #ffffff;
-  padding: 6px 14px;
-  border-radius: 30px;
-  font-size: 12.5px;
-  font-weight: 700;
-  color: var(--primary);
+.badge-role.role-caregiver {
+  background-color: #f0fdf4;
+  color: #15803d;
+  border-color: #bbf7d0;
+}
+
+.role-status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: var(--success);
+}
+
+/* 6. SHARED UI PRIMITIVES: CARDS & CONTAINERS */
+.card,
+.stat-card,
+.metric-card,
+.data-card,
+.table-card {
+  background-color: var(--surface);
   border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 22px;
   box-shadow: var(--shadow-sm);
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
-/* 5. MODULAR SITE NAVIGATION HEADER (GLASSMORPHIC & RESPONSIVE) */
+.card:hover,
+.stat-card:hover,
+.metric-card:hover {
+  border-color: #cbd5e1;
+}
+
+/* Dose Card Primitive (Used across Patient & Caregiver Dashboards) */
+.dose-card {
+  background-color: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 18px 20px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  transition: all 0.2s ease;
+}
+
+.dose-card:hover {
+  box-shadow: var(--shadow-md);
+  border-color: #cbd5e1;
+}
+
+.dose-card.taken {
+  background-color: #f7fee7;
+  border-color: #bef264;
+}
+
+.dose-card.missed {
+  background-color: #fff1f2;
+  border-color: #fecdd3;
+}
+
+.dose-card.next {
+  border-color: #38bdf8;
+  border-left-width: 6px;
+  background-color: #f0f9ff;
+}
+
+/* 7. SHARED UI PRIMITIVES: FORMS (Min 44px Touch Targets) */
+.form-group {
+  margin-bottom: 18px;
+}
+
+.form-group label,
+.form-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-main);
+  margin-bottom: 7px;
+}
+
+.form-control {
+  min-height: var(--touch-target);
+  width: 100%;
+  padding: 10px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 15px;
+  color: var(--text-main);
+  background-color: #ffffff;
+  outline: none;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.form-control:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.18);
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+@media (max-width: 640px) {
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+}
+
+/* 8. SHARED UI PRIMITIVES: TABLES (MOBILE RESPONSIVE) */
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin-bottom: 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background-color: #ffffff;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 13.5px;
+}
+
+th {
+  background-color: #f8fafc;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-main);
+  vertical-align: middle;
+}
+
+tr:last-child td {
+  border-bottom: none;
+}
+
+tbody tr:hover {
+  background-color: #f8fafc;
+}
+
+/* 9. SHARED UI PRIMITIVES: MODALS */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(15, 23, 42, 0.5);
+  z-index: 1000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.modal-backdrop.active {
+  display: flex;
+}
+
+.modal-box,
+.modal-dialog {
+  background-color: #ffffff;
+  width: 100%;
+  max-width: min(520px, calc(100vw - 32px));
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-lg);
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+@media (max-width: 480px) {
+  .modal-box,
+  .modal-dialog {
+    padding: 18px 14px;
+    max-width: calc(100vw - 20px);
+  }
+}
+
+/* 10. MODULAR SITE NAVIGATION HEADER */
 .site-header,
 #global-header {
   position: sticky;
   top: 0;
-  z-index: 1000;
-  background: rgba(255, 255, 255, 0.88);
-  backdrop-filter: blur(16px) saturate(180%);
-  -webkit-backdrop-filter: blur(16px) saturate(180%);
-  border-bottom: 1px solid rgba(226, 232, 240, 0.85);
-  height: 72px;
+  z-index: 900;
+  background-color: #ffffff;
+  border-bottom: 1px solid var(--border);
+  height: 64px;
   display: flex;
   align-items: center;
   padding: 0 clamp(16px, 3.5vw, 40px);
   width: 100%;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 2px 12px -2px rgba(15, 23, 42, 0.04);
-}
-
-.site-header.scrolled,
-#global-header.scrolled {
-  background: rgba(255, 255, 255, 0.96);
-  height: 66px;
-  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.08), 0 2px 6px -2px rgba(15, 23, 42, 0.04);
-  border-bottom-color: rgba(203, 213, 225, 0.9);
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
 }
 
 .nav-container {
   width: 100%;
-  max-width: 1380px;
+  max-width: 1280px;
   margin: 0 auto;
   display: flex;
   align-items: center;
@@ -264,43 +622,26 @@ body.drawer-open {
 .brand-logo {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   text-decoration: none;
   cursor: pointer;
   flex-shrink: 0;
   user-select: none;
-  transition: transform 0.2s ease, opacity 0.2s ease;
-}
-
-.brand-logo:hover {
-  opacity: 0.95;
 }
 
 .logo-icon {
-  width: 42px;
-  height: 42px;
-  background: linear-gradient(135deg, #0284c7 0%, #0369a1 40%, #0ea5e9 100%);
-  border-radius: 12px;
+  width: 38px;
+  height: 38px;
+  background-color: var(--primary);
+  border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
   justify-content: center;
   color: #ffffff;
   font-weight: 800;
-  font-size: 20px;
-  box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35);
-  border: 1px solid rgba(255, 255, 255, 0.35);
-  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
+  font-size: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
   flex-shrink: 0;
-}
-
-.brand-logo:hover .logo-icon {
-  transform: translateY(-2px) scale(1.05);
-  box-shadow: 0 8px 20px rgba(2, 132, 199, 0.45);
-}
-
-.logo-icon svg {
-  display: block;
-  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.15));
 }
 
 .brand-text {
@@ -310,33 +651,30 @@ body.drawer-open {
 }
 
 .brand-text h1 {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 800;
   color: var(--text-main);
   line-height: 1.15;
-  letter-spacing: -0.4px;
   margin: 0;
   display: flex;
   align-items: center;
 }
 
 .brand-text .brand-accent {
-  background: linear-gradient(135deg, #0284c7, #0ea5e9);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: var(--primary);
   display: inline-block !important;
 }
 
 .brand-text .brand-subtitle {
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.6px;
+  letter-spacing: 0.5px;
   display: flex;
   align-items: center;
   gap: 5px;
-  margin-top: 2px;
+  margin-top: 1px;
 }
 
 .brand-text .brand-subtitle::before {
@@ -345,70 +683,20 @@ body.drawer-open {
   width: 5px;
   height: 5px;
   border-radius: 50%;
-  background: #10b981;
-  box-shadow: 0 0 6px rgba(16, 185, 129, 0.7);
+  background-color: var(--success);
 }
 
-/* User Role Status Pill */
-.badge-role {
-  padding: 4px 10px;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.5px;
-  border-radius: 20px;
-  background: rgba(2, 132, 199, 0.08);
-  color: var(--primary-dark);
-  border: 1px solid rgba(2, 132, 199, 0.22);
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  margin-left: 6px;
-  text-transform: uppercase;
-  user-select: none;
-}
-
-.badge-role .role-status-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: #10b981;
-  box-shadow: 0 0 6px #10b981;
-  animation: pulse-role-dot 2s infinite;
-}
-
-@keyframes pulse-role-dot {
-  0% { transform: scale(0.95); opacity: 0.8; }
-  50% { transform: scale(1.25); opacity: 1; }
-  100% { transform: scale(0.95); opacity: 0.8; }
-}
-
-.badge-role.role-admin {
-  background: rgba(99, 102, 241, 0.08);
-  color: #4f46e5;
-  border-color: rgba(99, 102, 241, 0.25);
-}
-.badge-role.role-admin .role-status-dot {
-  background: #6366f1;
-  box-shadow: 0 0 6px #6366f1;
-}
-
-.badge-role.role-caregiver {
-  background: rgba(14, 165, 233, 0.08);
-  color: #0369a1;
-  border-color: rgba(14, 165, 233, 0.25);
-}
-
-/* Segmented Desktop Navigation Links */
+/* Desktop Navigation Links */
 #global-header .desktop-nav-links,
 .site-header .desktop-nav-links {
   display: flex;
   align-items: center;
   gap: 4px;
   list-style: none;
-  background: rgba(241, 245, 249, 0.75);
-  padding: 4px 5px;
-  border-radius: 12px;
-  border: 1px solid rgba(226, 232, 240, 0.85);
+  background-color: var(--surface-alt);
+  padding: 3px 4px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
 }
 
 #global-header .desktop-nav-links li,
@@ -424,144 +712,100 @@ body.drawer-open {
   color: #475569;
   font-size: 13.5px;
   font-weight: 600;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   cursor: pointer;
-  padding: 7px 14px;
-  border-radius: 8px;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  position: relative;
   white-space: nowrap;
+  transition: all 0.15s ease;
 }
 
 #global-header .desktop-nav-links a:hover,
 .site-header .desktop-nav-links a:hover {
   color: var(--primary);
-  background: rgba(255, 255, 255, 0.9);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  transform: translateY(-0.5px);
+  background-color: #ffffff;
 }
 
 #global-header .desktop-nav-links a.active,
 .site-header .desktop-nav-links a.active {
   color: var(--primary-dark);
-  background: #ffffff;
+  background-color: #ffffff;
   font-weight: 700;
-  box-shadow: 0 2px 6px rgba(2, 132, 199, 0.12), 0 1px 2px rgba(0, 0, 0, 0.06);
+  box-shadow: var(--shadow-sm);
 }
 
-#global-header .desktop-nav-links a.active::after,
-.site-header .desktop-nav-links a.active::after {
-  display: none !important;
-}
-
-/* Desktop Action Clusters */
-.desktop-actions,
-.desktop-auth-actions {
+/* Header Right Cluster & Sign In Button */
+.header-right-cluster {
   display: flex;
   align-items: center;
   gap: 10px;
   flex-shrink: 0;
 }
 
-/* Polished header button variants */
-.site-header .btn {
-  padding: 8px 16px;
-  font-size: 13.5px;
-  font-weight: 600;
-  border-radius: 10px;
-  letter-spacing: -0.1px;
-}
-
-.site-header .btn-primary {
-  background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
-  color: #ffffff;
-  box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.site-header .btn-primary:hover {
-  background: linear-gradient(135deg, #0369a1 0%, #075985 100%);
-  transform: translateY(-1.5px);
-  box-shadow: 0 6px 18px rgba(2, 132, 199, 0.4);
-}
-
-.site-header .btn-ghost {
-  background: #ffffff;
-  border: 1px solid var(--border);
-  color: var(--text-main);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
-}
-
-.site-header .btn-ghost:hover {
-  background: var(--surface-alt);
-  color: var(--primary);
-  border-color: #cbd5e1;
-  transform: translateY(-1px);
-}
-
-.site-header .btn-sos {
-  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-  color: #ffffff;
-  padding: 8px 15px;
-  font-size: 13px;
-  font-weight: 700;
-  border-radius: 10px;
-  border: none;
-  animation: pulse-sos 2s infinite;
-  box-shadow: 0 3px 12px rgba(220, 38, 38, 0.35);
+.header-signin-btn {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  justify-content: center;
+  min-height: 44px;
+  padding: 8px 18px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 12px;
+  background-color: #ffffff;
+  border: 1.5px solid var(--border);
+  color: var(--text-main);
+  text-decoration: none;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 
-.site-header .btn-sos:hover {
-  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
-  transform: translateY(-1px);
+.header-signin-btn:hover {
+  background-color: var(--surface-alt);
+  border-color: #cbd5e1;
+  color: var(--primary);
 }
 
-/* 6. MOBILE ACTIONS & ANIMATED HAMBURGER */
-.mobile-actions {
-  display: none;
-  align-items: center;
-  gap: 8px;
-  flex-shrink: 0;
-}
-
+/* 11. 3-LINES HAMBURGER BUTTON */
 .hamburger-btn {
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
-  border: 1px solid var(--border);
-  background: #ffffff;
-  display: flex;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  border-radius: 12px;
+  border: 1.5px solid var(--border);
+  background-color: #ffffff;
+  display: flex !important;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 5px;
+  gap: 4.5px;
   cursor: pointer;
   padding: 0;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  flex-shrink: 0;
 }
 
 .hamburger-btn:hover {
-  background: var(--surface-alt);
+  background-color: var(--surface-alt);
   border-color: #cbd5e1;
-  transform: scale(1.02);
 }
 
 .hamburger-btn span {
   width: 18px;
   height: 2px;
-  background: var(--text-main);
+  background-color: var(--text-main);
   border-radius: 2px;
-  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;
+  transition:
+    transform 0.25s ease,
+    opacity 0.2s ease;
   transform-origin: center;
 }
 
-/* Hamburger to X morph */
 .hamburger-btn.active span:nth-child(1) {
   transform: translateY(7px) rotate(45deg);
 }
@@ -575,17 +819,17 @@ body.drawer-open {
   transform: translateY(-7px) rotate(-45deg);
 }
 
-/* 7. SLIDE-IN MOBILE DRAWER & FROSTED BACKDROP */
+/* 12. SLIDE-IN MOBILE DRAWER */
 .mobile-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(15, 23, 42, 0.55);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  background-color: rgba(15, 23, 42, 0.45);
   z-index: 1001;
   opacity: 0;
   visibility: hidden;
-  transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  transition:
+    opacity 0.25s ease,
+    visibility 0.25s ease;
 }
 
 .mobile-overlay.active {
@@ -597,18 +841,16 @@ body.drawer-open {
   position: fixed;
   top: 0;
   right: -100%;
-  width: min(340px, 86vw);
+  width: min(320px, 86vw);
   height: 100%;
-  background: #ffffff;
+  background-color: #ffffff;
   z-index: 1002;
   display: flex;
   flex-direction: column;
-  transition: right 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-  padding: 22px 18px;
-  box-shadow: -10px 0 35px rgba(0, 0, 0, 0.15);
+  transition: right 0.3s ease;
+  padding: 20px 16px;
+  box-shadow: -4px 0 20px rgba(0, 0, 0, 0.1);
   overflow-y: auto;
-  border-top-left-radius: 20px;
-  border-bottom-left-radius: 20px;
 }
 
 .mobile-drawer.active {
@@ -619,109 +861,90 @@ body.drawer-open {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-bottom: 16px;
+  padding-bottom: 14px;
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;
 }
 
 .close-btn {
-  background: var(--surface-alt);
+  background-color: var(--surface-alt);
   border: 1px solid var(--border);
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
   color: var(--text-muted);
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s ease;
+  font-size: 16px;
 }
 
 .close-btn:hover {
-  background: #fee2e2;
+  background-color: #fee2e2;
   color: #dc2626;
   border-color: #fecaca;
-  transform: rotate(90deg);
 }
 
 .drawer-links {
   list-style: none;
-  padding: 16px 0;
+  padding: 14px 0;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
   flex-grow: 1;
 }
 
 .drawer-links a {
   text-decoration: none;
   color: var(--text-main);
-  font-size: 14.5px;
+  font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  padding: 11px 14px;
-  border-radius: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
-  gap: 12px;
-  transition: all 0.2s ease;
-  border: 1px solid transparent;
+  gap: 10px;
+  transition: background-color 0.15s ease;
 }
 
 .drawer-links a:hover {
-  background: var(--surface-alt);
+  background-color: var(--surface-alt);
   color: var(--primary);
-  transform: translateX(3px);
 }
 
 .drawer-links a.active {
-  background: #e0f2fe;
-  color: #0369a1;
+  background-color: var(--primary-light);
+  color: var(--primary-dark);
   font-weight: 700;
-  border-color: rgba(2, 132, 199, 0.2);
-}
-
-.drawer-links a .drawer-link-icon {
-  font-size: 18px;
-  width: 26px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
+  border: 1px solid var(--info-border);
 }
 
 .drawer-auth,
 .drawer-footer {
   margin-top: auto;
-  padding-top: 16px;
+  padding-top: 14px;
   border-top: 1px solid var(--border);
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
   flex-shrink: 0;
 }
 
-/* 8. RESPONSIVE BREAKPOINTS FOR NAVIGATION */
+/* 13. RESPONSIVE BREAKPOINTS (ALL VIEWPORT WIDTHS) */
 @media (max-width: 1200px) {
   #global-header .desktop-nav-links a,
   .site-header .desktop-nav-links a {
-    padding: 6px 10px;
+    padding: 5px 9px;
     font-size: 13px;
-  }
-  .site-header .btn {
-    padding: 7px 13px;
-    font-size: 13px;
-  }
-  .nav-container {
-    gap: 10px;
   }
 }
 
 @media (max-width: 1024px) {
   .site-header,
   #global-header {
-    height: 66px;
+    height: 60px;
     padding: 0 16px;
   }
 
@@ -736,35 +959,19 @@ body.drawer-open {
   }
 }
 
-@media (max-width: 540px) {
+@media (max-width: 480px) {
   .brand-text .brand-subtitle {
     display: none !important;
   }
 
   .brand-text h1 {
-    font-size: 18px;
+    font-size: 17px;
   }
 
   .logo-icon {
-    width: 38px;
-    height: 38px;
-    border-radius: 10px;
-  }
-
-  .logo-icon svg {
-    width: 18px;
-    height: 18px;
-  }
-
-  .badge-role {
-    font-size: 10px;
-    padding: 3px 8px;
-  }
-}
-
-@media (max-width: 430px) {
-  .site-header .badge-role {
-    display: none !important;
+    width: 34px;
+    height: 34px;
+    font-size: 16px;
   }
 }
 
@@ -775,12 +982,12 @@ body.drawer-open {
   }
 
   .brand-text h1 {
-    font-size: 16px;
+    font-size: 15px;
   }
 
   .logo-icon {
-    width: 34px;
-    height: 34px;
+    width: 32px;
+    height: 32px;
   }
 
   .mobile-actions .btn-sos {
@@ -789,19 +996,863 @@ body.drawer-open {
   }
 
   .hamburger-btn {
-    width: 36px;
-    height: 36px;
+    width: 34px;
+    height: 34px;
   }
 }
 
-/* 9. PRINT MEDIA STYLES - GUARANTEES CLEAN PRINTOUTS */
+/* 14. ACCESSIBLE TOAST NOTIFICATIONS & HELP MODAL */
+.medicare-toast-container {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: min(420px, calc(100vw - 32px));
+  pointer-events: none;
+}
+
+.medicare-toast {
+  background-color: #ffffff;
+  color: var(--text-main);
+  border: 1.5px solid var(--border);
+  border-left: 6px solid var(--primary);
+  border-radius: var(--radius);
+  padding: 14px 18px;
+  box-shadow: var(--shadow-lg);
+  font-size: 14.5px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  pointer-events: auto;
+  animation: slideInUp 0.25s ease;
+}
+
+.medicare-toast.success {
+  border-left-color: var(--success);
+  background-color: #f0fdf4;
+}
+
+.medicare-toast.error {
+  border-left-color: var(--danger);
+  background-color: #fef2f2;
+}
+
+.medicare-toast.warning {
+  border-left-color: var(--warning);
+  background-color: #fffbeb;
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Help Modal Styling */
+.help-modal-content {
+  line-height: 1.6;
+  font-size: 14.5px;
+  color: var(--text-secondary);
+}
+
+.help-modal-content h4 {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-main);
+  margin-top: 14px;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.help-modal-content p {
+  margin-bottom: 10px;
+}
+
+.help-steps-list {
+  padding-left: 20px;
+  margin-bottom: 14px;
+}
+
+.help-steps-list li {
+  margin-bottom: 8px;
+}
+
+.emergency-quick-box {
+  background-color: var(--danger-light);
+  border: 1.5px solid var(--danger-border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  margin-top: 16px;
+}
+
+.emergency-quick-box strong {
+  color: #991b1b;
+  display: block;
+  font-size: 15px;
+  margin-bottom: 4px;
+}
+
+/* 15. PRINT STYLES */
 @media print {
   .site-header,
   #global-header,
+  .medicare-sidebar,
+  .medicare-mobile-topbar,
+  .sidebar-backdrop,
   .mobile-overlay,
   .mobile-drawer,
   .hamburger-btn,
   .no-print {
     display: none !important;
+  }
+  body.has-sidebar .page-wrapper,
+  body.has-sidebar .chat-wrapper,
+  body.has-sidebar .page-container {
+    margin-left: 0 !important;
+    width: 100% !important;
+    padding: 0 !important;
+  }
+}
+
+/* =========================================================
+   16. FIXED LEFT SIDEBAR DASHBOARD ARCHITECTURE
+   ========================================================= */
+
+/* Body with sidebar */
+body.has-sidebar {
+  display: block;
+  min-height: 100vh;
+  background-color: var(--bg);
+  overflow-x: hidden;
+}
+
+body.has-sidebar .site-header:not(.medicare-mobile-topbar),
+body.has-sidebar #global-header:not(.medicare-mobile-topbar) {
+  display: none !important;
+}
+
+/* Sidebar Container */
+.medicare-sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 260px;
+  background: #ffffff;
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  z-index: 1000;
+  overflow-y: auto;
+  overflow-x: hidden;
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 1px 0 4px rgba(0, 0, 0, 0.02);
+}
+
+/* Sidebar Brand Header */
+.sidebar-header {
+  padding: 18px 16px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #f1f5f9;
+  flex-shrink: 0;
+}
+
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+}
+
+.sidebar-logo-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #0284c7 0%, #0ea5e9 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  box-shadow: 0 3px 8px rgba(2, 132, 199, 0.2);
+  flex-shrink: 0;
+}
+
+.sidebar-brand-name {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--text-main);
+  letter-spacing: -0.3px;
+}
+
+.sidebar-role-pill {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2.5px 8px;
+  border-radius: 20px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+.sidebar-role-pill.role-patient {
+  background: #e0f2fe;
+  color: #0369a1;
+  border: 1px solid #bae6fd;
+}
+.sidebar-role-pill.role-caregiver {
+  background: #dcfce7;
+  color: #15803d;
+  border: 1px solid #bbf7d0;
+}
+.sidebar-role-pill.role-admin {
+  background: #fef3c7;
+  color: #b45309;
+  border: 1px solid #fde68a;
+}
+
+.sidebar-close-btn {
+  display: none;
+  background: #f1f5f9;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  font-size: 20px;
+  line-height: 1;
+  color: var(--text-main);
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Sidebar Navigation Items */
+.sidebar-nav {
+  padding: 12px 10px;
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sidebar-section-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: #94a3b8;
+  padding: 10px 12px 4px;
+}
+
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #475569;
+  text-decoration: none;
+  transition: all 0.15s ease;
+  min-height: 44px;
+}
+
+.sidebar-link:focus-visible {
+  outline: 3px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.sidebar-link:hover {
+  background-color: #f8fafc;
+  color: var(--text-main);
+}
+
+.sidebar-link.active {
+  background-color: #f0f9ff;
+  color: #0284c7;
+  font-weight: 700;
+}
+
+.sidebar-link-icon {
+  font-size: 17px;
+  width: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.sidebar-link.sos-link {
+  color: #dc2626;
+}
+.sidebar-link.sos-link:hover {
+  background-color: #fee2e2;
+  color: #b91c1c;
+}
+.sidebar-link.sos-link.active {
+  background-color: #fee2e2;
+  color: #b91c1c;
+}
+
+/* Sidebar Footer */
+.sidebar-footer {
+  padding: 12px 12px 14px;
+  border-top: 1px solid #f1f5f9;
+  background-color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.sidebar-user-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  background-color: #f8fafc;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+}
+
+.sidebar-user-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--primary-light);
+  color: var(--primary);
+  font-weight: 800;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.sidebar-user-meta {
+  flex: 1;
+  min-width: 0;
+}
+
+.sidebar-user-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sidebar-user-role {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: capitalize;
+}
+
+.sidebar-signout-btn {
+  width: 100%;
+  min-height: 42px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid #fecaca;
+  background: #ffffff;
+  color: #dc2626;
+  font-size: 13px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.sidebar-signout-btn:hover {
+  background: #fee2e2;
+}
+
+/* Backdrop */
+.sidebar-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(4px);
+  z-index: 999;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 0.25s ease,
+    visibility 0.25s ease;
+}
+.sidebar-backdrop.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Mobile Topbar */
+.medicare-mobile-topbar {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 56px;
+  background: #ffffff;
+  border-bottom: 1px solid var(--border);
+  z-index: 990;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 14px;
+}
+
+.mobile-bar-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.mobile-hamburger-btn {
+  width: 32px !important;
+  height: 32px !important;
+  min-width: 32px !important;
+  min-height: 32px !important;
+  border-radius: var(--radius-sm, 8px) !important;
+  border: 1px solid var(--border, #e2e8f0) !important;
+  background: #ffffff !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 3.5px !important;
+  cursor: pointer !important;
+  padding: 0 !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+  transition: all 0.15s ease !important;
+  flex-shrink: 0 !important;
+  box-sizing: border-box !important;
+}
+
+.mobile-hamburger-btn:hover,
+.mobile-hamburger-btn:active {
+  background: var(--surface-alt, #f8fafc) !important;
+  border-color: #cbd5e1 !important;
+}
+
+.mobile-hamburger-btn span {
+  width: 14px !important;
+  height: 1.8px !important;
+  background: var(--text-main, #0f172a) !important;
+  border-radius: 2px !important;
+  display: block !important;
+  margin: 0 !important;
+}
+
+.mobile-bar-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Main Content Wrapper in Sidebar Mode */
+body.has-sidebar .page-wrapper,
+body.has-sidebar .chat-wrapper,
+body.has-sidebar .page-container {
+  margin-left: 260px !important;
+  width: calc(100% - 260px) !important;
+  max-width: 1400px !important;
+  padding: 24px 32px 60px !important;
+  box-sizing: border-box !important;
+  transition:
+    margin-left 0.25s ease,
+    width 0.25s ease;
+}
+
+/* Tablet: 768px - 1023px */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .medicare-sidebar {
+    width: 220px;
+  }
+  body.has-sidebar .page-wrapper,
+  body.has-sidebar .chat-wrapper,
+  body.has-sidebar .page-container {
+    margin-left: 220px !important;
+    width: calc(100% - 220px) !important;
+    padding: 20px 20px 60px !important;
+  }
+}
+
+/* Mobile: < 768px */
+@media (max-width: 767px) {
+  .medicare-mobile-topbar {
+    display: flex;
+  }
+  .sidebar-close-btn {
+    display: flex;
+  }
+  .medicare-sidebar {
+    top: 0 !important;
+    bottom: auto !important;
+    left: auto !important;
+    right: 0 !important;
+    width: min(235px, 70vw) !important;
+    height: auto !important;
+    max-height: min(520px, 84vh) !important;
+    border-left: 1px solid var(--border) !important;
+    border-bottom: 1px solid var(--border) !important;
+    border-right: none !important;
+    border-top: none !important;
+    border-radius: 0 0 0 16px !important;
+    box-shadow: -4px 8px 24px rgba(15, 23, 42, 0.16) !important;
+    transform: translateX(100%) !important;
+    transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+  }
+  .medicare-sidebar.open {
+    transform: translateX(0) !important;
+  }
+
+  /* Compact Expanded Header / Brand Bar */
+  .medicare-sidebar .sidebar-header {
+    height: 52px !important;
+    padding: 0 12px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    border-bottom: 1px solid var(--border) !important;
+    flex-shrink: 0 !important;
+  }
+  .medicare-sidebar .sidebar-brand {
+    gap: 8px !important;
+  }
+  .medicare-sidebar .sidebar-logo-icon {
+    width: 28px !important;
+    height: 28px !important;
+    border-radius: 7px !important;
+  }
+  .medicare-sidebar .sidebar-logo-icon svg {
+    width: 15px !important;
+    height: 15px !important;
+  }
+  .medicare-sidebar .sidebar-brand-name {
+    font-size: 15px !important;
+    font-weight: 800 !important;
+  }
+  .medicare-sidebar .sidebar-role-pill {
+    font-size: 9.5px !important;
+    font-weight: 700 !important;
+    padding: 1.5px 6px !important;
+    border-radius: 10px !important;
+  }
+  .medicare-sidebar .sidebar-close-btn {
+    width: 28px !important;
+    height: 28px !important;
+    border-radius: 6px !important;
+    font-size: 18px !important;
+    line-height: 1 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background: var(--surface-alt, #f1f5f9) !important;
+    color: var(--text-muted, #64748b) !important;
+    border: 1px solid var(--border, #e2e8f0) !important;
+    cursor: pointer !important;
+    transition: all 0.15s ease !important;
+  }
+  .medicare-sidebar .sidebar-close-btn:hover {
+    background: #fee2e2 !important;
+    color: #dc2626 !important;
+    border-color: #fecaca !important;
+  }
+
+  /* Compact Section Titles & Nav Links inside Expanded Header */
+  .medicare-sidebar .sidebar-nav {
+    padding: 4px 6px !important;
+    gap: 1.5px !important;
+    flex: none !important;
+    overflow-y: visible !important;
+  }
+  .medicare-sidebar .sidebar-section-title {
+    font-size: 10px !important;
+    font-weight: 700 !important;
+    padding: 6px 8px 2px !important;
+    letter-spacing: 0.4px !important;
+  }
+  .medicare-sidebar .sidebar-link {
+    padding: 5px 8px !important;
+    min-height: 32px !important;
+    font-size: 12.5px !important;
+    gap: 7px !important;
+    border-radius: 6px !important;
+    font-weight: 600 !important;
+  }
+  .medicare-sidebar .sidebar-link-icon {
+    font-size: 14px !important;
+    width: 18px !important;
+  }
+
+  /* Compact User Profile & Sign Out Footer */
+  .medicare-sidebar .sidebar-footer {
+    padding: 6px 8px 10px !important;
+    gap: 6px !important;
+    border-top: 1px solid var(--border) !important;
+    flex-shrink: 0 !important;
+  }
+  .medicare-sidebar .sidebar-user-card {
+    padding: 4px 8px !important;
+    gap: 7px !important;
+    border-radius: 6px !important;
+  }
+  .medicare-sidebar .sidebar-user-avatar {
+    width: 24px !important;
+    height: 24px !important;
+    font-size: 10.5px !important;
+  }
+  .medicare-sidebar .sidebar-user-name {
+    font-size: 11.5px !important;
+    font-weight: 700 !important;
+    line-height: 1.2 !important;
+  }
+  .medicare-sidebar .sidebar-user-role {
+    font-size: 9.5px !important;
+    line-height: 1.2 !important;
+  }
+  .medicare-sidebar .sidebar-signout-btn {
+    min-height: 30px !important;
+    padding: 5px 8px !important;
+    font-size: 11.5px !important;
+    border-radius: 6px !important;
+    gap: 5px !important;
+  }
+  body.has-sidebar .page-wrapper,
+  body.has-sidebar .chat-wrapper,
+  body.has-sidebar .page-container {
+    margin-left: 0 !important;
+    width: 100% !important;
+    max-width: 100vw !important;
+    padding: 16px 14px 60px !important;
+    margin-top: 56px !important;
+    box-sizing: border-box !important;
+    overflow-x: hidden !important;
+  }
+
+  /* Universal Container & Card Bounds on Mobile */
+  .page-wrapper,
+  .chat-wrapper,
+  .page-container,
+  .container,
+  .dashboard-layout,
+  .routine-container,
+  .side-panel,
+  .table-card,
+  .table-responsive,
+  .card,
+  .p-stat-card,
+  .dose-card,
+  .empty-state,
+  .empty-box,
+  .empty-card,
+  .empty-state-card {
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    min-width: 0 !important;
+  }
+
+  /* Universal Badge & Schedule Callout Bounds on Mobile */
+  .status-badge {
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    white-space: normal !important;
+    word-break: break-word !important;
+    line-height: 1.35 !important;
+  }
+  #nextDoseCallout {
+    white-space: normal !important;
+    word-break: break-word !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    line-height: 1.35 !important;
+    display: inline-flex !important;
+  }
+
+  /* Universal Mobile Button Sizing: Compact, clean, comfortable 36-40px touch targets */
+  .btn,
+  a.btn,
+  button.btn {
+    min-height: 38px !important;
+    padding: 7px 14px !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    border-radius: var(--radius-sm, 8px) !important;
+    gap: 6px !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .btn svg,
+  a.btn svg,
+  button.btn svg {
+    width: 15px !important;
+    height: 15px !important;
+    flex-shrink: 0 !important;
+  }
+
+  /* Universal Mobile Compact Action & Section-Header Buttons across all pages */
+  .section-header {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 12px !important;
+  }
+  .section-header .btn,
+  .section-header > button,
+  .section-header > a.btn {
+    width: auto !important;
+    max-width: fit-content !important;
+    align-self: center !important;
+    margin: 4px auto 0 !important;
+    padding: 6px 14px !important;
+    font-size: 12.5px !important;
+    font-weight: 600 !important;
+    min-height: 34px !important;
+    height: 34px !important;
+    border-radius: 8px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Compact Table, Card & Grid Action Buttons */
+  tbody tr td .btn,
+  tbody tr td a.btn,
+  .table-card .btn,
+  .patient-card .btn,
+  .patient-card-actions .btn,
+  .card-actions .btn,
+  .med-actions .btn {
+    width: auto !important;
+    min-height: 32px !important;
+    height: 32px !important;
+    padding: 4px 10px !important;
+    font-size: 11.5px !important;
+    font-weight: 600 !important;
+    border-radius: 6px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    box-sizing: border-box !important;
+    gap: 4px !important;
+  }
+
+  /* Dose Action Buttons on Mobile: Clean 38px with wrap-prevention */
+  .dose-card .btn,
+  .dose-actions .btn {
+    min-height: 38px !important;
+    padding: 7px 12px !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    border-radius: 8px !important;
+    gap: 6px !important;
+    box-sizing: border-box !important;
+    white-space: normal !important;
+    word-break: break-word !important;
+    text-align: center !important;
+    line-height: 1.35 !important;
+    max-width: 100% !important;
+  }
+
+  /* Notification Action Buttons */
+  .notif-actions .btn {
+    min-height: 34px !important;
+    padding: 6px 12px !important;
+    font-size: 12px !important;
+    border-radius: 8px !important;
+    gap: 5px !important;
+  }
+
+  /* Empty State Buttons */
+  .empty-state .btn,
+  .empty-box .btn,
+  .empty-card .btn,
+  .empty-state-card .btn {
+    min-height: 36px !important;
+    padding: 7px 14px !important;
+    font-size: 12.5px !important;
+    font-weight: 600 !important;
+    border-radius: 8px !important;
+    white-space: normal !important;
+    word-break: break-word !important;
+    text-align: center !important;
+    line-height: 1.35 !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Header Actions Cluster */
+  .header-actions {
+    width: 100% !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    gap: 8px !important;
+    flex-wrap: wrap !important;
+    margin: 8px 0 0 !important;
+  }
+  .header-actions .btn {
+    width: auto !important;
+    max-width: fit-content !important;
+    margin: 0 !important;
+    padding: 6px 12px !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    min-height: 34px !important;
+    height: 34px !important;
+    border-radius: 8px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Modal Footer Buttons on Mobile */
+  .modal-footer .btn,
+  .modal-box .modal-footer .btn,
+  .modal-box .btn-submit,
+  .modal-box button[type="submit"] {
+    min-height: 38px !important;
+    padding: 7px 14px !important;
+    font-size: 13px !important;
+    border-radius: 8px !important;
+  }
+
+  /* Sidebar Sign Out Button on Mobile */
+  .sidebar-signout-btn {
+    min-height: 36px !important;
+    padding: 6px 12px !important;
+    font-size: 12.5px !important;
+    border-radius: 8px !important;
+    gap: 6px !important;
+  }
+
+  /* Tab Pills & Filter Buttons on Mobile */
+  .tab-btn,
+  .tab-pills .tab-btn,
+  .status-tabs .tab-item {
+    min-height: 32px !important;
+    padding: 5px 10px !important;
+    font-size: 12px !important;
+    border-radius: 6px !important;
   }
 }
