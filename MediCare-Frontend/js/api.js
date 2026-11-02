@@ -8,23 +8,30 @@
 (function (window) {
   'use strict';
 
-  // 1. CONFIGURATION CONSTANTS
-  // The .NET Core backend runs on port 5000 (and 5095).
-  // If the page is hosted by Kestrel itself (port 5000 or 5095), use relative origin.
-  // When running on VS Code Live Server (e.g. 5500, 5501) or other dev servers, point to http://localhost:5000/api.
+  // 1. DYNAMIC API BASE RESOLVER
+  // ASP.NET Core Kestrel typically listens on port 5000 and/or 5095 (or 7164 for HTTPS).
+  // If the web page is served directly from Kestrel, use window.location.origin.
+  // Otherwise, default to port 5000 with automatic fallback to port 5095 if 5000 is unavailable.
   function resolveApiBaseUrl() {
     if (typeof window !== 'undefined' && window.MEDICARE_API_BASE_URL) {
       return window.MEDICARE_API_BASE_URL;
     }
-    if (typeof window !== 'undefined' && window.location) {
+    if (typeof window !== 'undefined' && window.location && window.location.origin) {
+      const origin = window.location.origin;
       const port = String(window.location.port || '');
-      if (port === '5000' || port === '5095') {
-        return `${window.location.origin}/api`;
+      // If page is hosted on Kestrel (5000, 5095, 7164)
+      if (port === '5000' || port === '5095' || port === '7164') {
+        return `${origin}/api`;
+      }
+      // If hosted on localhost root/proxy
+      if ((origin.includes('localhost') || origin.includes('127.0.0.1')) && (!port || port === '80' || port === '443')) {
+        return `${origin}/api`;
       }
     }
     return 'http://localhost:5000/api';
   }
-  const API_BASE_URL = resolveApiBaseUrl();
+
+  let API_BASE_URL = resolveApiBaseUrl();
   const TOKEN_KEY = 'medicare_jwt_token';
   const USER_KEY = 'medicare_user';
   const ROLE_KEY = 'medicare_role';
@@ -69,7 +76,6 @@
   function setAuthToken(token, user = null) {
     if (!token) return;
     localStorage.setItem(TOKEN_KEY, token);
-    // Keep backwards compatibility with older scripts
     localStorage.setItem('jwtToken', token);
     localStorage.setItem('token', token);
 
@@ -156,7 +162,7 @@
 
   function getUserRole() {
     const token = getAuthToken();
-    if (!token) return null; // No role when not logged in
+    if (!token) return null;
     const user = getCurrentUser();
     if (user && user.role) return user.role.toUpperCase();
     const storedRole = localStorage.getItem(ROLE_KEY) || localStorage.getItem('userRole');
@@ -164,16 +170,10 @@
     return 'PATIENT';
   }
 
-  // 3. GENERIC API FETCH WRAPPER
+  // 3. GENERIC API FETCH WRAPPER WITH AUTO-RETRY ON BACKEND PORTS
   /**
    * Robust fetch wrapper with automatic JWT injection, error normalization,
-   * and 401 Unauthorized redirection.
-   *
-   * @param {string} endpoint - API path (e.g. '/medicine', 'dashboard/patient') or full URL
-   * @param {string} method - HTTP Verb: GET, POST, PUT, DELETE, PATCH
-   * @param {any} body - Request payload (Object, Array, FormData, or string)
-   * @param {object} options - Optional fetch configuration overrides
-   * @returns {Promise<any>} Cleanly parsed JSON response
+   * multi-port fallback (5000 <-> 5095), and 401 Unauthorized redirection.
    */
   async function apiFetch(endpoint, method = 'GET', body = null, options = {}) {
     // 1. Build Absolute URL
@@ -207,74 +207,130 @@
       fetchConfig.body = isFormData || typeof body === 'string' ? body : JSON.stringify(body);
     }
 
-    // 4. Execute Network Request
+    // 4. Execute Network Request with Fallback
+    let response;
     try {
-      const response = await fetch(url, fetchConfig);
-
-      // Handle 401 Unauthorized Session Expiry
-      if (response.status === 401) {
-        console.warn(`[MediCare API] 401 Unauthorized for endpoint: ${url}`);
-        clearAuthToken();
-        const currentPath = window.location.pathname.split('/').pop().toLowerCase();
-        if (currentPath !== 'login.html' && currentPath !== 'index.html' && currentPath !== '') {
-          window.location.href = `login.html?expired=true&redirect=${encodeURIComponent(currentPath)}`;
-        }
-        const error = new Error('Session expired or unauthorized. Please sign in again.');
-        error.status = 401;
-        throw error;
-      }
-
-      // Handle 204 No Content
-      if (response.status === 204) {
-        return { success: true };
-      }
-
-      // Parse Response (JSON or Text)
-      const contentType = response.headers.get('content-type') || '';
-      let data = null;
-      if (contentType.includes('application/json')) {
-        data = await response.json();
-      } else {
-        const rawText = await response.text();
+      response = await fetch(url, fetchConfig);
+    } catch (netErr) {
+      // If connection refused to port 5000, attempt fallback to port 5095 (or vice-versa)
+      if (url.includes('localhost:5000') || url.includes('127.0.0.1:5000')) {
+        const altUrl = url.replace(':5000', ':5095');
+        console.warn(`[MediCare API] Primary port 5000 failed. Retrying alternate port 5095: ${altUrl}`);
         try {
-          data = JSON.parse(rawText);
+          response = await fetch(altUrl, fetchConfig);
+          API_BASE_URL = API_BASE_URL.replace(':5000', ':5095');
         } catch {
-          data = rawText;
+          throw netErr;
+        }
+      } else if (url.includes('localhost:5095') || url.includes('127.0.0.1:5095')) {
+        const altUrl = url.replace(':5095', ':5000');
+        console.warn(`[MediCare API] Primary port 5095 failed. Retrying alternate port 5000: ${altUrl}`);
+        try {
+          response = await fetch(altUrl, fetchConfig);
+          API_BASE_URL = API_BASE_URL.replace(':5095', ':5000');
+        } catch {
+          throw netErr;
+        }
+      } else {
+        throw netErr;
+      }
+    }
+
+    // Handle 401 Unauthorized Session Expiry
+    if (response.status === 401) {
+      console.warn(`[MediCare API] 401 Unauthorized for endpoint: ${url}`);
+      clearAuthToken();
+      const currentPath = window.location.pathname.split('/').pop().toLowerCase();
+      if (currentPath !== 'login.html' && currentPath !== 'index.html' && currentPath !== '') {
+        window.location.href = `login.html?expired=true&redirect=${encodeURIComponent(currentPath)}`;
+      }
+      const error = new Error('Session expired or unauthorized. Please sign in again.');
+      error.status = 401;
+      throw error;
+    }
+
+    // Handle 204 No Content
+    if (response.status === 204) {
+      return { success: true };
+    }
+
+    // Parse Response (JSON or Text)
+    const contentType = response.headers.get('content-type') || '';
+    let data = null;
+    if (contentType.includes('application/json')) {
+      data = await response.json();
+    } else {
+      const rawText = await response.text();
+      try {
+        data = JSON.parse(rawText);
+      } catch {
+        data = rawText;
+      }
+    }
+
+    // Check HTTP Error Codes
+    if (!response.ok) {
+      let errorMessage =
+        (typeof data === 'string' && data.trim().length > 0 ? data.trim() : null) ||
+        (data && (data.message || data.title || data.error)) ||
+        `API Request failed with status ${response.status} (${response.statusText})`;
+
+      // Extract ASP.NET Core ModelState validation errors if present
+      if (data && data.errors && typeof data.errors === 'object') {
+        const errorList = Object.values(data.errors).flat().filter(Boolean);
+        if (errorList.length > 0) {
+          errorMessage = errorList.join(' ');
         }
       }
 
-      // Check HTTP Error Codes
-      if (!response.ok) {
-        const errorMessage =
-          (data && (data.message || data.title || data.error)) ||
-          `API Request failed with status ${response.status} (${response.statusText})`;
-        const error = new Error(errorMessage);
-        error.status = response.status;
-        error.data = data;
-        throw error;
-      }
-
-      return data;
-    } catch (err) {
-      console.error(`[MediCare API] Error during ${method} ${url}:`, err);
-      throw err;
+      const error = new Error(errorMessage);
+      error.status = response.status;
+      error.data = data;
+      throw error;
     }
+
+    return data;
   }
 
-  // 4. CONVENIENCE HTTP VERB HELPERS
+  // 4. AUTHENTICATION SERVICE SHORTCUTS
+  /**
+   * Log in user with email & password, storing token on success.
+   */
+  async function login(email, password) {
+    const res = await apiFetch('/auth/login', 'POST', {
+      email: (email || '').trim(),
+      password: password || '',
+    });
+    if (res && res.token) {
+      setAuthToken(res.token, res);
+    }
+    return res;
+  }
+
+  /**
+   * Register new Patient or Caregiver user.
+   */
+  async function register(dto) {
+    const res = await apiFetch('/auth/register', 'POST', {
+      name: (dto.name || '').trim(),
+      email: (dto.email || '').trim(),
+      password: dto.password || '',
+      role: (dto.role || 'PATIENT').trim().toUpperCase(),
+      phoneNumber: (dto.phoneNumber || dto.phone || '').trim() || null,
+    });
+    if (res && res.token) {
+      setAuthToken(res.token, res);
+    }
+    return res;
+  }
+
+  // 5. CONVENIENCE HTTP VERB HELPERS
   const apiGet = (endpoint, options) => apiFetch(endpoint, 'GET', null, options);
   const apiPost = (endpoint, body, options) => apiFetch(endpoint, 'POST', body, options);
   const apiPut = (endpoint, body, options) => apiFetch(endpoint, 'PUT', body, options);
   const apiDelete = (endpoint, options) => apiFetch(endpoint, 'DELETE', null, options);
 
-  // 5. ROLE-BASED ACCESS CONTROL GUARD
-  /**
-   * Guard a page based on authorized roles.
-   * Redirects unauthorized users to login.html or to their corresponding home dashboard.
-   *
-   * @param {string[]} allowedRoles - Array of allowed roles, e.g., ['PATIENT', 'CAREGIVER', 'ADMIN']
-   * @returns {boolean} True if authorized, false if redirected
-   */
+  // 6. ROLE-BASED ACCESS CONTROL GUARD
   function checkRole(allowedRoles = ['PATIENT', 'CAREGIVER', 'ADMIN']) {
     const currentPath = window.location.pathname.split('/').pop().toLowerCase();
     
@@ -312,9 +368,10 @@
     return true;
   }
 
-  // 6. EXPORT UTILITIES TO GLOBAL SCOPE
+  // 7. EXPORT UTILITIES TO GLOBAL SCOPE
   const MediCareAPI = {
     API_BASE_URL,
+    resolveApiBaseUrl,
     getAuthToken,
     setAuthToken,
     clearAuthToken,
@@ -326,6 +383,8 @@
     apiPost,
     apiPut,
     apiDelete,
+    login,
+    register,
     checkRole,
   };
 
