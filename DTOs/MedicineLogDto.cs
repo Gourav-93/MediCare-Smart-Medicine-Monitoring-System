@@ -4,6 +4,8 @@ public class MedicineLogDto
 {
     public int MedicineId { get; set; }
     public int PatientId { get; set; }
+    public int? ScheduleId { get; set; }
     public DateTime ScheduledTime { get; set; }
+    public DateTime? TakenTime { get; set; }
     public string Status { get; set; } = string.Empty;
 }
