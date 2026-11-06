@@ -9,6 +9,7 @@ public class PatientHistoryDto
     public string MealTiming { get; set; } = string.Empty;
     public DateTime ScheduledTime { get; set; }
     public DateTime? TakenTime { get; set; }
+    public int? ScheduleId { get; set; }
     public string Status { get; set; } = string.Empty;
     public int SnoozeCount { get; set; }
 }
