@@ -24,6 +24,14 @@ public class PatientDashboardDto
 
     public int MissedDoses { get; set; }
 
+    public int TodayTotalDoses { get; set; }
+
+    public int TodayTakenDoses { get; set; }
+
+    public int TodayMissedDoses { get; set; }
+
+    public int TodayPendingDoses { get; set; }
+
     public double AdherencePercentage { get; set; }
 
     public List<Medicine> LowStockMedicines { get; set; } = new();
