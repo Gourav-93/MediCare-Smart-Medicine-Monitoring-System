@@ -12,7 +12,7 @@ A smart medicine management and family-monitoring application designed to help p
 **ORM:** Entity Framework Core  
 **Database provider:** Pomelo.EntityFrameworkCore.MySql  
 **Authentication:** JWT Bearer Authentication  
-**API style:** REST  
+**API style:** REST  yuppppp
 **API testing:** Postman  
 **Architecture:** Layered architecture with controllers, services, repositories, data access, and background processing
 
