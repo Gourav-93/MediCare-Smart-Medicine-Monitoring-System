@@ -1,4 +1,6 @@
+using System.Collections.Generic;
 using MediCare.Data;
+
 namespace MediCare.Models;
 
 public class Caregiver
@@ -8,6 +10,8 @@ public class Caregiver
     public int UserId { get; set; }
 
     public string Relationship { get; set; } = string.Empty;
+
+    public string? PreferredContactMethod { get; set; }
 
     public User User { get; set; } = null!;
 
