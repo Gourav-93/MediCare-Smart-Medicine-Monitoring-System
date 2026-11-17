@@ -28,9 +28,13 @@ public class Medicine
         set => MealTimeing = value;
     }
 
+    public bool IsDeleted { get; set; } = false;
+
+    public DateTime? DeletedAt { get; set; }
+
     public ICollection<MedicineSchedule> MedicineSchedules { get; set; }
     = new List<MedicineSchedule>();
 
     public ICollection<MedicineLog> MedicineLogs { get; set; }
         = new List<MedicineLog>();
-}   
+}
