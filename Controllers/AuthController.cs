@@ -1,5 +1,7 @@
 using System.Security.Claims;
 using System.Security.Cryptography;
+using System.Text;
+using MySqlConnector;
 using MediCare.Data;
 using MediCare.DTOs;
 using MediCare.Models;
@@ -7,6 +9,7 @@ using MediCare.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 
 namespace MediCare.Controllers;
@@ -38,6 +41,7 @@ public class AuthController : ControllerBase
     // POST: api/Auth/register
     [AllowAnonymous]
     [HttpPost("register")]
+    [EnableRateLimiting("RegisterPolicy")]
     public async Task<IActionResult> Register(RegisterDto dto)
     {
         if (string.IsNullOrWhiteSpace(dto.Name) ||
@@ -54,7 +58,7 @@ public class AuthController : ControllerBase
         }
 
 
-        var email = dto.Email.Trim().ToLower();
+        var email = dto.Email.Trim().ToLowerInvariant();
 
         var existingUser = await _context.Users
             .FirstOrDefaultAsync(u =>
@@ -65,7 +69,7 @@ public class AuthController : ControllerBase
             return BadRequest(new { message = "Email already exists." });
         }
 
-        var role = dto.Role.Trim().ToUpper();
+        var role = dto.Role.Trim().ToUpperInvariant();
 
         // ADMIN cannot register publicly
         if (role != "PATIENT" && role != "CAREGIVER")
@@ -89,34 +93,47 @@ public class AuthController : ControllerBase
 
         _context.Users.Add(user);
 
-        await _context.SaveChangesAsync();
-
         if (role == "PATIENT")
         {
             var patient = new Patient
             {
-                UserId = user.Id,
+                User = user,
                 DateOfBirth = DateTime.Today,
                 EmergencyContact = dto.PhoneNumber?.Trim() ?? string.Empty
             };
             _context.Patients.Add(patient);
-            await _context.SaveChangesAsync();
         }
         else if (role == "CAREGIVER")
         {
             var caregiver = new Caregiver
             {
-                UserId = user.Id,
+                User = user,
                 Relationship = ""
             };
             _context.Caregivers.Add(caregiver);
+        }
+
+        // EF Core saves the user and related profile in one transaction.
+        try
+        {
             await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateException ex) when
+            (ex.InnerException is MySqlException { Number: 1062 })
+        {
+            if (await _context.Users.AnyAsync(u => u.Email.ToLower() == email))
+            {
+                return BadRequest(new { message = "Email already exists." });
+            }
+
+            throw;
         }
 
         var token = _jwtService.GenerateToken(
             user.Id,
             user.Email,
-            user.Role
+            user.Role,
+            user.TokenVersion
         );
 
         return Ok(new
@@ -133,6 +150,7 @@ public class AuthController : ControllerBase
     // POST: api/Auth/login
     [AllowAnonymous]
     [HttpPost("login")]
+    [EnableRateLimiting("LoginPolicy")]
     public async Task<IActionResult> Login(LoginDto dto)
     {
         if (string.IsNullOrWhiteSpace(dto.Email) ||
@@ -141,7 +159,7 @@ public class AuthController : ControllerBase
             return BadRequest(new { message = "Email and Password are required." });
         }
 
-        var email = dto.Email.Trim().ToLower();
+        var email = dto.Email.Trim().ToLowerInvariant();
 
         var user = await _context.Users
             .FirstOrDefaultAsync(u =>
@@ -163,10 +181,27 @@ public class AuthController : ControllerBase
             return Unauthorized(new { message = "Invalid email or password." });
         }
 
+        if (result == PasswordVerificationResult.SuccessRehashNeeded)
+        {
+            var oldHash = user.PasswordHash;
+            var upgradedHash = _passwordHasher.HashPassword(user, dto.Password);
+
+            var updated = await _context.Users
+                .Where(u => u.Id == user.Id && u.PasswordHash == oldHash)
+                .ExecuteUpdateAsync(setters => setters
+                    .SetProperty(u => u.PasswordHash, upgradedHash));
+
+            if (updated == 0)
+            {
+                return Unauthorized(new { message = "Invalid email or password." });
+            }
+        }
+
         var token = _jwtService.GenerateToken(
             user.Id,
             user.Email,
-            user.Role
+            user.Role,
+            user.TokenVersion
         );
 
         return Ok(new
@@ -189,6 +224,7 @@ public class AuthController : ControllerBase
     // POST: api/auth/change-password
     [Authorize]
     [HttpPost("change-password")]
+    [EnableRateLimiting("ChangePasswordPolicy")]
     public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto dto)
     {
         var userId = GetCurrentUserId();
@@ -231,8 +267,21 @@ public class AuthController : ControllerBase
             return BadRequest(new { message = "Current password is incorrect." });
         }
 
-        user.PasswordHash = _passwordHasher.HashPassword(user, dto.NewPassword);
-        await _context.SaveChangesAsync();
+        var oldHash = user.PasswordHash;
+        var newHash = _passwordHasher.HashPassword(user, dto.NewPassword);
+
+        var updated = await _context.Users
+            .Where(u => u.Id == userId && u.PasswordHash == oldHash)
+            .ExecuteUpdateAsync(setters => setters
+                .SetProperty(u => u.PasswordHash, newHash)
+                .SetProperty(u => u.TokenVersion, u => u.TokenVersion + 1)
+                .SetProperty(u => u.PasswordResetToken, (string?)null)
+                .SetProperty(u => u.PasswordResetTokenExpiry, (DateTime?)null));
+
+        if (updated == 0)
+        {
+            return BadRequest(new { message = "Current password is incorrect." });
+        }
 
         _logger.LogInformation("Password successfully changed for user {UserId}", user.Id);
 
@@ -242,6 +291,7 @@ public class AuthController : ControllerBase
     // POST: api/auth/forgot-password
     [AllowAnonymous]
     [HttpPost("forgot-password")]
+    [EnableRateLimiting("ForgotPasswordPolicy")]
     public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDto dto)
     {
         if (string.IsNullOrWhiteSpace(dto.Email))
@@ -249,13 +299,13 @@ public class AuthController : ControllerBase
             return BadRequest(new { message = "Email address is required." });
         }
 
-        var email = dto.Email.Trim().ToLower();
+        var email = dto.Email.Trim().ToLowerInvariant();
         var user = await _context.Users.FirstOrDefaultAsync(u => u.Email.ToLower() == email);
 
         if (user != null)
         {
             var resetToken = Convert.ToHexString(RandomNumberGenerator.GetBytes(32));
-            user.PasswordResetToken = resetToken;
+            user.PasswordResetToken = HashResetToken(resetToken);
             user.PasswordResetTokenExpiry = DateTime.UtcNow.AddHours(1);
             await _context.SaveChangesAsync();
 
@@ -281,7 +331,7 @@ The MediCare Health Team";
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to send password reset email to {Email}", user.Email);
+                _logger.LogError(ex, "Failed to send password reset email for user {UserId}", user.Id);
             }
         }
 
@@ -294,6 +344,7 @@ The MediCare Health Team";
     // POST: api/auth/reset-password
     [AllowAnonymous]
     [HttpPost("reset-password")]
+    [EnableRateLimiting("ResetPasswordPolicy")]
     public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto dto)
     {
         if (string.IsNullOrWhiteSpace(dto.Email) ||
@@ -314,21 +365,37 @@ The MediCare Health Team";
             return BadRequest(new { message = "New password must be at least 6 characters long." });
         }
 
-        var email = dto.Email.Trim().ToLower();
+        var email = dto.Email.Trim().ToLowerInvariant();
+        var tokenHash = HashResetToken(dto.Token);
+        var now = DateTime.UtcNow;
         var user = await _context.Users.FirstOrDefaultAsync(u =>
             u.Email.ToLower() == email &&
-            u.PasswordResetToken == dto.Token &&
-            u.PasswordResetTokenExpiry > DateTime.UtcNow);
+            u.PasswordResetToken == tokenHash &&
+            u.PasswordResetTokenExpiry > now);
 
         if (user == null)
         {
             return BadRequest(new { message = "Invalid or expired password reset token." });
         }
 
-        user.PasswordHash = _passwordHasher.HashPassword(user, dto.NewPassword);
-        user.PasswordResetToken = null;
-        user.PasswordResetTokenExpiry = null;
-        await _context.SaveChangesAsync();
+        var newHash = _passwordHasher.HashPassword(user, dto.NewPassword);
+        now = DateTime.UtcNow;
+
+        // Consume the token atomically so it cannot be used twice.
+        var updated = await _context.Users
+            .Where(u => u.Id == user.Id &&
+                u.PasswordResetToken == tokenHash &&
+                u.PasswordResetTokenExpiry > now)
+            .ExecuteUpdateAsync(setters => setters
+                .SetProperty(u => u.PasswordHash, newHash)
+                .SetProperty(u => u.TokenVersion, u => u.TokenVersion + 1)
+                .SetProperty(u => u.PasswordResetToken, (string?)null)
+                .SetProperty(u => u.PasswordResetTokenExpiry, (DateTime?)null));
+
+        if (updated == 0)
+        {
+            return BadRequest(new { message = "Invalid or expired password reset token." });
+        }
 
         _logger.LogInformation("Password reset successfully for user {UserId}", user.Id);
 
@@ -336,5 +403,10 @@ The MediCare Health Team";
         {
             message = "Password has been reset successfully. You can now log in with your new password."
         });
+    }
+    private static string HashResetToken(string token)
+    {
+        return Convert.ToHexString(
+            SHA256.HashData(Encoding.UTF8.GetBytes(token.Trim())));
     }
 }
