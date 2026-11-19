@@ -1,3 +1,4 @@
+
 using MediCare.Data;
 using MediCare.DTOs;
 using Microsoft.AspNetCore.Authorization;
@@ -50,8 +51,10 @@ public class AdminDashboardController : ControllerBase
             await _context.Notifications
                 .CountAsync(n => !n.IsRead);
 
+        // Count only patient-approved relationships
         var caregiverPatientRelationships =
-            await _context.CaregiverPatients.CountAsync();
+            await _context.CaregiverPatients
+                .CountAsync(cp => cp.Status == "APPROVED");
 
         var lowStockMedicines =
             await _context.Medicines
