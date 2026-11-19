@@ -1,3 +1,4 @@
+
 using MediCare.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -34,10 +35,20 @@ public class AppDbContext : DbContext
 
     public DbSet<EmergencyContact> EmergencyContacts { get; set; }
 
-
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+
+        // User Email Configuration
+        modelBuilder.Entity<User>()
+            .Property(u => u.Email)
+            .IsRequired()
+            .HasMaxLength(254);
+
+        // Prevent Duplicate User Emails
+        modelBuilder.Entity<User>()
+            .HasIndex(u => u.Email)
+            .IsUnique();
 
         // User -> Patient (One-to-One)
         modelBuilder.Entity<Patient>()
@@ -72,7 +83,7 @@ public class AppDbContext : DbContext
             .HasIndex(cp => new { cp.CaregiverId, cp.PatientId })
             .IsUnique();
 
-
+        // User -> Notification
         modelBuilder.Entity<Notification>()
             .HasOne(n => n.User)
             .WithMany()
@@ -86,7 +97,8 @@ public class AppDbContext : DbContext
             .HasForeignKey(ms => ms.MedicineId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        // Medicine -> MedicineLog (One-to-Many, Prevent Cascade Delete of History)
+        // Medicine -> MedicineLog
+        // Prevent Cascade Delete of History
         modelBuilder.Entity<MedicineLog>()
             .HasOne(ml => ml.Medicine)
             .WithMany(m => m.MedicineLogs)
@@ -100,12 +112,14 @@ public class AppDbContext : DbContext
             .HasForeignKey(ml => ml.ScheduleId)
             .OnDelete(DeleteBehavior.SetNull);
 
+        // Patient -> EmergencyAlert
         modelBuilder.Entity<EmergencyAlert>()
             .HasOne(e => e.Patient)
             .WithMany()
             .HasForeignKey(e => e.PatientId)
             .OnDelete(DeleteBehavior.Cascade);
 
+        // Prevent Duplicate Email Delivery Logs
         modelBuilder.Entity<EmailDeliveryLog>()
             .HasIndex(e => new
             {
@@ -116,18 +130,21 @@ public class AppDbContext : DbContext
             })
             .IsUnique();
 
+        // MedicineSchedule -> EmailDeliveryLog
         modelBuilder.Entity<EmailDeliveryLog>()
             .HasOne(e => e.MedicineSchedule)
             .WithMany()
             .HasForeignKey(e => e.MedicineScheduleId)
             .OnDelete(DeleteBehavior.Cascade);
 
+        // User -> UserNotificationPreference
         modelBuilder.Entity<UserNotificationPreference>()
             .HasOne(p => p.User)
             .WithOne(u => u.NotificationPreference)
             .HasForeignKey<UserNotificationPreference>(p => p.UserId)
             .OnDelete(DeleteBehavior.Cascade);
 
+        // Patient -> EmergencyContact
         modelBuilder.Entity<EmergencyContact>()
             .HasOne(ec => ec.Patient)
             .WithMany(p => p.EmergencyContacts)
