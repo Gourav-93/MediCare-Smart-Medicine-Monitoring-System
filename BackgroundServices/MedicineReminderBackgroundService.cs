@@ -8,7 +8,7 @@ namespace MediCare.BackgroundServices;
 public class MedicineReminderBackgroundService : BackgroundService
 {
     private readonly IServiceScopeFactory _scopeFactory;
-        private readonly ILogger<MedicineReminderBackgroundService> _logger;
+    private readonly ILogger<MedicineReminderBackgroundService> _logger;
 
     public MedicineReminderBackgroundService(
         IServiceScopeFactory scopeFactory,
@@ -68,17 +68,11 @@ public class MedicineReminderBackgroundService : BackgroundService
         var now = DateTime.Now;
         var today = now.Date;
         var recoveryStart = today.AddDays(-RecoveryDays);
-        var overdueCutoff = now.AddMinutes(-15);
 
-        // Catch overdue existing logs, including snoozes spanning midnight.
-        // Never overwrite Taken or an unrelated status.
-        await context.MedicineLogs
-            .Where(x => (x.Status == "Pending" || x.Status == "Snoozed") &&
-                        x.ScheduledTime <= overdueCutoff)
-            .ExecuteUpdateAsync(setters => setters
-                .SetProperty(x => x.Status, "Missed"), stoppingToken);
+        // Do not globally mark overdue rows: a cancelled or unknown legacy
+        // occurrence must not be converted into a missed dose.
 
-        var medicines = await context.Medicines
+        var medicines = await context.Medicines.AsNoTracking()
             .Where(m => !m.IsDeleted)
             .Include(m => m.MedicineSchedules)
             .Include(m => m.Patient)
@@ -106,7 +100,8 @@ public class MedicineReminderBackgroundService : BackgroundService
                 {
                     stoppingToken.ThrowIfCancellationRequested();
                     var occurrence = day.Add(schedule.Time);
-                    if (occurrence > now.AddMinutes(2))
+                    if (occurrence > now.AddMinutes(2) ||
+                         !IsEffectiveOccurrence(schedule, medicine, occurrence))
                         continue;
 
                     var log = await GetOrCreateOccurrenceAsync(
@@ -114,24 +109,9 @@ public class MedicineReminderBackgroundService : BackgroundService
                     if (log == null)
                         continue; // Ambiguous legacy record; do not guess.
 
-                    // The original occurrence is the identity; ScheduledTime is
-                    // the effective time, including any snooze.
+                    // The occurrence was validated and any overdue transition
+                    // was performed under the medicine lock in the helper.
                     var effectiveTime = log.ScheduledTime;
-                    if ((log.Status == "Pending" || log.Status == "Snoozed") &&
-                        effectiveTime <= overdueCutoff)
-                    {
-                        await context.MedicineLogs
-                            .Where(x => x.Id == log.Id &&
-                                (x.Status == "Pending" || x.Status == "Snoozed") &&
-                                x.ScheduledTime <= overdueCutoff)
-                            .ExecuteUpdateAsync(setters => setters
-                                .SetProperty(x => x.Status, "Missed"), stoppingToken);
-
-                        log = await context.MedicineLogs.AsNoTracking()
-                            .FirstOrDefaultAsync(x => x.Id == log.Id, stoppingToken);
-                        if (log == null) continue;
-                        effectiveTime = log.ScheduledTime;
-                    }
 
                     // Do not replay old reminders or flood users after downtime.
                     // Keep existing email occurrence keys stable.
@@ -163,66 +143,114 @@ public class MedicineReminderBackgroundService : BackgroundService
         }
     }
 
+    // Lifecycle timestamps are UTC; occurrence keys retain the existing
+    // server-local wall time convention until B17 is migrated consistently.
+    private static bool IsEffectiveOccurrence(
+        MedicineSchedule schedule, Medicine medicine, DateTime occurrence)
+    {
+        if (medicine.IsDeleted || !schedule.EffectiveFrom.HasValue ||
+            (schedule.IsRetired && !schedule.EffectiveUntil.HasValue) ||
+            !string.Equals(schedule.Frequency, "Daily", StringComparison.OrdinalIgnoreCase) ||
+            schedule.Time < TimeSpan.Zero || schedule.Time >= TimeSpan.FromDays(1) ||
+            occurrence.TimeOfDay != schedule.Time ||
+            occurrence.Date < medicine.StartDate.Date ||
+            occurrence.Date > medicine.EndDate.Date)
+            return false;
+
+        var wallTime = DateTime.SpecifyKind(occurrence, DateTimeKind.Unspecified);
+        if (TimeZoneInfo.Local.IsInvalidTime(wallTime) ||
+            TimeZoneInfo.Local.IsAmbiguousTime(wallTime))
+            return false;
+
+        var utc = TimeZoneInfo.ConvertTimeToUtc(wallTime, TimeZoneInfo.Local);
+        return utc >= schedule.EffectiveFrom.Value &&
+            (!schedule.EffectiveUntil.HasValue || utc < schedule.EffectiveUntil.Value);
+    }
+
     private async Task<MedicineLog?> GetOrCreateOccurrenceAsync(
         AppDbContext context, Medicine medicine, MedicineSchedule schedule,
         DateTime occurrence, DateTime now, CancellationToken stoppingToken)
     {
+        // Share the parent-row lock protocol with schedule mutations. Reload
+        // lifecycle and prescription data after obtaining the lock.
+        await using var transaction = await context.Database.BeginTransactionAsync(
+            System.Data.IsolationLevel.ReadCommitted, stoppingToken);
+        var ids = await context.Database.SqlQuery<int>(
+            $"SELECT Id AS Value FROM Medicines WHERE Id = {medicine.Id} AND IsDeleted = 0 FOR UPDATE")
+            .ToListAsync(stoppingToken);
+        if (ids.Count != 1) return null;
+
+        var current = await context.MedicineSchedules.AsNoTracking()
+            .Include(s => s.Medicine)
+            .FirstOrDefaultAsync(s => s.Id == schedule.Id &&
+                s.MedicineId == medicine.Id, stoppingToken);
+        if (current == null || current.Medicine.PatientId != medicine.PatientId ||
+            !IsEffectiveOccurrence(current, current.Medicine, occurrence))
+            return null;
+
         var exact = context.MedicineLogs.AsNoTracking().Where(x =>
-            x.ScheduleId == schedule.Id && x.MedicineId == medicine.Id &&
+            x.ScheduleId == current.Id && x.MedicineId == medicine.Id &&
             x.PatientId == medicine.PatientId && x.OriginalScheduledTime == occurrence);
-
-        var log = await exact.FirstOrDefaultAsync(stoppingToken);
-        if (log != null) return log;
-
-        // Legacy rows without a complete identity: match only the exact original
-        // time (or effective time if no original exists), never a nearby dose.
-        var legacy = await context.MedicineLogs.AsNoTracking()
-            .Where(x => x.MedicineId == medicine.Id && x.PatientId == medicine.PatientId &&
-                (x.ScheduleId == schedule.Id || x.ScheduleId == null) &&
-                (x.ScheduleId == null || x.OriginalScheduledTime == null) &&
-                (x.OriginalScheduledTime ?? x.ScheduledTime) == occurrence)
-            .Take(2).ToListAsync(stoppingToken);
-
-        if (legacy.Count > 0)
+        var matches = await exact.Take(2).ToListAsync(stoppingToken);
+        if (matches.Count > 1)
         {
-            if (legacy.Count == 1 &&
-                (legacy[0].ScheduleId == schedule.Id ||
-                 medicine.MedicineSchedules.Count(s => s.Time == schedule.Time) == 1))
-                return legacy[0];
-
-            _logger.LogWarning("Ambiguous legacy medicine occurrence for schedule {ScheduleId} at {Occurrence}.",
-                schedule.Id, occurrence);
+            _logger.LogWarning("Duplicate occurrence for schedule {ScheduleId} at {Occurrence}.", current.Id, occurrence);
             return null;
         }
 
-        log = new MedicineLog
+        // Never generate or mutate an occurrence alongside an incomplete legacy
+        // identity. Such records require explicit reconciliation.
+        var hasLegacy = await context.MedicineLogs.AsNoTracking().AnyAsync(x =>
+            x.MedicineId == medicine.Id && x.PatientId == medicine.PatientId &&
+            (x.ScheduleId == current.Id || x.ScheduleId == null) &&
+            (x.ScheduleId == null || x.OriginalScheduledTime == null) &&
+            (x.OriginalScheduledTime ?? x.ScheduledTime) == occurrence, stoppingToken);
+        if (hasLegacy)
         {
-            MedicineId = medicine.Id,
-            PatientId = medicine.PatientId,
-            ScheduleId = schedule.Id,
-            ScheduledTime = occurrence,
-            OriginalScheduledTime = occurrence,
-            Status = now >= occurrence.AddMinutes(15) ? "Missed" : "Pending",
-            MedicineName = medicine.Name,
-            Dosage = medicine.Dosage,
-            MealTiming = medicine.MealTimeing
-        };
+            _logger.LogWarning("Legacy occurrence requires reconciliation for schedule {ScheduleId} at {Occurrence}.", current.Id, occurrence);
+            return null;
+        }
 
-        context.MedicineLogs.Add(log);
-        try
+        var log = matches.SingleOrDefault();
+        if (log == null)
         {
-            await context.SaveChangesAsync(stoppingToken);
-            context.Entry(log).State = EntityState.Detached;
-            return log;
+            log = new MedicineLog
+            {
+                MedicineId = medicine.Id,
+                PatientId = medicine.PatientId,
+                ScheduleId = current.Id,
+                ScheduledTime = occurrence,
+                OriginalScheduledTime = occurrence,
+                Status = now >= occurrence.AddMinutes(15) ? "Missed" : "Pending",
+                MedicineName = current.Medicine.Name,
+                Dosage = current.Medicine.Dosage,
+                MealTiming = current.Medicine.MealTimeing
+            };
+            context.MedicineLogs.Add(log);
+            try
+            {
+                await context.SaveChangesAsync(stoppingToken);
+                context.Entry(log).State = EntityState.Detached;
+            }
+            catch (DbUpdateException ex) when (ex.InnerException is MySqlConnector.MySqlException { Number: 1062 })
+            {
+                context.Entry(log).State = EntityState.Detached;
+                var concurrent = await exact.Take(2).ToListAsync(stoppingToken);
+                if (concurrent.Count != 1) throw;
+                log = concurrent[0];
+            }
         }
-        catch (DbUpdateException ex) when (ex.InnerException is MySqlConnector.MySqlException { Number: 1062 })
+
+        var cutoff = now.AddMinutes(-15);
+        if ((log.Status == "Pending" || log.Status == "Snoozed") && log.ScheduledTime <= cutoff)
         {
-            // The unique occurrence index decides the winning insert.
-            context.Entry(log).State = EntityState.Detached;
-            var existing = await exact.FirstOrDefaultAsync(stoppingToken);
-            if (existing == null) throw;
-            return existing;
+            await context.MedicineLogs.Where(x => x.Id == log.Id &&
+                (x.Status == "Pending" || x.Status == "Snoozed") && x.ScheduledTime <= cutoff)
+                .ExecuteUpdateAsync(setters => setters.SetProperty(x => x.Status, "Missed"), stoppingToken);
+            log = await exact.FirstOrDefaultAsync(stoppingToken);
         }
+        await transaction.CommitAsync(stoppingToken);
+        return log;
     }
 
     private async Task TrySendReminderEmailAsync(AppDbContext context, IEmailService emailService, MedicineSchedule schedule, Medicine medicine, DateTime scheduledTime, CancellationToken stoppingToken)
