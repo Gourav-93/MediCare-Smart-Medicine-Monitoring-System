@@ -11,6 +11,7 @@ namespace MediCare.Controllers;
 [ApiController]
 [Route("api/medicine")]
 [Authorize(Roles = "ADMIN,PATIENT,CAREGIVER")]
+[ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
 public class MedicineController : ControllerBase
 {
     private readonly IMedicineService _service;
@@ -68,10 +69,10 @@ public class MedicineController : ControllerBase
                     p.UserId == currentUserId);
         }
 
-        // CAREGIVER can access only linked patients.
+        // CAREGIVER can access only approved linked patients.
         if (role == "CAREGIVER")
         {
-            var caregiver = await _context.Caregivers
+            var caregiver = await _context.Caregivers.AsNoTracking()
                 .FirstOrDefaultAsync(c => c.UserId == currentUserId);
 
             if (caregiver == null)
@@ -82,7 +83,8 @@ public class MedicineController : ControllerBase
             return await _context.CaregiverPatients
                 .AnyAsync(cp =>
                     cp.CaregiverId == caregiver.Id &&
-                    cp.PatientId == patientId);
+                    cp.PatientId == patientId &&
+                    cp.Status == "APPROVED");
         }
 
         return false;
@@ -105,7 +107,7 @@ public class MedicineController : ControllerBase
 
         if (role == "PATIENT")
         {
-            var patient = await _context.Patients
+            var patient = await _context.Patients.AsNoTracking()
                 .FirstOrDefaultAsync(p => p.UserId == currentUserId);
 
             if (patient == null)
@@ -113,7 +115,7 @@ public class MedicineController : ControllerBase
                 return NotFound("Patient profile not found.");
             }
 
-            var medicines = await _context.Medicines
+            var medicines = await _context.Medicines.AsNoTracking()
                 .Where(m => m.PatientId == patient.Id && !m.IsDeleted)
                 .ToListAsync();
 
@@ -122,7 +124,7 @@ public class MedicineController : ControllerBase
 
         if (role == "CAREGIVER")
         {
-            var caregiver = await _context.Caregivers
+            var caregiver = await _context.Caregivers.AsNoTracking()
                 .FirstOrDefaultAsync(c => c.UserId == currentUserId);
 
             if (caregiver == null)
@@ -130,11 +132,12 @@ public class MedicineController : ControllerBase
                 return NotFound("Caregiver profile not found.");
             }
 
-            var medicines = await _context.Medicines
+            var medicines = await _context.Medicines.AsNoTracking()
                 .Where(m => !m.IsDeleted && _context.CaregiverPatients
                     .Any(cp =>
                         cp.CaregiverId == caregiver.Id &&
-                        cp.PatientId == m.PatientId))
+                        cp.PatientId == m.PatientId &&
+                        cp.Status == "APPROVED"))
                 .ToListAsync();
 
             return Ok(medicines);
@@ -146,6 +149,11 @@ public class MedicineController : ControllerBase
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(int id)
     {
+        if (GetCurrentUserId() <= 0)
+            return Unauthorized();
+
+        if (id <= 0)
+            return BadRequest("A valid medicine ID is required.");
         var medicine = await _service.GetByIdAsync(id);
 
         if (medicine == null)
@@ -164,6 +172,8 @@ public class MedicineController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Add(MedicineDto dto)
     {
+        if (dto == null)
+            return BadRequest("Medicine details are required.");
         var role = GetCurrentRole();
         var currentUserId = GetCurrentUserId();
 
@@ -172,7 +182,7 @@ public class MedicineController : ControllerBase
 
         if (role == "PATIENT")
         {
-            var patient = await _context.Patients.FirstOrDefaultAsync(p => p.UserId == currentUserId);
+            var patient = await _context.Patients.AsNoTracking().FirstOrDefaultAsync(p => p.UserId == currentUserId);
             if (patient == null)
             {
                 return NotFound("Patient profile not found.");
@@ -190,15 +200,13 @@ public class MedicineController : ControllerBase
             return Forbid();
         }
 
-        if (dto.StartDate == default)
-        {
-            dto.StartDate = DateTime.UtcNow;
-        }
+        // Require explicit prescription dates rather than inventing a duration.
+        if (dto.StartDate == default || dto.EndDate == default ||
+            dto.EndDate.Date < dto.StartDate.Date)
+            return BadRequest("Valid start and end dates are required; end date cannot precede start date.");
 
-        if (dto.EndDate == default)
-        {
-            dto.EndDate = DateTime.UtcNow.AddMonths(1);
-        }
+        if (dto.Dose <= 0 || dto.Stock < 0)
+            return BadRequest("Dose must be positive and stock cannot be negative.");
 
         try
         {
@@ -217,53 +225,59 @@ public class MedicineController : ControllerBase
         int id,
         MedicineDto dto)
     {
-        var medicine = await _service.GetByIdAsync(id);
-
-        if (medicine == null)
-        {
-            return NotFound("Medicine not found.");
-        }
-
-        if (!await CanAccessPatientAsync(medicine.PatientId))
-        {
-            return Forbid();
-        }
-
-        var role = GetCurrentRole();
-        var currentUserId = GetCurrentUserId();
-
-        if (currentUserId <= 0)
+        if (GetCurrentUserId() <= 0)
             return Unauthorized();
 
-        if (role == "PATIENT")
-        {
-            var patient = await _context.Patients.FirstOrDefaultAsync(p => p.UserId == currentUserId);
-            if (patient == null)
-            {
-                return NotFound("Patient profile not found.");
-            }
-            dto.PatientId = patient.Id;
-        }
+        if (id <= 0)
+            return BadRequest("A valid medicine ID is required.");
 
-        if (dto.PatientId <= 0)
-        {
-            dto.PatientId = medicine.PatientId;
-        }
+        if (dto == null)
+            return BadRequest("Medicine details are required.");
 
-        if (!await CanAccessPatientAsync(dto.PatientId))
-        {
+        var medicine = await _service.GetByIdAsync(id);
+        if (medicine == null)
+            return NotFound("Medicine not found.");
+
+        if (!await CanAccessPatientAsync(medicine.PatientId))
             return Forbid();
+
+        if (dto.PatientId == 0)
+            dto.PatientId = medicine.PatientId;
+
+        if (dto.PatientId != medicine.PatientId)
+            return BadRequest("An existing medicine cannot be transferred to another patient.");
+
+        // The client must send the version originally loaded with the edit form.
+        if (!dto.Version.HasValue || dto.Version.Value < 0 ||
+            dto.Version.Value == long.MaxValue)
+        {
+            return BadRequest(new
+            {
+                message = "A valid medicine version is required. Refresh the medicine details."
+            });
         }
 
+        if (dto.Version.Value != medicine.Version)
+        {
+            return Conflict(new
+            {
+                message = "Medicine details or stock changed. Refresh and try again."
+            });
+        }
+
+        // Preserve the client version; service and repository recheck it.
+        // Preserve existing dates when omitted on update.
         if (dto.StartDate == default)
-        {
-            dto.StartDate = medicine.StartDate != default ? medicine.StartDate : DateTime.UtcNow;
-        }
-
+            dto.StartDate = medicine.StartDate;
         if (dto.EndDate == default)
-        {
-            dto.EndDate = medicine.EndDate != default ? medicine.EndDate : DateTime.UtcNow.AddMonths(1);
-        }
+            dto.EndDate = medicine.EndDate;
+
+        if (dto.StartDate == default || dto.EndDate == default ||
+            dto.EndDate.Date < dto.StartDate.Date)
+            return BadRequest("Invalid medicine date range.");
+
+        if (dto.Dose <= 0 || dto.Stock < 0)
+            return BadRequest("Dose must be positive and stock cannot be negative.");
 
         try
         {
@@ -277,6 +291,14 @@ public class MedicineController : ControllerBase
 
             return Ok(updatedMedicine);
         }
+        catch (DbUpdateConcurrencyException)
+        {
+            return Conflict(new { message = "Medicine details or stock changed. Refresh and try again." });
+        }
+        catch (InvalidOperationException ex) when (ex.Message == "Medicine not found or has been deleted.")
+        {
+            return NotFound("Medicine not found.");
+        }
         catch (ArgumentException ex)
         {
             return BadRequest(ex.Message);
@@ -286,6 +308,11 @@ public class MedicineController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id)
     {
+        if (GetCurrentUserId() <= 0)
+            return Unauthorized();
+
+        if (id <= 0)
+            return BadRequest("A valid medicine ID is required.");
         var medicine = await _service.GetByIdAsync(id);
 
         if (medicine == null)
@@ -298,14 +325,22 @@ public class MedicineController : ControllerBase
             return Forbid();
         }
 
-        var deleted = await _service.DeleteAsync(id);
-
-        if (!deleted)
+        try
         {
-            return NotFound("Medicine not found.");
-        }
+            var deleted = await _service.DeleteAsync(id);
+            if (!deleted)
+                return NotFound("Medicine not found.");
 
-        return Ok("Medicine deleted successfully.");
+            return Ok("Medicine deleted successfully.");
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            return Conflict(new { message = "Medicine changed or was deleted. Refresh and try again." });
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 
     // GET: api/medicine/low-stock
@@ -318,9 +353,12 @@ public class MedicineController : ControllerBase
         if (currentUserId <= 0)
             return Unauthorized();
 
+        if (threshold < 0)
+            return BadRequest("Stock threshold cannot be negative.");
+
         if (role == "ADMIN")
         {
-            var adminLowStock = await _context.Medicines
+            var adminLowStock = await _context.Medicines.AsNoTracking()
                 .Include(m => m.Patient)
                     .ThenInclude(p => p.User)
                 .Where(m => !m.IsDeleted && m.Stock <= threshold)
@@ -331,13 +369,13 @@ public class MedicineController : ControllerBase
 
         if (role == "PATIENT")
         {
-            var patient = await _context.Patients
+            var patient = await _context.Patients.AsNoTracking()
                 .FirstOrDefaultAsync(p => p.UserId == currentUserId);
 
             if (patient == null)
                 return NotFound("Patient profile not found.");
 
-            var patientLowStock = await _context.Medicines
+            var patientLowStock = await _context.Medicines.AsNoTracking()
                 .Where(m => !m.IsDeleted && m.PatientId == patient.Id && m.Stock <= threshold)
                 .OrderBy(m => m.Stock)
                 .ToListAsync();
@@ -347,17 +385,20 @@ public class MedicineController : ControllerBase
 
         if (role == "CAREGIVER")
         {
-            var caregiver = await _context.Caregivers
+            var caregiver = await _context.Caregivers.AsNoTracking()
                 .FirstOrDefaultAsync(c => c.UserId == currentUserId);
 
             if (caregiver == null)
                 return NotFound("Caregiver profile not found.");
 
-            var caregiverLowStock = await _context.Medicines
+            var caregiverLowStock = await _context.Medicines.AsNoTracking()
                 .Include(m => m.Patient)
                     .ThenInclude(p => p.User)
                 .Where(m => !m.IsDeleted && _context.CaregiverPatients
-                    .Any(cp => cp.CaregiverId == caregiver.Id && cp.PatientId == m.PatientId) && m.Stock <= threshold)
+                    .Any(cp =>
+                        cp.CaregiverId == caregiver.Id &&
+                        cp.PatientId == m.PatientId &&
+                        cp.Status == "APPROVED") && m.Stock <= threshold)
                 .OrderBy(m => m.Stock)
                 .ToListAsync();
 
